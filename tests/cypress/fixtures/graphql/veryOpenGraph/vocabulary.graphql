@@ -1,0 +1,12 @@
+query openGraphVocabulary {
+    openGraphVocabulary {
+        ogTypes {
+            name
+            properties {
+                name
+                kind
+                multiple
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<vognt = 'http://www.jahia.org/very-open-graph/nt/1.0'>
+<vog = 'http://www.jahia.org/very-open-graph/1.0'>
+
+[vognt:settings] > nt:base, jmix:nolive
+ + * (vognt:typeMapping)
+
+[vognt:typeMapping] > nt:base
+ - vog:nodeType (string) mandatory
+ - vog:ogType (string) mandatory < 'website', 'article', 'book', 'profile'
+ + * (vognt:propertyMapping)
+
+[vognt:propertyMapping] > nt:base
+ - vog:ogProperty (string) mandatory
+ - vog:sourceProperty (string) mandatory
