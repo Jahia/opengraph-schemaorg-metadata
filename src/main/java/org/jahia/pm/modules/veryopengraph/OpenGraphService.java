@@ -35,12 +35,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Stores the Open Graph mappings of a site, and resolves the Open Graph tags of a content node.
  * <p>
  * The mappings live under {@code /sites/<siteKey>/very-open-graph} in the default workspace. The settings node
  * has the mixin {@code jmix:nolive}, so a publication never copies it to live, and a change applies at once.
+ * The service keeps the mappings of each site in memory, because the render filter reads them on every live page.
  */
 @Component(service = OpenGraphService.class, immediate = true)
 public class OpenGraphService {
@@ -65,26 +67,59 @@ public class OpenGraphService {
     private static final Set<String> FILE_PICKER_TYPES = new HashSet<>(Arrays.asList("image", "file"));
 
     /**
+     * The mappings of each site, by site path. {@link MappingCacheListener} removes the entry of a site when its
+     * settings node changes.
+     */
+    private final Map<String, List<TypeMapping>> mappingsBySite = new ConcurrentHashMap<>();
+
+    /**
      * @return the mappings of the site, in the order of their creation
      */
     public List<TypeMapping> getMappings(JCRSiteNode site) throws RepositoryException {
-        String settingsPath = site.getPath() + "/" + SETTINGS_NODE_NAME;
-        return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.EDIT_WORKSPACE, null, session -> {
-            if (!session.nodeExists(settingsPath)) {
-                return Collections.emptyList();
-            }
-            List<TypeMapping> mappings = new ArrayList<>();
-            for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(session.getNode(settingsPath), TYPE_MAPPING_TYPE)) {
-                List<PropertyMapping> properties = new ArrayList<>();
-                for (JCRNodeWrapper propertyNode : JCRContentUtils.getChildrenOfType(typeNode, PROPERTY_MAPPING_TYPE)) {
-                    properties.add(new PropertyMapping(propertyNode.getPropertyAsString(OG_PROPERTY_PROPERTY),
-                            propertyNode.getPropertyAsString(SOURCE_PROPERTY_PROPERTY)));
+        try {
+            // A removal waits for a running load of the same site, so a load never stores a stale value.
+            return mappingsBySite.computeIfAbsent(site.getPath(), OpenGraphService::readMappings);
+        } catch (MappingReadException e) {
+            throw e.getCause();
+        }
+    }
+
+    /**
+     * Removes the cached mappings of a site. The next read loads them from the repository again.
+     */
+    void clearMappings(String sitePath) {
+        mappingsBySite.remove(sitePath);
+    }
+
+    /**
+     * Removes the cached mappings of every site.
+     */
+    void clearMappings() {
+        mappingsBySite.clear();
+    }
+
+    private static List<TypeMapping> readMappings(String sitePath) {
+        String settingsPath = sitePath + "/" + SETTINGS_NODE_NAME;
+        try {
+            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.EDIT_WORKSPACE, null, session -> {
+                if (!session.nodeExists(settingsPath)) {
+                    return Collections.emptyList();
                 }
-                mappings.add(new TypeMapping(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
-                        typeNode.getPropertyAsString(OG_TYPE_PROPERTY), properties));
-            }
-            return mappings;
-        });
+                List<TypeMapping> mappings = new ArrayList<>();
+                for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(session.getNode(settingsPath), TYPE_MAPPING_TYPE)) {
+                    List<PropertyMapping> properties = new ArrayList<>();
+                    for (JCRNodeWrapper propertyNode : JCRContentUtils.getChildrenOfType(typeNode, PROPERTY_MAPPING_TYPE)) {
+                        properties.add(new PropertyMapping(propertyNode.getPropertyAsString(OG_PROPERTY_PROPERTY),
+                                propertyNode.getPropertyAsString(SOURCE_PROPERTY_PROPERTY)));
+                    }
+                    mappings.add(new TypeMapping(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
+                            typeNode.getPropertyAsString(OG_TYPE_PROPERTY), properties));
+                }
+                return Collections.unmodifiableList(mappings);
+            });
+        } catch (RepositoryException e) {
+            throw new MappingReadException(e);
+        }
     }
 
     /**
@@ -119,6 +154,7 @@ public class OpenGraphService {
                     session.save();
                     return null;
                 });
+        clearMappings(site.getPath());
     }
 
     /**
@@ -140,6 +176,7 @@ public class OpenGraphService {
                     }
                     return null;
                 });
+        clearMappings(site.getPath());
     }
 
     /**
@@ -477,5 +514,22 @@ public class OpenGraphService {
      */
     private static String nodeName(String qualifiedName) {
         return qualifiedName.replace(':', '_');
+    }
+
+    /**
+     * Carries a {@link RepositoryException} out of the loading function of the mapping cache.
+     */
+    private static final class MappingReadException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        MappingReadException(RepositoryException cause) {
+            super(cause);
+        }
+
+        @Override
+        public synchronized RepositoryException getCause() {
+            return (RepositoryException) super.getCause();
+        }
     }
 }
