@@ -1,0 +1,7 @@
+query hasPermission($path: String!, $permission: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            hasPermission(permissionName: $permission)
+        }
+    }
+}
