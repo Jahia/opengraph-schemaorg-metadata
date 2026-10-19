@@ -1,0 +1,21 @@
+# This workflow triggers a full Sonar analysis at regular intervals
+name: Sonar Analysis - Scheduled
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1,3,5" # At 4AM, on Monday, Wednesday and Friday
+
+jobs:
+  sonar-analysis:
+    uses: Jahia/jahia-modules-action/.github/workflows/reusable-sonar-scan.yml@v2
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        git_branch: ["${{ github.event.repository.default_branch }}"]
+    with:
+      module_id: very-open-graph
+      git_branch: ${{ matrix.git_branch }}
+      incident_service: very-open-graph-sonar
+      github_slug: Jahia/very-open-graph

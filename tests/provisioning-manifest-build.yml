@@ -1,0 +1,10 @@
+- addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/enterprise/@id=jahia-enterprise@snapshots'
+  username: 'NEXUS_USERNAME'
+  password: 'NEXUS_PASSWORD'
+# news 3.4.0 depends on default, grid and seo, and the specs use its type jnt:news.
+- installBundle:
+      - 'mvn:org.jahia.modules/grid/8.1.0'
+      - 'mvn:org.jahia.modules/news/3.4.0'
+  autoStart: true
+  uninstallPreviousVersion: true
+# env.provision.sh of @jahia/cypress installs every artifacts/*-SNAPSHOT.jar after this manifest.
