@@ -73,6 +73,11 @@
                     <instructions>
                         <Bundle-SymbolicName>very-open-graph</Bundle-SymbolicName>
                         <_dsannotations>*</_dsannotations>
+                        <Import-Package>
+                            org.jahia.modules.graphql.provider.dxm,
+                            org.jahia.modules.graphql.provider.dxm.node,
+                            *
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>

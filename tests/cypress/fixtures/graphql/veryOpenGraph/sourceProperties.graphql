@@ -1,0 +1,15 @@
+query openGraphSourceProperties($path: String!, $nodeType: String!, $language: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            openGraphSourceProperties(nodeType: $nodeType, language: $language) {
+                name
+                displayName
+                requiredType
+                multiple
+                internationalized
+                declaringType
+                compatibleOgKinds
+            }
+        }
+    }
+}

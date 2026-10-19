@@ -20,7 +20,12 @@ export default defineConfig({
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require('./cypress/plugins/index.js')(on, config);
         },
-        specPattern: ['cypress/e2e/0Setup.cy.ts', 'cypress/e2e/1AdminRoute.cy.ts', 'cypress/e2e/ZTeardown.cy.ts'],
+        specPattern: [
+            'cypress/e2e/0Setup.cy.ts',
+            'cypress/e2e/1AdminRoute.cy.ts',
+            'cypress/e2e/2Api.cy.ts',
+            'cypress/e2e/ZTeardown.cy.ts'
+        ],
         excludeSpecPattern: '*.ignore.ts',
         baseUrl: process.env.CYPRESS_BASE_URL || process.env.JAHIA_URL || 'http://jahia:8080'
     }

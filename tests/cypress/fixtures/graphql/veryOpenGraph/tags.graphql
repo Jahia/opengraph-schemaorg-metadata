@@ -1,0 +1,11 @@
+query openGraphTags($path: String!, $language: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            openGraphTags(language: $language) {
+                property
+                content
+                nodePath
+            }
+        }
+    }
+}
