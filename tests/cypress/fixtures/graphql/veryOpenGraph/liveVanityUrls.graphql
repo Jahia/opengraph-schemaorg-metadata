@@ -1,0 +1,16 @@
+query veryOpenGraphLiveVanityUrls($path: String!) {
+    jcr(workspace: LIVE) {
+        nodeByPath(path: $path) {
+            descendants(typesFilter: {types: ["jnt:vanityUrl"]}) {
+                nodes {
+                    url: property(name: "j:url") {
+                        value
+                    }
+                    language: property(name: "jcr:language") {
+                        value
+                    }
+                }
+            }
+        }
+    }
+}
