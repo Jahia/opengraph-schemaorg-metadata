@@ -93,8 +93,8 @@ describe('Open Graph mapping API', () => {
             expect(byName.image.compatibleOgKinds).to.deep.equal(['URL', 'IMAGE']);
             expect(byName.date.compatibleOgKinds).to.deep.equal(['DATE']);
             expect(byName['j:tagList']).to.include({declaringType: 'jmix:tagged', multiple: true});
-            expect(byName['j:defaultCategory']).to.include({declaringType: 'jmix:categorized'});
-            expect(byName['j:defaultCategory'].compatibleOgKinds).to.deep.equal(['TEXT']);
+            expect(byName['j:defaultCategory'], 'a reference to a node that is not a file fills nothing').to.be
+                .undefined;
             expect(byName.openGraphImage).to.include({declaringType: 'jmix:seoHtmlHead'});
             expect(byName.openGraphImage.compatibleOgKinds).to.deep.equal(['URL', 'IMAGE']);
             expect(byName['jcr:primaryType'], 'a NAME property fills nothing').to.be.undefined;
@@ -221,6 +221,13 @@ describe('Open Graph mapping API', () => {
                 ogType: 'article',
                 properties: [{ogProperty: 'og:image', sourceProperty: 'date'}],
                 message: "The property 'date' (DATE) cannot fill 'og:image'"
+            },
+            {
+                reason: 'a source property with several values for a text Open Graph property with one value',
+                nodeType: NEWS_TYPE,
+                ogType: 'article',
+                properties: [{ogProperty: 'og:title', sourceProperty: 'j:tagList'}],
+                message: "The property 'j:tagList' holds several values and cannot fill 'og:title'"
             },
             {
                 reason: 'an Open Graph property mapped twice',

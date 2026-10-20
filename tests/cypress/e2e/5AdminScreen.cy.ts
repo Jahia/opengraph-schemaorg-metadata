@@ -1,6 +1,7 @@
 import {deleteMapping, expectNoError, getMappings, PropertyMapping, TypeMapping} from '../support/openGraphApi';
 import {
     ADD_MAPPING,
+    cancelAndDiscard,
     choose,
     chooseSources,
     CONFIRM_DELETE,
@@ -19,7 +20,8 @@ import {
     propertiesText,
     save,
     shouldOfferOnly,
-    sourceField
+    sourceField,
+    sourceFieldIn
 } from '../support/mappingScreen';
 import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/veryOpenGraph';
 
@@ -27,6 +29,8 @@ const NEWS_TYPE = 'jnt:news';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
+const BASIC_METADATA = 'vogBasicMetadata';
+const TYPE_METADATA = 'vogTypeMetadata';
 
 describe('Open Graph mapping screen', () => {
     before(() => {
@@ -48,6 +52,28 @@ describe('Open Graph mapping screen', () => {
 
         it('shows "No mapping yet." when the site has no mapping', () => {
             cy.get(EMPTY).should('contain.text', 'No mapping yet.');
+        });
+
+        it('groups the fields in the basic and the type metadata, with the source properties of each kind', () => {
+            cy.get(ADD_MAPPING).click();
+            choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            choose(OG_TYPE_FIELD, 'article');
+            cy.get(sourceFieldIn(BASIC_METADATA, TITLE.ogProperty)).should('exist');
+            cy.get(OG_TYPE_FIELD).closest('article').find(`label[for="${TYPE_METADATA}"]`).should('exist');
+            cy.get(sourceFieldIn(TYPE_METADATA, PUBLISHED.ogProperty)).should('exist');
+
+            openDropdown(sourceField(TITLE.ogProperty));
+            cy.get(menuItem('jcr:title')).should('exist');
+            ['j:tagList', 'j:defaultCategory', 'image', 'date'].forEach(name =>
+                cy.get(menuItem(name)).should('not.exist')
+            );
+            cy.get(menuItem('jcr:title')).click();
+
+            openDropdown(sourceField('article:tag'));
+            cy.get(menuItem('j:tagList')).should('exist');
+            cy.get(menuItem('j:defaultCategory')).should('not.exist');
+            cy.get(menuItem('j:tagList')).click();
+            cancelAndDiscard();
         });
 
         it('creates the mapping of jnt:news to article in the Content Editor', () => {

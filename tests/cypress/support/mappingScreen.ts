@@ -15,18 +15,24 @@ export const CONFIRM_DELETE = role('vog-confirm-delete');
 export const CONTENT_EDITOR = '[aria-labelledby="dialog-content-editor"]';
 const CREATE = role('createButton');
 const SAVE = role('submitSave');
+const CANCEL = role('backButton');
+const DISCARD = role('close-dialog-discard');
 
 const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-field="${name}"]`;
 
 export const NODE_TYPE_FIELD = field('vognt:typeMapping_vog:nodeType');
-export const OG_TYPE_FIELD = field('vognt:typeMapping_vog:ogType');
+export const OG_TYPE_FIELD = field('vogTypeMetadata_vog:ogType');
 
-// The mapping stores og:title in vog:og_title of vognt:typeMapping, and article:tag in vog:article_tag of vogmix:article.
-export const sourceField = (ogProperty: string) => {
-    const prefix = ogProperty.split(':')[0];
-    const owner = prefix === 'og' ? 'vognt:typeMapping' : `vogmix:${prefix}`;
-    return field(`${owner}_vog:${ogProperty.replace(/:/g, '_')}`);
-};
+// The Content Editor names a field after its fieldset and its property, such as vogBasicMetadata_vog:og_title, and
+// the mapping stores article:tag in vog:article_tag.
+const sourceFieldSelector = (ogProperty: string) =>
+    `[data-sel-content-editor-field$="_vog:${ogProperty.replace(/:/g, '_')}"]`;
+
+export const sourceField = (ogProperty: string) => `${CONTENT_EDITOR} ${sourceFieldSelector(ogProperty)}`;
+
+// A fieldset of the Content Editor is an article, and its title is a label for the name of the fieldset.
+export const sourceFieldIn = (fieldSetName: string, ogProperty: string) =>
+    `${CONTENT_EDITOR} article:has(label[for="${fieldSetName}"]) ${sourceFieldSelector(ogProperty)}`;
 
 // The "Add a mapping" button is enabled once the screen has loaded its data.
 export const openScreen = (user: TestUser) => {
@@ -71,6 +77,12 @@ export const chooseSources = (properties: PropertyMapping[]) => {
 
 export const create = () => {
     cy.get(CREATE).click();
+    cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
+};
+
+export const cancelAndDiscard = () => {
+    cy.get(CANCEL).click();
+    cy.get(DISCARD).click();
     cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
 };
 

@@ -1,0 +1,38 @@
+{
+  "nodeType": "vognt:typeMapping",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "content",
+      "fieldSets": [
+        {
+          "name": "vognt:typeMapping",
+          "rank": 0.0
+        },
+        {
+          "name": "vogBasicMetadata",
+          "rank": 1.0,
+          "labelKey": "very-open-graph:fieldset.basicMetadata",
+          "descriptionKey": "very-open-graph:fieldset.basicMetadata.description",
+          "fields": [
+            {"name": "vog:og_title", "declaringNodeType": "vognt:typeMapping", "rank": 1.0},
+            {"name": "vog:og_description", "declaringNodeType": "vognt:typeMapping", "rank": 2.0},
+            {"name": "vog:og_image", "declaringNodeType": "vognt:typeMapping", "rank": 3.0},
+            {"name": "vog:og_image_alt", "declaringNodeType": "vognt:typeMapping", "rank": 4.0},
+            {"name": "vog:og_audio", "declaringNodeType": "vognt:typeMapping", "rank": 5.0},
+            {"name": "vog:og_video", "declaringNodeType": "vognt:typeMapping", "rank": 6.0}
+          ]
+        },
+        {
+          "name": "vogTypeMetadata",
+          "rank": 2.0,
+          "labelKey": "very-open-graph:fieldset.typeMetadata",
+          "descriptionKey": "very-open-graph:fieldset.typeMetadata.description",
+          "fields": [
+            {"name": "vog:ogType", "declaringNodeType": "vognt:typeMapping", "rank": 1.0}
+          ]
+        }
+      ]
+    }
+  ]
+}
