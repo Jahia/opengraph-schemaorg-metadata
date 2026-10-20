@@ -14,25 +14,6 @@
       "delete": "Supprimer",
       "confirmDelete": "Confirmer la suppression",
       "cancel": "Annuler"
-    },
-    "editor": {
-      "newTitle": "Nouvelle correspondance",
-      "editTitle": "Modifier la correspondance",
-      "contentType": "Type de contenu",
-      "contentTypePlaceholder": "Choisir un type de contenu",
-      "ogType": "og:type",
-      "ogTypePlaceholder": "Choisir un og:type",
-      "properties": "Propriétés Open Graph",
-      "addProperty": "Ajouter une propriété",
-      "noProperty": "Aucune propriété pour l'instant.",
-      "ogProperty": "Propriété Open Graph",
-      "ogPropertyPlaceholder": "Choisir une propriété Open Graph",
-      "sourceProperty": "Propriété source",
-      "sourcePropertyPlaceholder": "Choisir une propriété",
-      "removeProperty": "Retirer la propriété",
-      "searchEmpty": "Aucun résultat.",
-      "save": "Enregistrer",
-      "cancel": "Annuler"
     }
   }
 }

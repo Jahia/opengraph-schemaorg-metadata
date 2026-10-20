@@ -21,6 +21,14 @@ public class GqlTypeMapping {
     }
 
     @GraphQLField
+    @GraphQLName("uuid")
+    @GraphQLNonNull
+    @GraphQLDescription("The identifier of the node that stores the mapping, which the Content Editor opens")
+    public String getUuid() {
+        return mapping.getUuid();
+    }
+
+    @GraphQLField
     @GraphQLName("nodeType")
     @GraphQLNonNull
     @GraphQLDescription("The content type, such as jnt:news")

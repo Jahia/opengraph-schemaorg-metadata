@@ -15,4 +15,20 @@ declare var jahia: {
     getState: () => { site?: string; [k: string]: unknown };
   };
 } | undefined;
+
+/** The Content Editor API of jContent. needRefresh is true when the editor saved the node. */
+declare var CE_API: {
+  create: (config: {
+    path: string;
+    nodeTypes: string[];
+    includeSubTypes: boolean;
+    isFullscreen: boolean;
+    onClosedCallback: (config: unknown, needRefresh: boolean) => void;
+  }) => void;
+  edit: (config: {
+    uuid: string;
+    isFullscreen: boolean;
+    onClosedCallback: (config: unknown, needRefresh: boolean) => void;
+  }) => void;
+} | undefined;
 /* eslint-enable no-var */

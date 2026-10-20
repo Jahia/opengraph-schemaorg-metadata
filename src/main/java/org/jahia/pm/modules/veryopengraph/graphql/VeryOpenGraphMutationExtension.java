@@ -26,6 +26,20 @@ public class VeryOpenGraphMutationExtension {
     }
 
     @GraphQLField
+    @GraphQLName("createOpenGraphSettings")
+    @GraphQLNonNull
+    @GraphQLDescription("Creates the node that holds the Open Graph mappings of this site node when it does not exist, and "
+            + "returns its path. Requires the permission 'veryOpenGraphManage' on the site")
+    public String createOpenGraphSettings() {
+        JCRSiteNode site = Resolvers.managedSite(mutation.jcrNode);
+        try {
+            return Resolvers.service().createSettings(site);
+        } catch (RepositoryException e) {
+            throw new DataFetchingException(e);
+        }
+    }
+
+    @GraphQLField
     @GraphQLName("saveOpenGraphMapping")
     @GraphQLNonNull
     @GraphQLDescription("Creates the Open Graph mapping of a content type on this site node, or replaces all its values. "

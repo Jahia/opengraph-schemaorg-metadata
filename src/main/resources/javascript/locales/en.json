@@ -14,25 +14,6 @@
       "delete": "Delete",
       "confirmDelete": "Confirm deletion",
       "cancel": "Cancel"
-    },
-    "editor": {
-      "newTitle": "New mapping",
-      "editTitle": "Edit the mapping",
-      "contentType": "Content type",
-      "contentTypePlaceholder": "Select a content type",
-      "ogType": "og:type",
-      "ogTypePlaceholder": "Select an og:type",
-      "properties": "Open Graph properties",
-      "addProperty": "Add a property",
-      "noProperty": "No property mapped yet.",
-      "ogProperty": "Open Graph property",
-      "ogPropertyPlaceholder": "Select an Open Graph property",
-      "sourceProperty": "Source property",
-      "sourcePropertyPlaceholder": "Select a property",
-      "removeProperty": "Remove the property",
-      "searchEmpty": "No result.",
-      "save": "Save",
-      "cancel": "Cancel"
     }
   }
 }

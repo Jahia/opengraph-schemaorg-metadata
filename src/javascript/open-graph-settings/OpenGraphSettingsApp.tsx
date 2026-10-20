@@ -4,13 +4,14 @@ import { Add } from "@jahia/moonstone/dist/icons";
 import { useState, type ReactNode } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { i18n, NAMESPACE } from "../i18n.ts";
-import { MappingEditor } from "./MappingEditor.tsx";
 import { MappingTable } from "./MappingTable.tsx";
 import {
+  CREATE_SETTINGS,
   DELETE_MAPPING,
   errorMessage,
   SCREEN_QUERY,
-  type ContentType,
+  type CreateSettingsData,
+  type CreateSettingsVariables,
   type DeleteMappingData,
   type DeleteMappingVariables,
   type ScreenData,
@@ -18,20 +19,17 @@ import {
   type TypeMapping,
 } from "./openGraph.gql.ts";
 
+const MAPPING_TYPE = "vognt:typeMapping";
+
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
-
-// The editor shows a new mapping when the mapping is null.
-type EditorState = Readonly<{ mapping: TypeMapping | null }>;
-
-const labelOf = (type: ContentType) => type.displayName || type.name;
 
 const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   const { t } = useTranslation(NAMESPACE);
   const language = globalThis.contextJsParameters?.uilang ?? "en";
   const sitePath = `/sites/${siteKey}`;
   const client = globalThis.jahia?.apolloClient;
-  const [editor, setEditor] = useState<EditorState | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isOpening, setIsOpening] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // The queries bypass the Apollo cache, so they never replace the jcr data of jContent.
   const { data, loading, error, refetch } = useQuery<ScreenData, ScreenVariables>(SCREEN_QUERY, {
@@ -40,38 +38,60 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     client,
     skip: siteKey === "",
   });
+  const [createSettings] = useMutation<CreateSettingsData, CreateSettingsVariables>(CREATE_SETTINGS, {
+    fetchPolicy: "no-cache",
+    client,
+  });
   const [deleteMapping] = useMutation<DeleteMappingData, DeleteMappingVariables>(DELETE_MAPPING, {
     fetchPolicy: "no-cache",
     client,
   });
 
   const mappings = data?.jcr?.nodeByPath?.openGraphMappings ?? [];
-  const ogTypes = data?.openGraphVocabulary?.ogTypes ?? [];
-  const contentTypes = [...(data?.jcr?.nodeTypes?.nodes ?? [])].sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
+  const contentTypes = data?.jcr?.nodeTypes?.nodes ?? [];
   const displayNameOf = (nodeType: string) => contentTypes.find(type => type.name === nodeType)?.displayName ?? null;
 
-  // A content type that already has a mapping is left out of a new mapping.
-  const editorContentTypes = (mapping: TypeMapping | null): ContentType[] => {
-    if (mapping) {
-      return [{ name: mapping.nodeType, displayName: displayNameOf(mapping.nodeType) }];
+  const refreshAfterSave = (_config: unknown, needRefresh: boolean) => {
+    if (needRefresh) {
+      refetch();
     }
-
-    const mapped = new Set(mappings.map(existing => existing.nodeType));
-    return contentTypes.filter(type => !mapped.has(type.name));
   };
 
-  const closeEditorAndRefresh = async () => {
-    setEditor(null);
-    await refetch();
+  // The Content Editor creates the mapping under the settings node, so the node must exist first.
+  const openCreateForm = async () => {
+    setActionError(null);
+    setIsOpening(true);
+    try {
+      const result = await createSettings({ variables: { path: sitePath } });
+      const path = result.data?.jcr?.mutateNode?.createOpenGraphSettings;
+      if (path) {
+        globalThis.CE_API?.create({
+          path,
+          nodeTypes: [MAPPING_TYPE],
+          includeSubTypes: false,
+          isFullscreen: false,
+          onClosedCallback: refreshAfterSave,
+        });
+      }
+    } catch (failure) {
+      setActionError(errorMessage(failure));
+    } finally {
+      setIsOpening(false);
+    }
+  };
+
+  const openEditForm = (mapping: TypeMapping) => {
+    setActionError(null);
+    globalThis.CE_API?.edit({ uuid: mapping.uuid, isFullscreen: false, onClosedCallback: refreshAfterSave });
   };
 
   const deleteAndRefresh = async (nodeType: string) => {
-    setDeleteError(null);
+    setActionError(null);
     try {
       await deleteMapping({ variables: { path: sitePath, nodeType } });
       await refetch();
     } catch (failure) {
-      setDeleteError(errorMessage(failure));
+      setActionError(errorMessage(failure));
     }
   };
 
@@ -80,30 +100,15 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
               color="accent"
               icon={<Add/>}
               label={t("openGraph.addMapping")}
-              isDisabled={editor !== null || data === undefined}
-              onClick={() => setEditor({ mapping: null })}
+              isDisabled={isOpening || data === undefined}
+              onClick={openCreateForm}
       />
   );
 
   let errorText: ReactNode = null;
-  const shownError = error?.message ?? deleteError;
+  const shownError = error?.message ?? actionError;
   if (shownError) {
     errorText = <Typography data-sel-role="vog-error" weight="bold">{shownError}</Typography>;
-  }
-
-  let editorPanel: ReactNode = null;
-  if (editor) {
-    editorPanel = (
-        <MappingEditor key={editor.mapping?.nodeType ?? "new"}
-                       sitePath={sitePath}
-                       language={language}
-                       mapping={editor.mapping}
-                       contentTypes={editorContentTypes(editor.mapping)}
-                       ogTypes={ogTypes}
-                       onSaved={closeEditorAndRefresh}
-                       onCancel={() => setEditor(null)}
-        />
-    );
   }
 
   let list: ReactNode = null;
@@ -111,8 +116,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     list = (
         <MappingTable mappings={mappings}
                       displayNameOf={displayNameOf}
-                      isDisabled={editor !== null}
-                      onEdit={mapping => setEditor({ mapping })}
+                      onEdit={openEditForm}
                       onDelete={deleteAndRefresh}
         />
     );
@@ -131,7 +135,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
                      header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
       >
           {errorText}
-          {editorPanel}
           {list}
       </LayoutContent>
   );

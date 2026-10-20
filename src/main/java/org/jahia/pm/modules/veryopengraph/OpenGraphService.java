@@ -26,6 +26,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,14 +51,23 @@ public class OpenGraphService {
 
     public static final String MANAGE_PERMISSION = "veryOpenGraphManage";
     public static final String SETTINGS_NODE_NAME = "very-open-graph";
+    public static final String NODE_TYPE_PROPERTY = "vog:nodeType";
 
     private static final String SETTINGS_TYPE = "vognt:settings";
     private static final String TYPE_MAPPING_TYPE = "vognt:typeMapping";
-    private static final String PROPERTY_MAPPING_TYPE = "vognt:propertyMapping";
-    private static final String NODE_TYPE_PROPERTY = "vog:nodeType";
     private static final String OG_TYPE_PROPERTY = "vog:ogType";
-    private static final String OG_PROPERTY_PROPERTY = "vog:ogProperty";
-    private static final String SOURCE_PROPERTY_PROPERTY = "vog:sourceProperty";
+    private static final String STORAGE_PREFIX = "vog:";
+
+    /**
+     * The mixin that holds the Open Graph properties of an og:type, beyond the properties of every og:type.
+     */
+    private static final Map<OgType, String> OG_TYPE_MIXINS = new EnumMap<>(OgType.class);
+
+    static {
+        OG_TYPE_MIXINS.put(OgType.ARTICLE, "vogmix:article");
+        OG_TYPE_MIXINS.put(OgType.BOOK, "vogmix:book");
+        OG_TYPE_MIXINS.put(OgType.PROFILE, "vogmix:profile");
+    }
 
     private static final String PAGE_TYPE = "jnt:page";
     private static final String MAIN_RESOURCE_TYPE = "jmix:mainResource";
@@ -107,13 +118,16 @@ public class OpenGraphService {
                 }
                 List<TypeMapping> mappings = new ArrayList<>();
                 for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(session.getNode(settingsPath), TYPE_MAPPING_TYPE)) {
+                    String ogType = typeNode.getPropertyAsString(OG_TYPE_PROPERTY);
                     List<PropertyMapping> properties = new ArrayList<>();
-                    for (JCRNodeWrapper propertyNode : JCRContentUtils.getChildrenOfType(typeNode, PROPERTY_MAPPING_TYPE)) {
-                        properties.add(new PropertyMapping(propertyNode.getPropertyAsString(OG_PROPERTY_PROPERTY),
-                                propertyNode.getPropertyAsString(SOURCE_PROPERTY_PROPERTY)));
+                    for (OgProperty property : OgType.fromValue(ogType).map(OgType::getProperties).orElse(Collections.emptyList())) {
+                        String source = typeNode.getPropertyAsString(storageName(property.getName()));
+                        if (source != null && !source.isEmpty()) {
+                            properties.add(new PropertyMapping(property.getName(), source));
+                        }
                     }
-                    mappings.add(new TypeMapping(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
-                            typeNode.getPropertyAsString(OG_TYPE_PROPERTY), properties));
+                    mappings.add(new TypeMapping(typeNode.getIdentifier(), typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
+                            ogType, properties));
                 }
                 return Collections.unmodifiableList(mappings);
             });
@@ -141,15 +155,27 @@ public class OpenGraphService {
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
                     JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType);
-                    for (JCRNodeWrapper child : JCRContentUtils.getChildrenOfType(mapping, PROPERTY_MAPPING_TYPE)) {
-                        child.remove();
+                    for (OgType anyOgType : OgType.values()) {
+                        for (OgProperty property : anyOgType.getProperties()) {
+                            String name = storageName(property.getName());
+                            if (mapping.hasProperty(name)) {
+                                mapping.getProperty(name).remove();
+                            }
+                        }
+                    }
+                    for (Map.Entry<OgType, String> mixin : OG_TYPE_MIXINS.entrySet()) {
+                        if (mixin.getKey() != og && mapping.isNodeType(mixin.getValue())) {
+                            mapping.removeMixin(mixin.getValue());
+                        }
+                    }
+                    String mixin = OG_TYPE_MIXINS.get(og);
+                    if (mixin != null && !mapping.isNodeType(mixin)) {
+                        mapping.addMixin(mixin);
                     }
                     mapping.setProperty(NODE_TYPE_PROPERTY, nodeType);
                     mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
                     for (PropertyMapping property : properties) {
-                        JCRNodeWrapper child = mapping.addNode(nodeName(property.getOgProperty()), PROPERTY_MAPPING_TYPE);
-                        child.setProperty(OG_PROPERTY_PROPERTY, property.getOgProperty());
-                        child.setProperty(SOURCE_PROPERTY_PROPERTY, property.getSourceProperty());
+                        mapping.setProperty(storageName(property.getOgProperty()), property.getSourceProperty());
                     }
                     session.save();
                     return null;
@@ -177,6 +203,67 @@ public class OpenGraphService {
                     return null;
                 });
         clearMappings(site.getPath());
+    }
+
+    /**
+     * Creates the settings node of the site when it does not exist, so the Content Editor can create a mapping
+     * under it.
+     *
+     * @return the path of the settings node
+     */
+    public String createSettings(JCRSiteNode site) throws RepositoryException {
+        return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
+                Constants.EDIT_WORKSPACE, null, session -> {
+                    JCRNodeWrapper settings = settingsNode(session, site.getPath());
+                    session.save();
+                    return settings.getPath();
+                });
+    }
+
+    /**
+     * @return the content types that the site can map: {@code jnt:page} and the types that inherit
+     * {@code jmix:mainResource}, from the modules of the site
+     */
+    public List<ExtendedNodeType> getMappableTypes(JCRSiteNode site) {
+        Set<String> siteModules = site.getInstalledModulesWithAllDependencies();
+        List<ExtendedNodeType> types = new ArrayList<>();
+        for (ExtendedNodeType type : NodeTypeRegistry.getInstance().getAllNodeTypes()) {
+            if (!type.isMixin() && !type.isAbstract() && (type.isNodeType(PAGE_TYPE) || type.isNodeType(MAIN_RESOURCE_TYPE))
+                    && isActiveOnSite(siteModules, type)) {
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
+    /**
+     * @return the property of a mapping node that holds the source of an Open Graph property, such as
+     * {@code vog:og_image_alt} for {@code og:image:alt}
+     */
+    public static String storageName(String ogProperty) {
+        return STORAGE_PREFIX + ogProperty.replace(':', '_');
+    }
+
+    /**
+     * @return the Open Graph property that a property of a mapping node holds, such as {@code og:image:alt} for
+     * {@code vog:og_image_alt}
+     */
+    public static Optional<OgProperty> findOgProperty(String storageName) {
+        for (OgType type : OgType.values()) {
+            for (OgProperty property : type.getProperties()) {
+                if (storageName(property.getName()).equals(storageName)) {
+                    return Optional.of(property);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * @return the mixin that holds the own Open Graph properties of the og:type, or empty for {@code website}
+     */
+    public static Optional<String> ogTypeMixin(OgType ogType) {
+        return Optional.ofNullable(OG_TYPE_MIXINS.get(ogType));
     }
 
     /**
@@ -501,12 +588,23 @@ public class OpenGraphService {
                 .getNodeByIdentifier(node.getIdentifier());
     }
 
-    private static JCRNodeWrapper typeNode(JCRSessionWrapper session, String sitePath, String nodeType) throws RepositoryException {
+    private static JCRNodeWrapper settingsNode(JCRSessionWrapper session, String sitePath) throws RepositoryException {
         JCRNodeWrapper site = session.getNode(sitePath);
-        JCRNodeWrapper settings = site.hasNode(SETTINGS_NODE_NAME) ? site.getNode(SETTINGS_NODE_NAME)
-                : site.addNode(SETTINGS_NODE_NAME, SETTINGS_TYPE);
-        String name = nodeName(nodeType);
-        return settings.hasNode(name) ? settings.getNode(name) : settings.addNode(name, TYPE_MAPPING_TYPE);
+        return site.hasNode(SETTINGS_NODE_NAME) ? site.getNode(SETTINGS_NODE_NAME) : site.addNode(SETTINGS_NODE_NAME, SETTINGS_TYPE);
+    }
+
+    /**
+     * @return the mapping node of the content type, found by its value, because the Content Editor names a new node
+     * after the label of its type
+     */
+    private static JCRNodeWrapper typeNode(JCRSessionWrapper session, String sitePath, String nodeType) throws RepositoryException {
+        JCRNodeWrapper settings = settingsNode(session, sitePath);
+        for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(settings, TYPE_MAPPING_TYPE)) {
+            if (nodeType.equals(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY))) {
+                return typeNode;
+            }
+        }
+        return settings.addNode(JCRContentUtils.findAvailableNodeName(settings, nodeName(nodeType)), TYPE_MAPPING_TYPE);
     }
 
     /**
