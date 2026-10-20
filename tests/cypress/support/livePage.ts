@@ -26,6 +26,20 @@ export const ogProperties = (page: LivePage): string[] =>
 
 export const publish = (path: string) => publishAndWaitJobEnding(path, ['en']);
 
+type VanityUrl = {url: {value: string}; language: {value: string}};
+
+// The paths that the English live URL of a node can end with: its path with .html, and each English vanity URL.
+// The module news adds the vanity URL /news/<title> to a news item when the module seo is installed, and the URL
+// rewriting of Jahia uses it on some images only, such as jahia-ee-dev:8-SNAPSHOT.
+export const livePathsOf = (path: string): Cypress.Chainable<string[]> =>
+    cy.apollo({queryFile: 'graphql/veryOpenGraph/liveVanityUrls.graphql', variables: {path}}).then(result => {
+        const vanityUrls = result.data.jcr.nodeByPath.descendants.nodes as VanityUrl[];
+        return [
+            `${path}.html`,
+            ...vanityUrls.filter(vanityUrl => vanityUrl.language.value === 'en').map(vanityUrl => vanityUrl.url.value)
+        ];
+    });
+
 // Deletes a node in both workspaces, so that the next run starts from nothing.
 export const deleteEverywhere = (path: string) => {
     deleteNode(path);

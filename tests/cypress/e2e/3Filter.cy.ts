@@ -1,6 +1,14 @@
 import {addNode, uploadFile} from '@jahia/cypress';
 import {deleteMapping, expectNoError, saveMapping, TypeMapping} from '../support/openGraphApi';
-import {deleteEverywhere, getLivePage, LivePage, metaContents, ogProperties, publish} from '../support/livePage';
+import {
+    deleteEverywhere,
+    getLivePage,
+    LivePage,
+    livePathsOf,
+    metaContents,
+    ogProperties,
+    publish
+} from '../support/livePage';
 import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/veryOpenGraph';
 
 const PAGE_PATH = `${SITE_PATH}/home/vog-filter-page`;
@@ -33,11 +41,15 @@ const single = (page: LivePage, property: string): string => {
     return contents[0];
 };
 
-// Checks that a URL is absolute on the server name of the site, and that a guest can open its path.
-const expectLiveUrl = (url: string, pathSuffix: string) => {
+// Checks that a URL is absolute on the server name of the site, that its path ends with one of the suffixes, and that
+// a guest can open its path.
+const expectLiveUrl = (url: string, pathSuffixes: string[]) => {
     const parsed = new URL(url);
     expect(parsed.hostname, `host of ${url}`).to.equal(SERVER_NAME);
-    expect(parsed.pathname.endsWith(pathSuffix), `${parsed.pathname} ends with ${pathSuffix}`).to.equal(true);
+    expect(
+        pathSuffixes.some(pathSuffix => parsed.pathname.endsWith(pathSuffix)),
+        `${parsed.pathname} ends with one of ${pathSuffixes.join(', ')}`
+    ).to.equal(true);
     cy.clearCookies();
     cy.request({url: parsed.pathname}).its('status').should('equal', 200);
 };
@@ -92,7 +104,7 @@ describe('Open Graph tags in the head of live pages', () => {
             expect(single(page, 'og:description')).to.equal('A page for the filter test');
             expect(single(page, 'og:site_name')).to.equal(SITE_KEY);
             expect(single(page, 'og:locale')).to.equal('en');
-            expectLiveUrl(single(page, 'og:url'), '/sites/vogSite/home/vog-filter-page.html');
+            expectLiveUrl(single(page, 'og:url'), ['/sites/vogSite/home/vog-filter-page.html']);
             expect(page.html.indexOf('property="og:title"')).to.be.lessThan(page.html.search(/<\/head>/i));
         });
     });
@@ -105,8 +117,8 @@ describe('Open Graph tags in the head of live pages', () => {
             expect(single(page, 'og:description')).to.equal('First paragraph & more');
             expect(single(page, 'article:published_time')).to.equal('2026-10-19T09:30:00Z');
             expect(single(page, 'og:image:type')).to.equal('image/png');
-            expectLiveUrl(single(page, 'og:url'), '/sites/vogSite/contents/vog-filter-news.html');
-            expectLiveUrl(single(page, 'og:image'), `/files/live${IMAGE_PATH}`);
+            livePathsOf(NEWS_PATH).then(livePaths => expectLiveUrl(single(page, 'og:url'), livePaths));
+            expectLiveUrl(single(page, 'og:image'), [`/files/live${IMAGE_PATH}`]);
         });
     });
 
