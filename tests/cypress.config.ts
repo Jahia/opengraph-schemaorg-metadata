@@ -24,6 +24,8 @@ export default defineConfig({
             'cypress/e2e/0Setup.cy.ts',
             'cypress/e2e/1AdminRoute.cy.ts',
             'cypress/e2e/2Api.cy.ts',
+            'cypress/e2e/3Filter.cy.ts',
+            'cypress/e2e/4FilterEscape.cy.ts',
             'cypress/e2e/ZTeardown.cy.ts'
         ],
         excludeSpecPattern: '*.ignore.ts',
