@@ -24,12 +24,11 @@ const propertiesOf = (mapping: TypeMapping) =>
 type MappingTableProps = Readonly<{
   mappings: TypeMapping[];
   displayNameOf: (nodeType: string) => string | null;
-  isDisabled: boolean;
   onEdit: (mapping: TypeMapping) => void;
   onDelete: (nodeType: string) => Promise<void>;
 }>;
 
-export const MappingTable = ({ mappings, displayNameOf, isDisabled, onEdit, onDelete }: MappingTableProps) => {
+export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: MappingTableProps) => {
   const { t } = useTranslation(NAMESPACE);
   // The content type of the row that shows "Confirm deletion".
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -84,7 +83,6 @@ export const MappingTable = ({ mappings, displayNameOf, isDisabled, onEdit, onDe
                     variant="ghost"
                     icon={<Edit/>}
                     label={t("openGraph.list.edit")}
-                    isDisabled={isDisabled}
                     onClick={() => onEdit(mapping)}
             />
             {" "}
@@ -92,7 +90,6 @@ export const MappingTable = ({ mappings, displayNameOf, isDisabled, onEdit, onDe
                     variant="ghost"
                     icon={<Delete/>}
                     label={t("openGraph.list.delete")}
-                    isDisabled={isDisabled}
                     onClick={() => setConfirming(mapping.nodeType)}
             />
         </>

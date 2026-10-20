@@ -8,14 +8,23 @@ import java.util.List;
  */
 public final class TypeMapping {
 
+    private final String uuid;
     private final String nodeType;
     private final String ogType;
     private final List<PropertyMapping> properties;
 
-    public TypeMapping(String nodeType, String ogType, List<PropertyMapping> properties) {
+    public TypeMapping(String uuid, String nodeType, String ogType, List<PropertyMapping> properties) {
+        this.uuid = uuid;
         this.nodeType = nodeType;
         this.ogType = ogType;
         this.properties = Collections.unmodifiableList(properties);
+    }
+
+    /**
+     * @return the identifier of the node that stores the mapping
+     */
+    public String getUuid() {
+        return uuid;
     }
 
     /**
