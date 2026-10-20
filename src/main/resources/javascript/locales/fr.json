@@ -15,5 +15,13 @@
       "confirmDelete": "Confirmer la suppression",
       "cancel": "Annuler"
     }
+  },
+  "preview": {
+    "property": "Propriété",
+    "value": "Valeur",
+    "empty": "Ce contenu n'a aucune valeur Open Graph.",
+    "saveHint": "Enregistrez pour voir les valeurs Open Graph mises à jour",
+    "urlOf": "URL en ligne de {{path}}",
+    "error": "Impossible de charger les valeurs Open Graph : {{message}}"
   }
 }

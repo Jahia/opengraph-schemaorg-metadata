@@ -2,8 +2,16 @@ import { Share } from "@jahia/moonstone/dist/icons";
 import { registry } from "@jahia/ui-extender";
 import { lazy, Suspense } from "react";
 import { i18n, NAMESPACE } from "./i18n.ts";
+import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
+const OgPreviewApp = lazy(() => import("./open-graph-preview/OgPreview.tsx"));
+
+const OgPreviewSelector = (props: OgPreviewProps) => (
+    <Suspense fallback={null}>
+        <OgPreviewApp {...props}/>
+    </Suspense>
+);
 
 type RouteProps = { match?: { params?: { siteKey?: string } } };
 
@@ -32,6 +40,9 @@ export default function registerVeryOpenGraph() {
           );
         },
       });
+
+      // The read-only field vog:ogPreview of the section "Open Graph" in the Content Editor.
+      registry.add("selectorType", "VogPreview", { cmp: OgPreviewSelector, supportMultiple: false });
     },
   });
 }

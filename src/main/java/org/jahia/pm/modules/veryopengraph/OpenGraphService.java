@@ -353,6 +353,14 @@ public class OpenGraphService {
         return tags;
     }
 
+    /**
+     * @return true when the site of the node has a mapping for the type of the node, or for one of its supertypes
+     */
+    public boolean isMapped(JCRNodeWrapper node) throws RepositoryException {
+        JCRSiteNode site = node.getResolveSite();
+        return site != null && findMapping(getMappings(site), node.getPrimaryNodeType()) != null;
+    }
+
     private static void validate(PropertyMapping property, OgType og, String nodeType,
                                  Map<String, ExtendedPropertyDefinition> sources, Set<String> mapped)
             throws InvalidMappingException {
