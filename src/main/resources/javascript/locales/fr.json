@@ -21,5 +21,14 @@
     "value": "Valeur",
     "saveHint": "Enregistrez pour voir les valeurs Open Graph mises à jour",
     "urlOf": "URL en ligne de {{path}}"
+  },
+  "customTags": {
+    "property": "Propriété Open Graph",
+    "placeholder": {
+      "TEXT": "Valeur",
+      "DATE": "Date, par exemple 2026-10-20T09:30:00Z",
+      "URL": "URL absolue, par exemple https://www.example.com/video.mp4",
+      "IMAGE": "URL absolue d'une image, par exemple https://www.example.com/image.png"
+    }
   }
 }

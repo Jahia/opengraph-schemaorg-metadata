@@ -1,0 +1,4 @@
+/* The dropdown keeps the width of the longest property name, article:expiration_time, and the input takes the rest. */
+.property {
+  flex: 0 0 240px;
+}

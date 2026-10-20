@@ -51,7 +51,7 @@ export const propertiesText = (properties: PropertyMapping[]) =>
 const dropdownOf = (fieldSelector: string) =>
     cy.get(`${fieldSelector} [data-sel-content-editor-select-readonly="false"]`, {timeout: LOAD_TIMEOUT});
 
-const OPEN_MENU = '.moonstone-menu:not(.moonstone-hidden)';
+export const OPEN_MENU = '.moonstone-menu:not(.moonstone-hidden)';
 
 export const menuItem = (value: string) => `${OPEN_MENU} .moonstone-menuItem[data-value="${value}"]`;
 

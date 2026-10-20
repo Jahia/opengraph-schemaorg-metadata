@@ -1,0 +1,22 @@
+{
+  "nodeType": "vogmix:customTags",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "veryOpenGraph",
+      "fieldSets": [
+        {
+          "name": "vogOpenGraphValues",
+          "rank": 0.0
+        },
+        {
+          "name": "vogmix:customTags",
+          "rank": 1.0,
+          "fields": [
+            {"name": "vog:customTags", "selectorType": "VogTag"}
+          ]
+        }
+      ]
+    }
+  ]
+}

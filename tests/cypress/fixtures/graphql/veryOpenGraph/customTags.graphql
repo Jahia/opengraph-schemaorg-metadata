@@ -1,0 +1,13 @@
+query veryOpenGraphCustomTags($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            uuid
+            mixinTypes {
+                name
+            }
+            property(name: "vog:customTags", language: "en") {
+                values
+            }
+        }
+    }
+}
