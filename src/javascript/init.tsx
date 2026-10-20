@@ -1,11 +1,14 @@
 import { Share } from "@jahia/moonstone/dist/icons";
 import { registry } from "@jahia/ui-extender";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { i18n, NAMESPACE } from "./i18n.ts";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
-const OgPreviewApp = lazy(() => import("./open-graph-preview/OgPreview.tsx"));
+// The preview needs the federated module of jContent. If it does not load, the Content Editor shows an empty field.
+const OgPreviewApp = lazy<ComponentType<OgPreviewProps>>(() =>
+  import("./open-graph-preview/OgPreview.tsx").catch(() => ({ default: () => null }))
+);
 
 const OgPreviewSelector = (props: OgPreviewProps) => (
     <Suspense fallback={null}>

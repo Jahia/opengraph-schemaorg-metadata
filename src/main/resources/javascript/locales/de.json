@@ -19,9 +19,7 @@
   "preview": {
     "property": "Eigenschaft",
     "value": "Wert",
-    "empty": "Dieser Inhalt hat keinen Open-Graph-Wert.",
     "saveHint": "Speichern Sie, um die aktualisierten Open-Graph-Werte zu sehen",
-    "urlOf": "Live-URL von {{path}}",
-    "error": "Die Open-Graph-Werte können nicht geladen werden: {{message}}"
+    "urlOf": "Live-URL von {{path}}"
   }
 }

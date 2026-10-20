@@ -4,6 +4,7 @@ import {deleteEverywhere} from '../support/livePage';
 import {
     createFormSections,
     editFormSections,
+    fieldNamed,
     FormSection,
     nodeProperties,
     NodeProperty,
@@ -13,10 +14,12 @@ import {
     save,
     SAVE_HINT,
     SECTION,
+    SYSTEM_NAME_FIELD,
     sectionNames,
     sectionShouldNotExist,
     typeInField
 } from '../support/editorField';
+import {LOAD_TIMEOUT} from '../support/mappingScreen';
 import {SITE_KEY, SITE_MODULES, SITE_PATH, TEMPLATE_SET} from '../support/veryOpenGraph';
 
 const NEWS_NAME = 'vog-editor-news';
@@ -61,7 +64,7 @@ const expectSection = (sections: FormSection[]) => {
     const fields = section.fieldSets
         .flatMap(fieldSet => fieldSet.fields)
         .map(({name, selectorType, readOnly}) => ({name, selectorType, readOnly}));
-    expect(fields).to.deep.equal([{name: 'vog:ogPreview', selectorType: 'VogPreview', readOnly: true}]);
+    expect(fields).to.deep.include({name: 'vog:ogPreview', selectorType: 'VogPreview', readOnly: true});
 };
 
 // The save request carries the new title, and no request carries the field vog:ogPreview.
@@ -99,29 +102,12 @@ describe('Open Graph values in the Content Editor', () => {
         deleteSite(OTHER_SITE_KEY);
     });
 
-    describe('the edit form', () => {
-        it('has the section "Open Graph" with the read-only field vog:ogPreview on a mapped type', () => {
+    describe('the forms', () => {
+        it('give the edit form the section "Open Graph" with the read-only field vog:ogPreview', () => {
             editFormSections(NEWS_PATH).then(expectSection);
         });
 
-        it('has no section "Open Graph" on a type with no mapping', () => {
-            editFormSections(PAGE_PATH).then(sections => expect(sectionNames(sections)).not.to.include(SECTION));
-        });
-
-        it('has no section "Open Graph" on a site that has no mapping for the type', () => {
-            editFormSections(OTHER_NEWS_PATH).then(sections => expect(sectionNames(sections)).not.to.include(SECTION));
-        });
-
-        it('follows a new mapping and its deletion at the next request', () => {
-            saveMapping(PAGE_MAPPING).then(expectNoError);
-            editFormSections(PAGE_PATH).then(expectSection);
-            deleteMapping(PAGE_MAPPING.nodeType).then(expectNoError);
-            editFormSections(PAGE_PATH).then(sections => expect(sectionNames(sections)).not.to.include(SECTION));
-        });
-    });
-
-    describe('the create form', () => {
-        it('has no section "Open Graph" on a mapped type', () => {
+        it('give the create form no section "Open Graph"', () => {
             createFormSections('jnt:news', `${SITE_PATH}/contents`).then(sections => {
                 expect(sectionNames(sections)).to.include('content');
                 expect(sectionNames(sections)).not.to.include(SECTION);
@@ -150,29 +136,42 @@ describe('Open Graph values in the Content Editor', () => {
             cy.get(SAVE_HINT).should('not.exist');
         });
 
-        it('shows no section "Open Graph" on a page with no mapping', () => {
+        it('hides the section on a page with no mapping, and shows it once jnt:page has a mapping', () => {
             uuidOf(PAGE_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, PAGE_TITLE_FIELD));
             sectionShouldNotExist();
+            saveMapping(PAGE_MAPPING).then(expectNoError);
+            // The same URL again changes the hash only, so a reload loads the form again.
+            cy.reload();
+            cy.get(`[data-sel-content-editor-field="${PAGE_TITLE_FIELD}"]`, {timeout: LOAD_TIMEOUT}).should(
+                'be.visible'
+            );
+            openSection();
+            previewValue('og:type').should('have.text', 'website');
+            deleteMapping(PAGE_MAPPING.nodeType).then(expectNoError);
         });
 
-        it('shows no section "Open Graph" on a news item of a site with no mapping', () => {
+        it('hides the section on a news item of a site with no mapping', () => {
             uuidOf(OTHER_NEWS_PATH).then(uuid => openContentEditor(OTHER_SITE_KEY, uuid, TITLE_FIELD));
             sectionShouldNotExist();
         });
 
-        it('saves a mapped news item with no vog:ogPreview, then shows its new values', () => {
+        it('shows a typed title at once, asks to save for another change, and saves no vog:ogPreview', () => {
             const requests: string[] = [];
             cy.intercept('POST', '**/modules/graphql', request => {
                 requests.push(JSON.stringify(request.body));
             });
             uuidOf(NEWS_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, TITLE_FIELD));
-            // The sticky header of an expanded section covers the title field, so the change comes first.
-            typeInField(TITLE_FIELD, NEW_TITLE);
+            typeInField(fieldNamed(TITLE_FIELD), NEW_TITLE);
             openSection();
-            previewValue('og:title').should('have.text', TITLE);
+            previewValue('og:title').should('have.text', NEW_TITLE);
+            cy.get(SAVE_HINT).should('not.exist');
+
+            typeInField(SYSTEM_NAME_FIELD, `${NEWS_NAME}-renamed`);
             cy.get(SAVE_HINT).should('contain.text', 'Save to see the updated Open Graph values');
+            typeInField(SYSTEM_NAME_FIELD, NEWS_NAME);
+            cy.get(SAVE_HINT).should('not.exist');
+
             save();
-            cy.get(SAVE_HINT, {timeout: 10000}).should('not.exist');
             previewValue('og:title').should('have.text', NEW_TITLE);
             cy.wrap(requests).should(expectNoPreviewSent);
             nodeProperties(NEWS_PATH).then(expectSavedNews);

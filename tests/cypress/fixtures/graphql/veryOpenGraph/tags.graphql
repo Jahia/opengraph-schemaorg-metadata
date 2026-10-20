@@ -5,6 +5,7 @@ query openGraphTags($path: String!, $language: String!) {
                 property
                 content
                 nodePath
+                sourceProperty
             }
         }
     }

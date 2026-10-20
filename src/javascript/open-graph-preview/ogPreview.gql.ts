@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export type OgTag = { property: string; content: string | null; nodePath: string | null };
+export type OgTag = { property: string; content: string | null; nodePath: string | null; sourceProperty: string | null };
 
 export type PreviewData = {
   jcr: { nodeById: { openGraphTags: OgTag[] | null } | null } | null;
@@ -16,6 +16,7 @@ export const PREVIEW_QUERY = gql`
           property
           content
           nodePath
+          sourceProperty
         }
       }
     }

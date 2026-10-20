@@ -19,9 +19,7 @@
   "preview": {
     "property": "Property",
     "value": "Value",
-    "empty": "This content has no Open Graph value.",
     "saveHint": "Save to see the updated Open Graph values",
-    "urlOf": "Live URL of {{path}}",
-    "error": "Cannot load the Open Graph values: {{message}}"
+    "urlOf": "Live URL of {{path}}"
   }
 }

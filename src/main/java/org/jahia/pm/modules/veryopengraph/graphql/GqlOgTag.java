@@ -38,4 +38,13 @@ public class GqlOgTag {
     public String getNodePath() {
         return tag.getNode() == null ? null : tag.getNode().getPath();
     }
+
+    @GraphQLField
+    @GraphQLName("sourceProperty")
+    @GraphQLDescription("The single-valued property of the content whose text is the value of the tag, with the HTML "
+            + "of a rich text removed. Null when the value comes from a date, a reference, a property with several "
+            + "values, or the server")
+    public String getSourceProperty() {
+        return tag.getSourceProperty();
+    }
 }

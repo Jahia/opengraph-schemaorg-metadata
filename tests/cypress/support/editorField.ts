@@ -12,7 +12,8 @@ export type NodeProperty = {name: string; value: string};
 export type FormSection = {name: string; fieldSets?: {name: string; fields: FormField[]}[]};
 
 const CONTENT_EDITOR = '[aria-labelledby="dialog-content-editor"]';
-const SECTION_SELECTOR = `${CONTENT_EDITOR} [data-sel-content-editor-fields-group="${SECTION}"]`;
+const sectionSelector = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-fields-group="${name}"]`;
+const SECTION_SELECTOR = sectionSelector(SECTION);
 const PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${PREVIEW_FIELD}"]`;
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
@@ -49,9 +50,11 @@ export const openContentEditor = (siteKey: string, uuid: string, fieldName: stri
 
 export const sectionShouldNotExist = () => cy.get(SECTION_SELECTOR).should('not.exist');
 
-// Expands the section "Open Graph", and waits for the values of the saved node.
+export const expandSection = (name: string) => getComponentBySelector(Collapsible, sectionSelector(name)).expand();
+
+// Expands the section "Open Graph", and waits for its values.
 export const openSection = () => {
-    getComponentBySelector(Collapsible, SECTION_SELECTOR).expand();
+    expandSection(SECTION);
     cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}`, {timeout: LOAD_TIMEOUT}).should('have.length.at.least', 1);
 };
 
@@ -60,9 +63,16 @@ export const previewValue = (property: string) =>
         timeout: LOAD_TIMEOUT
     });
 
-export const typeInField = (fieldName: string, text: string) => {
-    cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${fieldName}"] input`).clear();
-    cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${fieldName}"] input`).type(text);
+export const fieldNamed = (name: string) => `[data-sel-content-editor-field="${name}"]`;
+
+// The Content Editor names the system name field after the fieldset that holds it.
+export const SYSTEM_NAME_FIELD = '[data-sel-content-editor-field$="_ce:systemName"]';
+
+// The sticky header of a section covers a field that Cypress scrolls to the top, so the field scrolls to the center.
+export const typeInField = (field: string, text: string) => {
+    const input = `${CONTENT_EDITOR} ${field} input`;
+    cy.get(input).clear({scrollBehavior: 'center'});
+    cy.get(input).type(text, {scrollBehavior: 'center'});
 };
 
 export const save = () => {

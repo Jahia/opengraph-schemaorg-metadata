@@ -4,7 +4,7 @@ const FIXTURES = 'graphql/veryOpenGraph';
 
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
 export type TypeMapping = {nodeType: string; ogType: string; properties: PropertyMapping[]};
-export type OgTag = {property: string; content: string | null; nodePath: string | null};
+export type OgTag = {property: string; content: string | null; nodePath: string | null; sourceProperty: string | null};
 export type SourceProperty = {
     name: string;
     displayName: string;

@@ -14,19 +14,28 @@ public final class OgTag {
     private final String property;
     private final String content;
     private final JCRNodeWrapper node;
+    private final String sourceProperty;
 
-    private OgTag(String property, String content, JCRNodeWrapper node) {
+    private OgTag(String property, String content, JCRNodeWrapper node, String sourceProperty) {
         this.property = property;
         this.content = content;
         this.node = node;
+        this.sourceProperty = sourceProperty;
     }
 
     public static OgTag text(String property, String content) {
-        return new OgTag(property, content, null);
+        return new OgTag(property, content, null, null);
+    }
+
+    /**
+     * @param sourceProperty the single-valued property whose text is the content, with the HTML of a rich text removed
+     */
+    public static OgTag text(String property, String content, String sourceProperty) {
+        return new OgTag(property, content, null, sourceProperty);
     }
 
     public static OgTag node(String property, JCRNodeWrapper node) {
-        return new OgTag(property, null, node);
+        return new OgTag(property, null, node, null);
     }
 
     /**
@@ -48,5 +57,13 @@ public final class OgTag {
      */
     public JCRNodeWrapper getNode() {
         return node;
+    }
+
+    /**
+     * @return the single-valued property of the content whose text is the content of the tag, or null when the tag
+     * comes from a date, a reference, a property with several values or a computed value
+     */
+    public String getSourceProperty() {
+        return sourceProperty;
     }
 }
