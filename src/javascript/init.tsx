@@ -5,6 +5,11 @@ import { i18n, NAMESPACE } from "./i18n.ts";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
 
+type RouteProps = { match?: { params?: { siteKey?: string } } };
+
+const siteKeyOf = (props: RouteProps): string =>
+  props?.match?.params?.siteKey ?? globalThis.jahia?.reduxStore?.getState().site ?? "";
+
 export default function registerVeryOpenGraph() {
   registry.add("callback", "very-open-graph", {
     targets: ["jahiaApp-init:50"],
@@ -18,11 +23,14 @@ export default function registerVeryOpenGraph() {
         isSelectable: true,
         requiredPermission: "veryOpenGraphManage",
         requireModuleInstalledOnSite: "very-open-graph",
-        render: () => (
-            <Suspense fallback={null}>
-                <OpenGraphSettingsApp/>
-            </Suspense>
-        ),
+        render: (props: RouteProps) => {
+          const siteKey = siteKeyOf(props);
+          return (
+              <Suspense fallback={null}>
+                  <OpenGraphSettingsApp key={siteKey} siteKey={siteKey}/>
+              </Suspense>
+          );
+        },
       });
     },
   });

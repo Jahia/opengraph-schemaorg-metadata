@@ -3,6 +3,36 @@
   "openGraph": {
     "nav": "Open Graph",
     "title": "Open Graph",
-    "empty": "Noch keine Zuordnung."
+    "empty": "Noch keine Zuordnung.",
+    "addMapping": "Zuordnung hinzufügen",
+    "list": {
+      "contentType": "Inhaltstyp",
+      "ogType": "og:type",
+      "properties": "Open-Graph-Eigenschaften",
+      "actions": "Aktionen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "confirmDelete": "Löschen bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "editor": {
+      "newTitle": "Neue Zuordnung",
+      "editTitle": "Zuordnung bearbeiten",
+      "contentType": "Inhaltstyp",
+      "contentTypePlaceholder": "Inhaltstyp auswählen",
+      "ogType": "og:type",
+      "ogTypePlaceholder": "og:type auswählen",
+      "properties": "Open-Graph-Eigenschaften",
+      "addProperty": "Eigenschaft hinzufügen",
+      "noProperty": "Noch keine Eigenschaft zugeordnet.",
+      "ogProperty": "Open-Graph-Eigenschaft",
+      "ogPropertyPlaceholder": "Open-Graph-Eigenschaft auswählen",
+      "sourceProperty": "Quelleigenschaft",
+      "sourcePropertyPlaceholder": "Eigenschaft auswählen",
+      "removeProperty": "Eigenschaft entfernen",
+      "searchEmpty": "Kein Ergebnis.",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    }
   }
 }
