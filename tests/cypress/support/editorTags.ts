@@ -41,9 +41,34 @@ export const openPropertyMenu = (index: number) => {
 
 export const addValue = () => cy.get(`${FIELD} button[data-sel-action="addField"]`).click();
 
-export const addTag = (index: number, property: string, content: string) => {
+const PICKER_DIALOG = '[data-sel-role="picker-dialog"]';
+
+export const tagImage = (index: number) => `${tagValue(index)} [data-testid="cardSelector-displayName"]`;
+export const tagDate = (index: number) => `${tagValue(index)} input[type="text"]`;
+
+const chooseProperty = (index: number, property: string) => {
     addValue();
     openPropertyMenu(index);
     cy.get(menuItem(property)).click();
+};
+
+export const addTag = (index: number, property: string, content: string) => {
+    chooseProperty(index, property);
     cy.get(tagContent(index)).type(content);
+};
+
+// The image picker opens on the files of the site.
+export const addImage = (index: number, property: string, fileName: string) => {
+    chooseProperty(index, property);
+    cy.get(`${tagValue(index)} [data-sel-field-picker-action="openPicker"]`).click();
+    cy.get(`${PICKER_DIALOG} [data-sel-role-card="${fileName}"]`, {timeout: LOAD_TIMEOUT}).click();
+    cy.get(`${PICKER_DIALOG} [data-sel-picker-dialog-action="done"]`).click();
+    cy.get(PICKER_DIALOG).should('not.exist');
+};
+
+// The date picker reads the date in the format of the browser locale, and in its time zone.
+export const addDate = (index: number, property: string, text: string) => {
+    chooseProperty(index, property);
+    cy.get(tagDate(index)).type(text);
+    cy.get(tagDate(index)).blur();
 };

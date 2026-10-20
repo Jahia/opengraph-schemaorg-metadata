@@ -346,7 +346,7 @@ public class OpenGraphService {
                 continue;
             }
             tags.addAll(values);
-            // The og:image of an editor is a typed URL, so it has no file node and no image details.
+            // An og:image that an editor typed as a URL, before the image picker, has no file node and no image details.
             if (OgType.OG_IMAGE.equals(name) && !values.isEmpty() && values.get(0).getNode() != null) {
                 image = values.get(0).getNode();
                 addImageDetails(tags, image);
@@ -544,7 +544,7 @@ public class OpenGraphService {
 
     /**
      * Reads the tags that the editor set in {@code vog:customTags}. The method ignores a value that is not valid
-     * JSON, that has no content, or whose property the og:type does not have. A property with one value keeps the
+     * JSON, that sets nothing, or whose property the og:type does not have. A property with one value keeps the
      * first value of the editor.
      *
      * @return the tags of the editor, by Open Graph property, in the order of the field
@@ -564,19 +564,50 @@ public class OpenGraphService {
                 continue;
             }
             OgProperty ogProperty = ogType.findProperty(json.optString("property")).orElse(null);
-            String content = json.optString("content").trim();
-            if (ogProperty != null && OgType.PROFILE_GENDER.equals(ogProperty.getName())) {
-                content = OgValues.gender(content);
-            }
-            if (ogProperty == null || content == null || content.isEmpty()) {
+            OgTag tag = ogProperty == null ? null : customTag(node.getSession(), ogProperty, json);
+            if (tag == null) {
                 continue;
             }
             List<OgTag> propertyTags = tags.computeIfAbsent(ogProperty.getName(), name -> new ArrayList<>());
             if (ogProperty.isMultiple() || propertyTags.isEmpty()) {
-                propertyTags.add(OgTag.text(ogProperty.getName(), content));
+                propertyTags.add(tag);
             }
         }
         return tags;
+    }
+
+    /**
+     * A value of the editor holds the identifier of a file in {@code node}, such as the image of {@code og:image},
+     * or a text in {@code content}.
+     *
+     * @return the tag of one value of the editor, or null when the value sets nothing
+     */
+    private static OgTag customTag(JCRSessionWrapper session, OgProperty ogProperty, JSONObject json)
+            throws RepositoryException {
+        String name = ogProperty.getName();
+        String fileId = json.optString("node");
+        if (!fileId.isEmpty()) {
+            return ogProperty.getKind() == OgKind.IMAGE || ogProperty.getKind() == OgKind.URL ? fileTag(session, fileId, name) : null;
+        }
+        String content = json.optString("content").trim();
+        if (OgType.PROFILE_GENDER.equals(name)) {
+            content = OgValues.gender(content);
+        }
+        return content == null || content.isEmpty() ? null : OgTag.text(name, content);
+    }
+
+    /**
+     * @return the tag of a file, or null when the identifier names no file of the workspace, such as an image that is
+     * not published yet
+     */
+    private static OgTag fileTag(JCRSessionWrapper session, String identifier, String name) throws RepositoryException {
+        JCRNodeWrapper target;
+        try {
+            target = session.getNodeByIdentifier(identifier);
+        } catch (ItemNotFoundException | IllegalArgumentException e) {
+            return null;
+        }
+        return target.isNodeType(FILE_TYPE) ? OgTag.node(name, target) : null;
     }
 
     /**

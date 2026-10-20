@@ -3,17 +3,16 @@
   "priority": 1.0,
   "sections": [
     {
-      "name": "veryOpenGraph",
+      "name": "seo",
       "fieldSets": [
         {
-          "name": "vogOpenGraphValues",
-          "rank": 0.0
-        },
-        {
           "name": "vogmix:customTags",
-          "rank": 1.0,
+          "rank": 11.0,
           "fields": [
-            {"name": "vog:customTags", "selectorType": "VogTag"}
+            {
+              "name": "vog:customTags",
+              "selectorType": "VogTag"
+            }
           ]
         }
       ]
