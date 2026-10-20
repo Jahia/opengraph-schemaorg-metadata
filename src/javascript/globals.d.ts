@@ -32,3 +32,21 @@ declare var CE_API: {
   }) => void;
 } | undefined;
 /* eslint-enable no-var */
+
+/** The part of the federated module of jContent that the Open Graph preview uses. */
+declare module "@jahia/jcontent" {
+  export type ContentEditorField = {
+    name: string;
+    propertyName?: string;
+    selectorType?: string;
+  };
+  export type ContentEditorSection = {
+    name: string;
+    visible?: boolean;
+    fieldSets?: { fields?: ContentEditorField[] }[];
+  };
+  /** The sections of the Content Editor form. A section shows while visible is true, after onSectionsUpdate. */
+  export const useContentEditorSectionContext: () =>
+    | { sections?: ContentEditorSection[]; onSectionsUpdate?: () => void }
+    | undefined;
+}

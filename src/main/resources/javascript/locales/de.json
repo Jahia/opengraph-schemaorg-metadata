@@ -15,5 +15,11 @@
       "confirmDelete": "Löschen bestätigen",
       "cancel": "Abbrechen"
     }
+  },
+  "preview": {
+    "property": "Eigenschaft",
+    "value": "Wert",
+    "saveHint": "Speichern Sie, um die aktualisierten Open-Graph-Werte zu sehen",
+    "urlOf": "Live-URL von {{path}}"
   }
 }

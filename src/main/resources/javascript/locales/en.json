@@ -15,5 +15,11 @@
       "confirmDelete": "Confirm deletion",
       "cancel": "Cancel"
     }
+  },
+  "preview": {
+    "property": "Property",
+    "value": "Value",
+    "saveHint": "Save to see the updated Open Graph values",
+    "urlOf": "Live URL of {{path}}"
   }
 }

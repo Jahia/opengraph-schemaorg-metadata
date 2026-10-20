@@ -1,0 +1,17 @@
+query editForm($uuidOrPath: String!) {
+    forms {
+        editForm(uuidOrPath: $uuidOrPath, uiLocale: "en", locale: "en") {
+            sections {
+                name
+                fieldSets {
+                    name
+                    fields {
+                        name
+                        selectorType
+                        readOnly
+                    }
+                }
+            }
+        }
+    }
+}

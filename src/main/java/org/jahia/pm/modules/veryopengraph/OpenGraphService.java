@@ -318,7 +318,10 @@ public class OpenGraphService {
         List<OgTag> tags = new ArrayList<>();
         List<OgTag> titles = mapped.getOrDefault(OgType.OG_TITLE, Collections.emptyList());
         if (titles.isEmpty()) {
-            addText(tags, OgType.OG_TITLE, localized.getPropertyAsString(TITLE_PROPERTY));
+            String title = localized.getPropertyAsString(TITLE_PROPERTY);
+            if (title != null && !title.trim().isEmpty()) {
+                tags.add(OgTag.text(OgType.OG_TITLE, title.trim(), TITLE_PROPERTY));
+            }
         } else {
             tags.addAll(titles);
         }
@@ -518,9 +521,10 @@ public class OpenGraphService {
         ExtendedPropertyDefinition definition = node.getApplicablePropertyDefinition(sourceName);
         boolean richText = definition != null && definition.getSelector() == SelectorType.RICHTEXT;
         JCRValueWrapper[] values = property.isMultiple() ? property.getValues() : new JCRValueWrapper[]{property.getValue()};
+        String singleSource = property.isMultiple() ? null : sourceName;
         List<OgTag> tags = new ArrayList<>();
         for (JCRValueWrapper value : values) {
-            OgTag tag = convert(value, ogProperty, richText);
+            OgTag tag = convert(value, ogProperty, richText, singleSource);
             if (tag != null) {
                 tags.add(tag);
                 if (!ogProperty.isMultiple()) {
@@ -531,7 +535,11 @@ public class OpenGraphService {
         return tags;
     }
 
-    private static OgTag convert(JCRValueWrapper value, OgProperty ogProperty, boolean richText) throws RepositoryException {
+    /**
+     * @param singleSource the name of the source property when it has one value, or null
+     */
+    private static OgTag convert(JCRValueWrapper value, OgProperty ogProperty, boolean richText, String singleSource)
+            throws RepositoryException {
         String name = ogProperty.getName();
         OgKind kind = ogProperty.getKind();
         switch (value.getType()) {
@@ -541,10 +549,12 @@ public class OpenGraphService {
                     return null;
                 }
                 String text = richText ? OgValues.plainText(value.getString()) : value.getString().trim();
-                if (OgType.PROFILE_GENDER.equals(name)) {
+                // The gender is not the text of its source, because the protocol accepts two values only.
+                boolean isGender = OgType.PROFILE_GENDER.equals(name);
+                if (isGender) {
                     text = OgValues.gender(text);
                 }
-                return text == null || text.isEmpty() ? null : OgTag.text(name, text);
+                return text == null || text.isEmpty() ? null : OgTag.text(name, text, isGender ? null : singleSource);
             case PropertyType.DATE:
                 return kind == OgKind.DATE ? OgTag.text(name, OgValues.isoDate(value.getDate())) : null;
             case PropertyType.REFERENCE:

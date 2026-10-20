@@ -16,6 +16,8 @@ export default defineConfig({
         react: { singleton: true, version: "0.0.0" },
         "react-dom": { singleton: true, version: "0.0.0" },
         "@apollo/client": { singleton: true, version: "0.0.0" },
+        // The Content Editor form is a formik context, so the preview uses the formik of jContent.
+        formik: { singleton: true, version: "0.0.0" },
         "@jahia/ui-extender": { singleton: true, version: "0.0.0" },
         i18next: { singleton: true, version: "0.0.0" },
         "react-i18next": { singleton: true, version: "0.0.0" },

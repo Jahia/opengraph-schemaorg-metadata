@@ -33,6 +33,9 @@ const ARTICLE_MAPPING: TypeMapping = {nodeType: NEWS_TYPE, ogType: 'article', pr
 const contentsOf = (tags: OgTag[], property: string) =>
     tags.filter(tag => tag.property === property).map(tag => tag.content);
 
+const sourcesOf = (tags: OgTag[], property: string) =>
+    tags.filter(tag => tag.property === property).map(tag => tag.sourceProperty);
+
 const expectMappings = (expected: unknown[]) => {
     getMappings().then(result => {
         expectNoError(result);
@@ -113,15 +116,41 @@ describe('Open Graph mapping API', () => {
         getTags(NEWS_PATH).then(result => {
             expectNoError(result);
             const tags = result.data.jcr.nodeByPath.openGraphTags;
-            expect(tags[0]).to.deep.equal({property: 'og:title', content: 'Open Graph news', nodePath: null});
-            expect(tags[1]).to.deep.equal({property: 'og:type', content: 'article', nodePath: null});
-            expect(tags[2]).to.deep.equal({property: 'og:url', content: null, nodePath: NEWS_PATH});
+            expect(tags[0]).to.deep.equal({
+                property: 'og:title',
+                content: 'Open Graph news',
+                nodePath: null,
+                sourceProperty: 'jcr:title'
+            });
+            expect(tags[1]).to.deep.equal({
+                property: 'og:type',
+                content: 'article',
+                nodePath: null,
+                sourceProperty: null
+            });
+            expect(tags[2]).to.deep.equal({
+                property: 'og:url',
+                content: null,
+                nodePath: NEWS_PATH,
+                sourceProperty: null
+            });
             expect(contentsOf(tags, 'og:description')).to.deep.equal(['First paragraph & more']);
             expect(contentsOf(tags, 'article:published_time')).to.deep.equal(['2026-10-19T09:30:00Z']);
             expect(contentsOf(tags, 'article:tag')).to.deep.equal(['alpha', 'beta']);
             expect(contentsOf(tags, 'og:locale')).to.deep.equal(['en']);
             expect(contentsOf(tags, 'og:site_name')).to.have.length(1);
             expect(contentsOf(tags, 'og:image'), 'the news item has no image').to.be.empty;
+        });
+    });
+
+    it('names the source property of a tag whose value is the text of one property', () => {
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(sourcesOf(tags, 'og:description'), 'a rich text').to.deep.equal(['desc']);
+            expect(sourcesOf(tags, 'article:published_time'), 'a date').to.deep.equal([null]);
+            expect(sourcesOf(tags, 'article:tag'), 'a property with several values').to.deep.equal([null, null]);
+            expect(sourcesOf(tags, 'og:locale'), 'a value of the server').to.deep.equal([null]);
         });
     });
 

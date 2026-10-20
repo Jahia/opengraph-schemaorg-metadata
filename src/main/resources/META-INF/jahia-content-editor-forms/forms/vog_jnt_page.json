@@ -1,0 +1,26 @@
+{
+  "nodeType": "jnt:page",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "veryOpenGraph",
+      "labelKey": "very-open-graph:section.openGraph",
+      "displayModes": ["edit"],
+      "fieldSets": [
+        {
+          "name": "vogOpenGraphValues",
+          "labelKey": "very-open-graph:fieldset.openGraphValues",
+          "descriptionKey": "very-open-graph:fieldset.openGraphValues.description",
+          "fields": [
+            {
+              "name": "vog:ogPreview",
+              "selectorType": "VogPreview",
+              "readOnly": true,
+              "labelKey": "very-open-graph:field.ogPreview"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

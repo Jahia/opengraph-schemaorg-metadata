@@ -1,0 +1,9 @@
+query createForm($primaryNodeType: String!, $uuidOrPath: String!) {
+    forms {
+        createForm(primaryNodeType: $primaryNodeType, uuidOrPath: $uuidOrPath, uiLocale: "en", locale: "en") {
+            sections {
+                name
+            }
+        }
+    }
+}

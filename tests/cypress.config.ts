@@ -2,7 +2,8 @@ import {defineConfig} from 'cypress';
 
 export default defineConfig({
     chromeWebSecurity: false,
-    defaultCommandTimeout: 2000,
+    // The @jahia/cypress helpers wait for each GraphQL request within this timeout, and a busy Jahia can take longer.
+    defaultCommandTimeout: 10000,
     video: true,
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
@@ -27,6 +28,7 @@ export default defineConfig({
             'cypress/e2e/3Filter.cy.ts',
             'cypress/e2e/4FilterEscape.cy.ts',
             'cypress/e2e/5AdminScreen.cy.ts',
+            'cypress/e2e/6EditorField.cy.ts',
             'cypress/e2e/ZTeardown.cy.ts'
         ],
         excludeSpecPattern: '*.ignore.ts',
