@@ -83,6 +83,16 @@ export const deleteMapping = (nodeType: string, {user, path = SITE_PATH}: Scope 
         user
     );
 
+export type CustomTagsNode = {uuid: string; mixinTypes: {name: string}[]; property: {values: string[]} | null};
+
+// The mixin types of a node, and the English values of vog:customTags.
+export const getCustomTags = (path: string) =>
+    run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customTags.graphql`, variables: {path}});
+
+// Adds the mixin vogmix:customTags to a node, and sets the English values of vog:customTags.
+export const setCustomTags = (path: string, values: string[]) =>
+    run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
+
 export const expectNoError = <T>(result: GqlResult<T>) => {
     expect(result.errors, 'GraphQL errors').to.be.undefined;
 };

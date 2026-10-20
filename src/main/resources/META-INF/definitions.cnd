@@ -34,6 +34,12 @@
  - vog:book_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:book_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
 
+// Each value is a JSON object that sets one Open Graph tag, such as {"property":"og:title","content":"Summer in Mykonos"}.
+// The selector type VogTag edits a value: a forms file sets it, because a CND accepts only the selector types of Jahia.
+[vogmix:customTags] mixin
+ extends = jmix:mainResource, jnt:page
+ - vog:customTags (string) i18n multiple
+
 [vogmix:profile] > jmix:dynamicFieldset mixin
  extends = vognt:typeMapping
  - vog:profile_first_name (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])

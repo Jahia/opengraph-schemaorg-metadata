@@ -1,0 +1,10 @@
+mutation veryOpenGraphSetCustomTags($path: String!, $values: [String]!) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            addMixins(mixins: ["vogmix:customTags"])
+            mutateProperty(name: "vog:customTags") {
+                setValues(values: $values, language: "en")
+            }
+        }
+    }
+}

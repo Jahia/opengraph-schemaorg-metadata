@@ -17,6 +17,8 @@ import org.jahia.services.content.nodetypes.ExtendedNodeType;
 import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 import org.jahia.services.content.nodetypes.NodeTypeRegistry;
 import org.jahia.services.content.nodetypes.SelectorType;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.ItemNotFoundException;
@@ -74,6 +76,7 @@ public class OpenGraphService {
     private static final String FILE_TYPE = "jnt:file";
     private static final String IMAGE_MIXIN = "jmix:image";
     private static final String TITLE_PROPERTY = "jcr:title";
+    private static final String CUSTOM_TAGS_PROPERTY = "vog:customTags";
     private static final String SYSTEM_MODULE = "system-jahia";
     private static final Set<String> FILE_PICKER_TYPES = new HashSet<>(Arrays.asList("image", "file"));
 
@@ -288,6 +291,7 @@ public class OpenGraphService {
 
     /**
      * Resolves the Open Graph tags of a content node with the mapping of its type, or of its closest supertype.
+     * A tag that the editor sets in {@code vog:customTags} replaces the mapped values of its property.
      * <p>
      * The {@code og:url} tag and the tags of a file hold a node, and the caller builds the absolute URL. When the
      * session of the node has another locale, the method reads the node again with the current user, in the
@@ -314,6 +318,8 @@ public class OpenGraphService {
                 mapped.put(ogProperty.getName(), values(localized, ogProperty, property.getSourceProperty()));
             }
         }
+        // A tag of the editor replaces every mapped value of the same property.
+        mapped.putAll(customTags(localized, ogType));
 
         List<OgTag> tags = new ArrayList<>();
         List<OgTag> titles = mapped.getOrDefault(OgType.OG_TITLE, Collections.emptyList());
@@ -340,7 +346,8 @@ public class OpenGraphService {
                 continue;
             }
             tags.addAll(values);
-            if (OgType.OG_IMAGE.equals(name) && !values.isEmpty()) {
+            // The og:image of an editor is a typed URL, so it has no file node and no image details.
+            if (OgType.OG_IMAGE.equals(name) && !values.isEmpty() && values.get(0).getNode() != null) {
                 image = values.get(0).getNode();
                 addImageDetails(tags, image);
             }
@@ -530,6 +537,43 @@ public class OpenGraphService {
                 if (!ogProperty.isMultiple()) {
                     break;
                 }
+            }
+        }
+        return tags;
+    }
+
+    /**
+     * Reads the tags that the editor set in {@code vog:customTags}. The method ignores a value that is not valid
+     * JSON, that has no content, or whose property the og:type does not have. A property with one value keeps the
+     * first value of the editor.
+     *
+     * @return the tags of the editor, by Open Graph property, in the order of the field
+     */
+    private static Map<String, List<OgTag>> customTags(JCRNodeWrapper node, OgType ogType) throws RepositoryException {
+        if (!node.hasProperty(CUSTOM_TAGS_PROPERTY)) {
+            return Collections.emptyMap();
+        }
+        JCRPropertyWrapper property = node.getProperty(CUSTOM_TAGS_PROPERTY);
+        JCRValueWrapper[] values = property.isMultiple() ? property.getValues() : new JCRValueWrapper[]{property.getValue()};
+        Map<String, List<OgTag>> tags = new HashMap<>();
+        for (JCRValueWrapper value : values) {
+            JSONObject json;
+            try {
+                json = new JSONObject(value.getString());
+            } catch (JSONException e) {
+                continue;
+            }
+            OgProperty ogProperty = ogType.findProperty(json.optString("property")).orElse(null);
+            String content = json.optString("content").trim();
+            if (ogProperty != null && OgType.PROFILE_GENDER.equals(ogProperty.getName())) {
+                content = OgValues.gender(content);
+            }
+            if (ogProperty == null || content == null || content.isEmpty()) {
+                continue;
+            }
+            List<OgTag> propertyTags = tags.computeIfAbsent(ogProperty.getName(), name -> new ArrayList<>());
+            if (ogProperty.isMultiple() || propertyTags.isEmpty()) {
+                propertyTags.add(OgTag.text(ogProperty.getName(), content));
             }
         }
         return tags;
