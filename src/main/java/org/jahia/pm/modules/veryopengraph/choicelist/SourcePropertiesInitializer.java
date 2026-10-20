@@ -20,7 +20,8 @@ import java.util.Map;
 
 /**
  * Lists the properties of the mapped content type that can fill the Open Graph property of the field, such as the
- * file references for {@code vog:og_image}. The list follows the content type that the form holds.
+ * file references for {@code vog:og_image}, or the single-valued strings for {@code vog:og_title}. The list follows
+ * the content type that the form holds.
  */
 @Component(service = ModuleChoiceListInitializer.class)
 public class SourcePropertiesInitializer implements ModuleChoiceListInitializer {
@@ -45,7 +46,7 @@ public class SourcePropertiesInitializer implements ModuleChoiceListInitializer 
             }
             List<ChoiceListValue> choices = new ArrayList<>();
             for (SourceProperty source : openGraphService.getSourceProperties(site, nodeType, locale)) {
-                if (source.getCompatibleOgKinds().contains(ogProperty.getKind())) {
+                if (OpenGraphService.canFill(source.getCompatibleOgKinds(), source.isMultiple(), ogProperty)) {
                     choices.add(new ChoiceListValue(ChoiceListContext.label(source.getDisplayName(), source.getName()), source.getName()));
                 }
             }

@@ -372,6 +372,19 @@ public class OpenGraphService {
                     + typeName(source) + ") cannot fill '" + ogName
                     + "', which takes a " + ogProperty.getKind() + " value");
         }
+        if (!canFill(compatibleKinds(source), source.isMultiple(), ogProperty)) {
+            throw new InvalidMappingException("The property '" + property.getSourceProperty()
+                    + "' holds several values and cannot fill '" + ogName + "', which takes one " + ogProperty.getKind() + " value");
+        }
+    }
+
+    /**
+     * @return true when a source property of these kinds can fill the Open Graph property. A text Open Graph property
+     * with one value takes a source property with one value only.
+     */
+    public static boolean canFill(Set<OgKind> kinds, boolean multipleSource, OgProperty ogProperty) {
+        return kinds.contains(ogProperty.getKind())
+                && !(ogProperty.getKind() == OgKind.TEXT && !ogProperty.isMultiple() && multipleSource);
     }
 
     /**
@@ -440,22 +453,21 @@ public class OpenGraphService {
         }
     }
 
+    /**
+     * @return the kinds of Open Graph property that the property can fill: a text comes from a STRING only, and a
+     * reference fills an image or a URL when it points to a file
+     */
     private static Set<OgKind> compatibleKinds(ExtendedPropertyDefinition definition) {
         switch (definition.getRequiredType()) {
             case PropertyType.STRING:
                 return definition.getSelector() == SelectorType.RICHTEXT ? EnumSet.of(OgKind.TEXT) : EnumSet.of(OgKind.TEXT, OgKind.URL);
             case PropertyType.URI:
-                return EnumSet.of(OgKind.TEXT, OgKind.URL);
+                return EnumSet.of(OgKind.URL);
             case PropertyType.DATE:
                 return EnumSet.of(OgKind.DATE);
-            case PropertyType.LONG:
-            case PropertyType.DOUBLE:
-            case PropertyType.DECIMAL:
-            case PropertyType.BOOLEAN:
-                return EnumSet.of(OgKind.TEXT);
             case PropertyType.REFERENCE:
             case PropertyType.WEAKREFERENCE:
-                return referencesFile(definition) ? EnumSet.of(OgKind.IMAGE, OgKind.URL) : EnumSet.of(OgKind.TEXT);
+                return referencesFile(definition) ? EnumSet.of(OgKind.IMAGE, OgKind.URL) : EnumSet.noneOf(OgKind.class);
             default:
                 return EnumSet.noneOf(OgKind.class);
         }
@@ -535,34 +547,22 @@ public class OpenGraphService {
                 return text == null || text.isEmpty() ? null : OgTag.text(name, text);
             case PropertyType.DATE:
                 return kind == OgKind.DATE ? OgTag.text(name, OgValues.isoDate(value.getDate())) : null;
-            case PropertyType.LONG:
-            case PropertyType.DOUBLE:
-            case PropertyType.DECIMAL:
-            case PropertyType.BOOLEAN:
-                return kind == OgKind.TEXT ? OgTag.text(name, value.getString()) : null;
             case PropertyType.REFERENCE:
             case PropertyType.WEAKREFERENCE:
-                return referencedValue(value, name, kind);
+                return kind == OgKind.IMAGE || kind == OgKind.URL ? fileValue(value, name) : null;
             default:
                 return null;
         }
     }
 
-    private static OgTag referencedValue(JCRValueWrapper value, String name, OgKind kind) throws RepositoryException {
+    private static OgTag fileValue(JCRValueWrapper value, String name) throws RepositoryException {
         JCRNodeWrapper target;
         try {
             target = value.getNode();
         } catch (ItemNotFoundException e) {
             return null;
         }
-        if (target == null) {
-            return null;
-        }
-        if (kind == OgKind.IMAGE || kind == OgKind.URL) {
-            return target.isNodeType(FILE_TYPE) ? OgTag.node(name, target) : null;
-        }
-        String title = target.getDisplayableName();
-        return kind == OgKind.TEXT && title != null && !title.isEmpty() ? OgTag.text(name, title) : null;
+        return target != null && target.isNodeType(FILE_TYPE) ? OgTag.node(name, target) : null;
     }
 
     private static void addImageDetails(List<OgTag> tags, JCRNodeWrapper image) throws RepositoryException {
