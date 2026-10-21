@@ -1,4 +1,7 @@
-/* The dropdown keeps the width of the longest property name, article:expiration_time, and the input takes the rest. */
+/* The dropdown keeps the width of the longest property name, article:expiration_time, and the value takes the rest.
+   The row centers its items, so the dropdown stays at the top, level with the first line of a taller value. */
 .property {
   flex: 0 0 240px;
+  align-self: flex-start;
+  margin-right: 8px;
 }

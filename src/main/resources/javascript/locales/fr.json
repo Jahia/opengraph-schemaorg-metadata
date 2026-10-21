@@ -23,10 +23,6 @@
     "urlOf": "URL en ligne de {{path}}"
   },
   "customTags": {
-    "property": "Propriété Open Graph",
-    "placeholder": {
-      "TEXT": "Valeur",
-      "URL": "URL absolue, par exemple https://www.example.com/video.mp4"
-    }
+    "property": "Propriété Open Graph"
   }
 }

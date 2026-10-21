@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { Dropdown, Input } from "@jahia/moonstone";
+import { Dropdown } from "@jahia/moonstone";
 import { registry } from "@jahia/ui-extender";
 import { useMemo, type ComponentType, type HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
@@ -119,17 +119,21 @@ const DateValue = ({ id, field, editorContext, onBlur, tag, update }: ValueEdito
   );
 };
 
-const TextValue = ({ id, field, onBlur, tag, kind, update }: ValueEditorProps) => {
-  const { t } = useTranslation(NAMESPACE);
+// The text field of the Content Editor, as a multiple text field shows it.
+const TextValue = ({ id, field, editorContext, onBlur, tag, update }: ValueEditorProps) => {
+  const textField = useMemo(
+    () => ({ ...field, name: id, requiredType: "STRING", selectorType: "Text", selectorOptions: [], multiple: false }),
+    [field, id],
+  );
+  const Text = selectorType("Text").cmp;
 
   return (
-      <Input
+      <Text
           id={id}
-          data-sel-role="vog-tag-content"
+          field={textField}
           value={tag.content ?? ""}
-          placeholder={t(`customTags.placeholder.${kind}`)}
-          isReadOnly={field.readOnly}
-          onChange={event => update({ property: tag.property, content: event.target.value })}
+          editorContext={editorContext}
+          onChange={(content: string | undefined) => update({ property: tag.property, content: content ?? "" })}
           onBlur={onBlur}
       />
   );
@@ -167,9 +171,13 @@ const VogTag = (props: VogTagProps) => {
 
   return (
       <>
+          {/* The props of the single choice list of the Content Editor, so both dropdowns look the same. */}
           <Dropdown
               data-sel-role="vog-tag-property"
               className={styles.property}
+              variant="outlined"
+              size="medium"
+              hasSearch={properties.length >= 5}
               data={properties.map(property => ({
                 label: property.name,
                 value: property.name,
