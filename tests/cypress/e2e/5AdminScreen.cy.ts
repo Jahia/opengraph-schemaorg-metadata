@@ -1,4 +1,12 @@
-import {deleteMapping, expectNoError, getMappings, PropertyMapping, TypeMapping} from '../support/openGraphApi';
+import {
+    deleteMapping,
+    expectNoError,
+    getMappings,
+    getStoredMapping,
+    PropertyMapping,
+    StoredMapping,
+    TypeMapping
+} from '../support/openGraphApi';
 import {
     ADD_MAPPING,
     cancelAndDiscard,
@@ -29,8 +37,12 @@ const NEWS_TYPE = 'jnt:news';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
+const VIDEO_TAG: PropertyMapping = {ogProperty: 'video:tag', sourceProperty: 'j:tagList'};
 const BASIC_METADATA = 'vogBasicMetadata';
 const TYPE_METADATA = 'vogTypeMetadata';
+
+// The properties of a mapping node that hold the source of a video property, such as vog:video_tag.
+const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('vog:video_'));
 
 describe('Open Graph mapping screen', () => {
     before(() => {
@@ -117,6 +129,41 @@ describe('Open Graph mapping screen', () => {
                 .should('contain.text', 'website')
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION]))
                 .and('not.contain.text', PUBLISHED.ogProperty);
+        });
+
+        it('drops the video properties when the og:type changes from video.movie to music.song', () => {
+            mappingRow(NEWS_TYPE).find(EDIT).click();
+            cy.get(sourceField(TITLE.ogProperty), {timeout: LOAD_TIMEOUT}).should('exist');
+            choose(OG_TYPE_FIELD, 'video.movie');
+            chooseSources([VIDEO_TAG]);
+            save();
+            mappingRow(NEWS_TYPE)
+                .should('contain.text', 'video.movie')
+                .and('contain.text', propertiesText([TITLE, DESCRIPTION, VIDEO_TAG]));
+            getStoredMapping(NEWS_TYPE).then(stored => {
+                expect(stored.mixins).to.include('vogmix:videoMovie');
+                expect(stored.properties).to.include('vog:video_tag');
+            });
+
+            mappingRow(NEWS_TYPE).find(EDIT).click();
+            cy.get(sourceField(VIDEO_TAG.ogProperty), {timeout: LOAD_TIMEOUT}).should('exist');
+            choose(OG_TYPE_FIELD, 'music.song');
+            cy.get(sourceField(VIDEO_TAG.ogProperty)).should('not.exist');
+            save();
+            mappingRow(NEWS_TYPE)
+                .should('contain.text', 'music.song')
+                .and('contain.text', propertiesText([TITLE, DESCRIPTION]))
+                .and('not.contain.text', VIDEO_TAG.ogProperty);
+            getStoredMapping(NEWS_TYPE).then(stored => {
+                expect(stored.mixins).not.to.include('vogmix:videoMovie');
+                expect(videoProperties(stored)).to.be.empty;
+            });
+            getMappings({user: SITE_ADMIN}).then(result => {
+                expectNoError(result);
+                expect(result.data.jcr.nodeByPath.openGraphMappings).to.deep.equal([
+                    {nodeType: NEWS_TYPE, ogType: 'music.song', properties: [TITLE, DESCRIPTION]}
+                ]);
+            });
         });
 
         it('leaves a mapped content type out of a new mapping', () => {

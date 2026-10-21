@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,8 @@ public final class OgValues {
     private static final Pattern TAG = Pattern.compile("<[^>]*>");
     private static final Pattern ENTITY = Pattern.compile("&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z]+);");
     private static final Pattern WHITE_SPACE = Pattern.compile("[\\s\\u00A0]+");
+    // Long.parseLong also reads the digits of other scripts, so the pattern names the ASCII digits.
+    private static final Pattern DIGITS = Pattern.compile("[0-9]+");
 
     private static final Map<String, String> NAMED_ENTITIES = new TreeMap<>();
 
@@ -72,13 +75,44 @@ public final class OgValues {
     }
 
     /**
-     * The protocol accepts only {@code male} and {@code female} for {@code profile:gender}.
+     * Reads a value of a closed list, such as {@code male} or {@code female} for {@code profile:gender}.
      *
-     * @return the value in lower case, or null when it is another value
+     * @param allowed the values that the protocol accepts, in lower case
+     * @return the value without its outer white space and in lower case, or null when it is not in the list
      */
-    public static String gender(String value) {
-        String gender = value.trim().toLowerCase(Locale.ROOT);
-        return "male".equals(gender) || "female".equals(gender) ? gender : null;
+    public static String allowedValue(String value, Set<String> allowed) {
+        String lowerCase = value.trim().toLowerCase(Locale.ROOT);
+        return allowed.contains(lowerCase) ? lowerCase : null;
+    }
+
+    /**
+     * The protocol writes a number, such as {@code music:duration}, as an integer of 1 or more. Its type Integer is a
+     * 32-bit signed integer, so the largest value is 2147483647.
+     *
+     * @return the number in decimal, or null when it is less than 1 or greater than 2147483647
+     */
+    public static String positiveInteger(long value) {
+        return value < 1 || value > Integer.MAX_VALUE ? null : Long.toString(value);
+    }
+
+    /**
+     * Reads a number that an editor typed. The text holds decimal digits only, after the removal of its outer white
+     * space.
+     *
+     * @return the number in decimal without leading zeros, or null when the text is not an integer from 1 to
+     * 2147483647
+     */
+    public static String positiveInteger(String value) {
+        String digits = value.trim();
+        if (!DIGITS.matcher(digits).matches()) {
+            return null;
+        }
+        try {
+            return positiveInteger(Long.parseLong(digits));
+        } catch (NumberFormatException e) {
+            // The number is greater than the largest long.
+            return null;
+        }
     }
 
     private static String decodeEntities(String text) {

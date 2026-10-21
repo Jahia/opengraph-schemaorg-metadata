@@ -11,11 +11,20 @@
  - vog:nodeType (string, choicelist[vogContentTypes]) mandatory
  - vog:og_title (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:og_description (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_determiner (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:og_image (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_image_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:og_image_alt (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:og_audio (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_audio_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_audio_type (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:og_video (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:ogType (string, choicelist[vogOgTypes]) mandatory < 'website', 'article', 'book', 'profile'
+ - vog:og_video_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_video_type (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_video_width (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_video_height (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:og_video_alt (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:ogType (string, choicelist[vogOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
 
 // The value of vog:ogType adds the mixin of its own Open Graph properties.
 [vogmix:article] > jmix:dynamicFieldset mixin
@@ -41,9 +50,79 @@
  extends = jmix:mainResource, jnt:page
  - vog:customTags (string) i18n multiple
 
+// Two mixins that share an Open Graph property declare the same storage name, such as vog:music_song.
+// A mapping carries one of these mixins at a time, because the JCR refuses two declarations of one name on a node.
+[vogmix:musicAlbum] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:music_song (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_song_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_song_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_musician (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:musicPlaylist] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:music_song (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_song_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_song_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_creator (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:musicRadioStation] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:music_creator (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:musicSong] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:music_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_album (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_album_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_album_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:music_musician (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
 [vogmix:profile] > jmix:dynamicFieldset mixin
  extends = vognt:typeMapping
  - vog:profile_first_name (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:profile_last_name (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:profile_username (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
  - vog:profile_gender (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:videoEpisode] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_series (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:videoMovie] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:videoOther] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+
+[vogmix:videoTvShow] > jmix:dynamicFieldset mixin
+ extends = vognt:typeMapping
+ - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+ - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])

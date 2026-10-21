@@ -5,6 +5,7 @@ import {
     expectNoError,
     getMappings,
     getSourceProperties,
+    getStoredMapping,
     getTags,
     getVocabulary,
     OgTag,
@@ -30,11 +31,71 @@ const ARTICLE_PROPERTIES: PropertyMapping[] = [
 ];
 const ARTICLE_MAPPING: TypeMapping = {nodeType: NEWS_TYPE, ogType: 'article', properties: ARTICLE_PROPERTIES};
 
+const VIDEO_PROPERTIES: PropertyMapping[] = [
+    {ogProperty: 'og:title', sourceProperty: 'jcr:title'},
+    {ogProperty: 'og:determiner', sourceProperty: 'jcr:title'},
+    {ogProperty: 'video:actor', sourceProperty: 'jcr:title'},
+    {ogProperty: 'video:release_date', sourceProperty: 'date'},
+    {ogProperty: 'video:tag', sourceProperty: 'j:tagList'}
+];
+const VIDEO_MAPPING: TypeMapping = {nodeType: NEWS_TYPE, ogType: 'video.movie', properties: VIDEO_PROPERTIES};
+
+// The og:type values of the Open Graph protocol, in the order of the vocabulary.
+const OG_TYPES = [
+    'website',
+    'article',
+    'book',
+    'profile',
+    'music.song',
+    'music.album',
+    'music.playlist',
+    'music.radio_station',
+    'video.movie',
+    'video.episode',
+    'video.tv_show',
+    'video.other'
+];
+
+// The properties of every og:type, in the order of the vocabulary: a structured property follows its root.
+const COMMON_PROPERTIES = [
+    'og:title',
+    'og:description',
+    'og:determiner',
+    'og:image',
+    'og:image:secure_url',
+    'og:image:alt',
+    'og:audio',
+    'og:audio:secure_url',
+    'og:audio:type',
+    'og:video',
+    'og:video:secure_url',
+    'og:video:type',
+    'og:video:width',
+    'og:video:height',
+    'og:video:alt'
+];
+
+// The own properties of video.movie, which video.episode, video.tv_show and video.other share.
+const VIDEO_OWN_PROPERTIES = [
+    'video:actor',
+    'video:actor:role',
+    'video:director',
+    'video:writer',
+    'video:duration',
+    'video:release_date',
+    'video:tag'
+];
+
 const contentsOf = (tags: OgTag[], property: string) =>
     tags.filter(tag => tag.property === property).map(tag => tag.content);
 
 const sourcesOf = (tags: OgTag[], property: string) =>
     tags.filter(tag => tag.property === property).map(tag => tag.sourceProperty);
+
+const namesWithPrefix = (properties: {name: string}[], prefix: string) =>
+    properties.map(property => property.name).filter(name => name.startsWith(prefix));
+
+const hasProperty = (properties: {name: string}[], name: string) => properties.some(property => property.name === name);
 
 const expectMappings = (expected: unknown[]) => {
     getMappings().then(result => {
@@ -52,12 +113,14 @@ describe('Open Graph mapping API', () => {
             parentPathOrId: `${SITE_PATH}/contents`,
             name: NEWS_NAME,
             primaryNodeType: NEWS_TYPE,
-            mixins: ['jmix:tagged'],
+            // The mixin jmix:cache of Jahia adds j:expiration, the LONG property that jnt:news offers as a source.
+            mixins: ['jmix:tagged', 'jmix:cache'],
             properties: [
                 {name: 'jcr:title', value: 'Open Graph news', language: 'en'},
                 {name: 'desc', value: '<p>First <strong>paragraph</strong> &amp; more</p>', language: 'en'},
                 {name: 'date', value: '2026-10-19T09:30:00.000Z'},
-                {name: 'j:tagList', values: ['alpha', 'beta']}
+                {name: 'j:tagList', values: ['alpha', 'beta']},
+                {name: 'j:expiration', value: '215'}
             ]
         });
         createSite(SITE_WITHOUT_NEWS, {templateSet: TEMPLATE_SET, serverName: 'vogsitenonews', locale: 'en'});
@@ -73,12 +136,43 @@ describe('Open Graph mapping API', () => {
         getVocabulary(EDITOR).then(result => {
             expectNoError(result);
             const ogTypes = result.data.openGraphVocabulary.ogTypes;
-            expect(ogTypes.map(ogType => ogType.name)).to.deep.equal(['website', 'article', 'book', 'profile']);
+            expect(ogTypes.map(ogType => ogType.name)).to.deep.equal(OG_TYPES);
+            const website = ogTypes.find(ogType => ogType.name === 'website').properties;
+            expect(website.map(property => property.name)).to.deep.equal(COMMON_PROPERTIES);
             const article = ogTypes.find(ogType => ogType.name === 'article').properties;
             expect(article).to.deep.include({name: 'og:image', kind: 'IMAGE', multiple: false});
+            expect(article).to.deep.include({name: 'og:video:width', kind: 'INTEGER', multiple: false});
             expect(article).to.deep.include({name: 'article:published_time', kind: 'DATE', multiple: false});
             expect(article).to.deep.include({name: 'article:tag', kind: 'TEXT', multiple: true});
             expect(article.map(property => property.name)).not.to.include('og:url');
+        });
+    });
+
+    it('lists the own properties of music.song and video.episode, and video:series on video.episode only', () => {
+        getVocabulary(EDITOR).then(result => {
+            expectNoError(result);
+            const ogTypes = result.data.openGraphVocabulary.ogTypes;
+            const song = ogTypes.find(ogType => ogType.name === 'music.song').properties;
+            expect(namesWithPrefix(song, 'music:')).to.deep.equal([
+                'music:duration',
+                'music:album',
+                'music:album:disc',
+                'music:album:track',
+                'music:musician'
+            ]);
+            expect(song).to.deep.include({name: 'music:duration', kind: 'INTEGER', multiple: false});
+            expect(song).to.deep.include({name: 'music:album', kind: 'URL', multiple: true});
+            expect(song).to.deep.include({name: 'music:album:disc', kind: 'INTEGER', multiple: true});
+
+            const episode = ogTypes.find(ogType => ogType.name === 'video.episode').properties;
+            expect(namesWithPrefix(episode, 'video:')).to.deep.equal([...VIDEO_OWN_PROPERTIES, 'video:series']);
+            expect(episode).to.deep.include({name: 'video:actor', kind: 'URL', multiple: true});
+            expect(episode).to.deep.include({name: 'video:actor:role', kind: 'TEXT', multiple: true});
+            expect(episode).to.deep.include({name: 'video:duration', kind: 'INTEGER', multiple: false});
+            expect(episode).to.deep.include({name: 'video:series', kind: 'URL', multiple: false});
+
+            const withSeries = ogTypes.filter(ogType => hasProperty(ogType.properties, 'video:series'));
+            expect(withSeries.map(ogType => ogType.name)).to.deep.equal(['video.episode']);
         });
     });
 
@@ -101,6 +195,15 @@ describe('Open Graph mapping API', () => {
             expect(byName.openGraphImage).to.include({declaringType: 'jmix:seoHtmlHead'});
             expect(byName.openGraphImage.compatibleOgKinds).to.deep.equal(['URL', 'IMAGE']);
             expect(byName['jcr:primaryType'], 'a NAME property fills nothing').to.be.undefined;
+            expect(byName['j:expiration']).to.include({requiredType: 'LONG', declaringType: 'jmix:cache'});
+            expect(byName['j:expiration'].compatibleOgKinds, 'a LONG fills an integer only').to.deep.equal(['INTEGER']);
+            properties
+                .filter(property => property.requiredType !== 'LONG')
+                .forEach(property => {
+                    expect(property.compatibleOgKinds, `${property.name} (${property.requiredType})`).not.to.include(
+                        'INTEGER'
+                    );
+                });
         });
     });
 
@@ -167,6 +270,77 @@ describe('Open Graph mapping API', () => {
         });
     });
 
+    it('saves a video.movie mapping on jnt:news, and resolves its tags', () => {
+        saveMapping(VIDEO_MAPPING).then(expectNoError);
+        expectMappings([VIDEO_MAPPING]);
+        getStoredMapping(NEWS_TYPE).then(stored => {
+            expect(stored.mixins).to.include('vogmix:videoMovie');
+            expect(stored.properties).to.include.members(['vog:video_release_date', 'vog:video_tag']);
+        });
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'og:type')).to.deep.equal(['video.movie']);
+            expect(contentsOf(tags, 'video:release_date')).to.deep.equal(['2026-10-19T09:30:00Z']);
+            expect(contentsOf(tags, 'video:tag')).to.deep.equal(['alpha', 'beta']);
+            expect(contentsOf(tags, 'og:determiner'), 'the title is not a determiner').to.be.empty;
+            expect(contentsOf(tags, 'video:actor')).to.deep.equal(['Open Graph news']);
+            expect(sourcesOf(tags, 'video:actor'), 'the root of a structured array').to.deep.equal([null]);
+        });
+    });
+
+    it('drops the video properties and the video mixin when the og:type becomes music.song', () => {
+        const properties = [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}];
+        saveMapping({nodeType: NEWS_TYPE, ogType: 'music.song', properties}).then(expectNoError);
+        expectMappings([{nodeType: NEWS_TYPE, ogType: 'music.song', properties}]);
+        getStoredMapping(NEWS_TYPE).then(stored => {
+            expect(stored.mixins).to.include('vogmix:musicSong').and.not.include('vogmix:videoMovie');
+            expect(stored.properties.filter(name => name.startsWith('vog:video_'))).to.be.empty;
+        });
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'og:type')).to.deep.equal(['music.song']);
+            expect(tags.map(tag => tag.property).filter(property => property.startsWith('video:'))).to.be.empty;
+        });
+    });
+
+    it('fills music:duration from a LONG property, and names no source property', () => {
+        const properties = [
+            {ogProperty: 'og:title', sourceProperty: 'jcr:title'},
+            {ogProperty: 'music:duration', sourceProperty: 'j:expiration'}
+        ];
+        saveMapping({nodeType: NEWS_TYPE, ogType: 'music.song', properties}).then(expectNoError);
+        expectMappings([{nodeType: NEWS_TYPE, ogType: 'music.song', properties}]);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'music:duration')).to.deep.equal(['215']);
+            expect(sourcesOf(tags, 'music:duration'), 'a number').to.deep.equal([null]);
+        });
+    });
+
+    it('names no source property for og:video when og:video:width follows it', () => {
+        const video = {ogProperty: 'og:video', sourceProperty: 'jcr:title'};
+        saveMapping({nodeType: NEWS_TYPE, ogType: 'website', properties: [video]}).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(sourcesOf(result.data.jcr.nodeByPath.openGraphTags, 'og:video'), 'a root alone').to.deep.equal([
+                'jcr:title'
+            ]);
+        });
+
+        const width = {ogProperty: 'og:video:width', sourceProperty: 'j:expiration'};
+        saveMapping({nodeType: NEWS_TYPE, ogType: 'website', properties: [video, width]}).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'og:video')).to.deep.equal(['Open Graph news']);
+            expect(sourcesOf(tags, 'og:video'), 'a root with a structured property').to.deep.equal([null]);
+            expect(contentsOf(tags, 'og:video:width')).to.deep.equal(['215']);
+        });
+    });
+
     it('applies a mapping on jnt:page to a page, with og:title from jcr:title by default', () => {
         saveMapping({nodeType: 'jnt:page', ogType: 'website', properties: []}).then(expectNoError);
         getTags(HOME_PATH).then(result => {
@@ -219,9 +393,9 @@ describe('Open Graph mapping API', () => {
             {
                 reason: 'an unknown og:type',
                 nodeType: NEWS_TYPE,
-                ogType: 'video.movie',
+                ogType: 'restaurant.menu',
                 properties: title,
-                message: "Unknown og:type 'video.movie'"
+                message: "Unknown og:type 'restaurant.menu'"
             },
             {
                 reason: 'an Open Graph property that the module computes',
@@ -238,6 +412,13 @@ describe('Open Graph mapping API', () => {
                 message: "Unknown Open Graph property 'book:isbn' for the og:type 'article'"
             },
             {
+                reason: 'a property of video.episode on video.movie',
+                nodeType: NEWS_TYPE,
+                ogType: 'video.movie',
+                properties: [{ogProperty: 'video:series', sourceProperty: 'jcr:title'}],
+                message: "Unknown Open Graph property 'video:series' for the og:type 'video.movie'"
+            },
+            {
                 reason: 'a source property that the content type does not have',
                 nodeType: NEWS_TYPE,
                 ogType: 'article',
@@ -250,6 +431,13 @@ describe('Open Graph mapping API', () => {
                 ogType: 'article',
                 properties: [{ogProperty: 'og:image', sourceProperty: 'date'}],
                 message: "The property 'date' (DATE) cannot fill 'og:image'"
+            },
+            {
+                reason: 'a text source property for a whole number Open Graph property',
+                nodeType: NEWS_TYPE,
+                ogType: 'music.song',
+                properties: [{ogProperty: 'music:duration', sourceProperty: 'jcr:title'}],
+                message: "The property 'jcr:title' (STRING) cannot fill 'music:duration'"
             },
             {
                 reason: 'a source property with several values for a text Open Graph property with one value',

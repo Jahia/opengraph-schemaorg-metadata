@@ -71,7 +71,8 @@ public class GqlSourceProperty {
     @GraphQLName("compatibleOgKinds")
     @GraphQLNonNull
     @GraphQLDescription("The kinds of Open Graph property that the value of this property can fill. A property "
-            + "with several values fills a TEXT Open Graph property only when that property takes several values")
+            + "with several values fills a TEXT or an INTEGER Open Graph property only when that property takes "
+            + "several values")
     public List<OgKind> getCompatibleOgKinds() {
         return new ArrayList<>(property.getCompatibleOgKinds());
     }

@@ -17,10 +17,19 @@
           "fields": [
             {"name": "vog:og_title", "declaringNodeType": "vognt:typeMapping", "rank": 1.0},
             {"name": "vog:og_description", "declaringNodeType": "vognt:typeMapping", "rank": 2.0},
-            {"name": "vog:og_image", "declaringNodeType": "vognt:typeMapping", "rank": 3.0},
-            {"name": "vog:og_image_alt", "declaringNodeType": "vognt:typeMapping", "rank": 4.0},
-            {"name": "vog:og_audio", "declaringNodeType": "vognt:typeMapping", "rank": 5.0},
-            {"name": "vog:og_video", "declaringNodeType": "vognt:typeMapping", "rank": 6.0}
+            {"name": "vog:og_determiner", "declaringNodeType": "vognt:typeMapping", "rank": 3.0},
+            {"name": "vog:og_image", "declaringNodeType": "vognt:typeMapping", "rank": 4.0},
+            {"name": "vog:og_image_secure_url", "declaringNodeType": "vognt:typeMapping", "rank": 5.0},
+            {"name": "vog:og_image_alt", "declaringNodeType": "vognt:typeMapping", "rank": 6.0},
+            {"name": "vog:og_audio", "declaringNodeType": "vognt:typeMapping", "rank": 7.0},
+            {"name": "vog:og_audio_secure_url", "declaringNodeType": "vognt:typeMapping", "rank": 8.0},
+            {"name": "vog:og_audio_type", "declaringNodeType": "vognt:typeMapping", "rank": 9.0},
+            {"name": "vog:og_video", "declaringNodeType": "vognt:typeMapping", "rank": 10.0},
+            {"name": "vog:og_video_secure_url", "declaringNodeType": "vognt:typeMapping", "rank": 11.0},
+            {"name": "vog:og_video_type", "declaringNodeType": "vognt:typeMapping", "rank": 12.0},
+            {"name": "vog:og_video_width", "declaringNodeType": "vognt:typeMapping", "rank": 13.0},
+            {"name": "vog:og_video_height", "declaringNodeType": "vognt:typeMapping", "rank": 14.0},
+            {"name": "vog:og_video_alt", "declaringNodeType": "vognt:typeMapping", "rank": 15.0}
           ]
         },
         {

@@ -18,11 +18,19 @@ export const metaContents = (page: LivePage, property: string): string[] =>
         meta.getAttribute('content')
     );
 
+// The property and the content of each meta tag of the head whose property starts with the prefix, in the order of
+// the page.
+export const metaTags = (page: LivePage, prefix: string): {property: string; content: string}[] =>
+    Array.from(page.doc.head.querySelectorAll(`meta[property^="${prefix}"]`)).map(meta => ({
+        property: meta.getAttribute('property'),
+        content: meta.getAttribute('content')
+    }));
+
 // The property of each Open Graph meta tag of the page, wherever it is.
 export const ogProperties = (page: LivePage): string[] =>
     Array.from(page.doc.querySelectorAll('meta[property]'))
         .map(meta => meta.getAttribute('property'))
-        .filter(property => /^(og|article|book|profile):/.test(property));
+        .filter(property => /^(og|article|book|profile|music|video):/.test(property));
 
 export const publish = (path: string) => publishAndWaitJobEnding(path, ['en']);
 

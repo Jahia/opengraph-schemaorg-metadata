@@ -1,4 +1,4 @@
-import {SITE_PATH, TestUser} from './veryOpenGraph';
+import {SETTINGS_PATH, SITE_PATH, TestUser} from './veryOpenGraph';
 
 const FIXTURES = 'graphql/veryOpenGraph';
 
@@ -104,3 +104,24 @@ export const expectError =
         expect(result.errors, 'GraphQL errors').to.have.length.at.least(1);
         expect(result.errors[0].message).to.contain(message);
     };
+
+type MappingNode = {nodeType: {value: string} | null; mixinTypes: {name: string}[]; properties: {name: string}[]};
+export type StoredMapping = {mixins: string[]; properties: string[]};
+
+// The mixins and the property names of the mapping node of a content type, as root reads them in the repository.
+// openGraphMappings reads the properties of the og:type of the mapping only, so it does not show a property that stays.
+export const getStoredMapping = (nodeType: string): Cypress.Chainable<StoredMapping> =>
+    run<NodeData<{children: {nodes: MappingNode[]}}>>({
+        queryFile: `${FIXTURES}/mappingNodes.graphql`,
+        variables: {path: SETTINGS_PATH}
+    }).then(result => {
+        expectNoError(result);
+        const node = result.data.jcr.nodeByPath.children.nodes.find(
+            candidate => candidate.nodeType?.value === nodeType
+        );
+        expect(node, `the mapping node of ${nodeType}`).to.exist;
+        return {
+            mixins: node.mixinTypes.map(mixin => mixin.name),
+            properties: node.properties.map(property => property.name)
+        };
+    });

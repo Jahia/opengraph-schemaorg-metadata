@@ -139,9 +139,30 @@ const TextValue = ({ id, field, editorContext, onBlur, tag, update }: ValueEdito
   );
 };
 
+// The number field of the Content Editor, as a LONG field shows it. The tag holds the digits as text, such as 215.
+const IntegerValue = ({ id, field, editorContext, onBlur, tag, update }: ValueEditorProps) => {
+  const integerField = useMemo(
+    () => ({ ...field, name: id, requiredType: "LONG", selectorType: "Text", selectorOptions: [], multiple: false }),
+    [field, id],
+  );
+  const Text = selectorType("Text").cmp;
+
+  return (
+      <Text
+          id={id}
+          field={integerField}
+          value={tag.content ?? ""}
+          editorContext={editorContext}
+          onChange={(content: string | undefined) => update({ property: tag.property, content: content ?? "" })}
+          onBlur={onBlur}
+      />
+  );
+};
+
 const VALUE_EDITORS: Partial<Record<OgKind, ComponentType<ValueEditorProps>>> = {
   IMAGE: ImageValue,
   DATE: DateValue,
+  INTEGER: IntegerValue,
 };
 
 // One value of vog:customTags: an Open Graph property of the og:type of the mapping, then its value.
