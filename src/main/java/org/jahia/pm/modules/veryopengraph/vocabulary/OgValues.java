@@ -27,8 +27,9 @@ public final class OgValues {
     private static final Pattern TAG = Pattern.compile("<[^>]*>");
     private static final Pattern ENTITY = Pattern.compile("&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z]+);");
     private static final Pattern WHITE_SPACE = Pattern.compile("[\\s\\u00A0]+");
-    // Long.parseLong also reads the digits of other scripts, so the pattern names the ASCII digits.
-    private static final Pattern DIGITS = Pattern.compile("[0-9]+");
+    // Long.parseLong also reads the digits of other scripts. Without UNICODE_CHARACTER_CLASS, \d matches the ASCII
+    // digits only.
+    private static final Pattern DIGITS = Pattern.compile("\\d+");
 
     private static final Map<String, String> NAMED_ENTITIES = new TreeMap<>();
 

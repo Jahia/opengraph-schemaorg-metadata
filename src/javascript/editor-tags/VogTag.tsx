@@ -22,7 +22,7 @@ const parseTag = (value: unknown): Tag => {
     try {
       const parsed = JSON.parse(value) as Partial<Record<keyof Tag, unknown>>;
       return {
-        property: String(parsed.property ?? ""),
+        property: typeof parsed.property === "string" ? parsed.property : "",
         content: typeof parsed.content === "string" ? parsed.content : undefined,
         node: typeof parsed.node === "string" ? parsed.node : undefined,
       };
