@@ -26,9 +26,7 @@
     "property": "Open Graph property",
     "placeholder": {
       "TEXT": "Value",
-      "DATE": "Date, such as 2026-10-20T09:30:00Z",
-      "URL": "Absolute URL, such as https://www.example.com/video.mp4",
-      "IMAGE": "Absolute URL of an image, such as https://www.example.com/image.png"
+      "URL": "Absolute URL, such as https://www.example.com/video.mp4"
     }
   }
 }

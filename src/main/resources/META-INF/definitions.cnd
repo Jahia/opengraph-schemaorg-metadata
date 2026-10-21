@@ -35,6 +35,7 @@
  - vog:book_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
 
 // Each value is a JSON object that sets one Open Graph tag, such as {"property":"og:title","content":"Summer in Mykonos"}.
+// An image holds the identifier of its file instead, such as {"property":"og:image","node":"<uuid>"}.
 // The selector type VogTag edits a value: a forms file sets it, because a CND accepts only the selector types of Jahia.
 [vogmix:customTags] mixin
  extends = jmix:mainResource, jnt:page

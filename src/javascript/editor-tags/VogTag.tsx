@@ -1,38 +1,148 @@
 import { useQuery } from "@apollo/client";
 import { Dropdown, Input } from "@jahia/moonstone";
-import type { HTMLAttributes } from "react";
+import { registry } from "@jahia/ui-extender";
+import { useMemo, type ComponentType, type HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { NAMESPACE } from "../i18n.ts";
 import styles from "./VogTag.module.css";
-import { TAG_PROPERTIES_QUERY, type TagPropertiesData, type TagPropertiesVariables } from "./vogTag.gql.ts";
+import {
+  TAG_PROPERTIES_QUERY,
+  type OgKind,
+  type TagPropertiesData,
+  type TagPropertiesVariables,
+} from "./vogTag.gql.ts";
 
-type Tag = { property: string; content: string };
+// A value of vog:customTags is a JSON object. An image holds the identifier of its file in node, such as
+// {"property":"og:image","node":"<uuid>"}, and another property holds its text in content, such as
+// {"property":"og:title","content":"Summer in Mykonos"}.
+type Tag = { property: string; content?: string; node?: string };
 
-// A value of vog:customTags is a JSON object, such as {"property":"og:title","content":"Summer in Mykonos"}.
 const parseTag = (value: unknown): Tag => {
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value) as Partial<Record<keyof Tag, unknown>>;
-      return { property: String(parsed.property ?? ""), content: String(parsed.content ?? "") };
+      return {
+        property: String(parsed.property ?? ""),
+        content: typeof parsed.content === "string" ? parsed.content : undefined,
+        node: typeof parsed.node === "string" ? parsed.node : undefined,
+      };
     } catch {
       // The field shows a value that is not JSON as an empty tag, and the next change replaces it.
     }
   }
 
-  return { property: "", content: "" };
+  return { property: "" };
 };
+
+// The date picker gives a local date and time, such as 2026-10-20T09:30:00.000. The tag holds it in UTC, to the
+// second, as the module writes a mapped date: 2026-10-20T07:30:00Z.
+const isoDate = (localDate: string | null | undefined) =>
+  localDate ? new Date(localDate).toISOString().replace(/\.\d{3}Z$/, "Z") : "";
+
+type SelectorType = {
+  cmp: ComponentType<Record<string, unknown>>;
+  resolver?: (options: unknown, field: unknown) => SelectorType;
+};
+
+// The Content Editor registers each selector type in the registry of the app shell.
+const selectorType = (key: string) => registry.get("selectorType", key) as unknown as SelectorType;
+
+type EditorField = { name: string; readOnly?: boolean } & Record<string, unknown>;
 
 export type VogTagProps = Readonly<{
   id: string;
   value?: string;
-  field: { readOnly?: boolean };
-  editorContext: { lang: string; nodeData?: { uuid?: string } };
+  field: EditorField;
+  editorContext: { lang: string; nodeData?: { uuid?: string } } & Record<string, unknown>;
+  inputContext: Record<string, unknown>;
   onChange: (value: string | undefined) => void;
   onBlur: () => void;
 }>;
 
+type ValueEditorProps = VogTagProps & Readonly<{ tag: Tag; kind: OgKind; update: (next: Tag) => void }>;
+
+// The image picker of the Content Editor, on a field of its own that holds one file.
+const ImageValue = ({ id, field, editorContext, inputContext, onBlur, tag, update }: ValueEditorProps) => {
+  const imageField = useMemo(
+    () => ({
+      ...field,
+      name: id,
+      multiple: false,
+      requiredType: "WEAKREFERENCE",
+      selectorType: "Picker",
+      selectorOptions: [{ name: "type", value: "image" }],
+      valueConstraints: [],
+    }),
+    [field, id],
+  );
+  const picker = useMemo(() => {
+    const pickerType = selectorType("Picker");
+    return pickerType.resolver ? pickerType.resolver(imageField.selectorOptions, imageField) : pickerType;
+  }, [imageField]);
+  // The picker writes its actions into the input context, so the context belongs to this value only.
+  const pickerContext = useMemo(
+    () => ({ ...inputContext, selectorType: picker, displayActions: false }),
+    [inputContext, picker],
+  );
+  const Picker = picker.cmp;
+
+  return (
+      <Picker
+          id={id}
+          field={imageField}
+          value={tag.node}
+          editorContext={editorContext}
+          inputContext={pickerContext}
+          onChange={(node: unknown) => update({ property: tag.property, node: typeof node === "string" ? node : undefined })}
+          onBlur={onBlur}
+      />
+  );
+};
+
+// The date and time picker of the Content Editor.
+const DateValue = ({ id, field, editorContext, onBlur, tag, update }: ValueEditorProps) => {
+  const dateField = useMemo(
+    () => ({ ...field, name: id, requiredType: "DATE", selectorType: "DateTimePicker", valueConstraints: [] }),
+    [field, id],
+  );
+  const DateTimePicker = selectorType("DateTimePicker").cmp;
+
+  return (
+      <DateTimePicker
+          id={id}
+          field={dateField}
+          value={tag.content ?? ""}
+          editorContext={editorContext}
+          onChange={(localDate: string | null) => update({ property: tag.property, content: isoDate(localDate) })}
+          onBlur={onBlur}
+      />
+  );
+};
+
+const TextValue = ({ id, field, onBlur, tag, kind, update }: ValueEditorProps) => {
+  const { t } = useTranslation(NAMESPACE);
+
+  return (
+      <Input
+          id={id}
+          data-sel-role="vog-tag-content"
+          value={tag.content ?? ""}
+          placeholder={t(`customTags.placeholder.${kind}`)}
+          isReadOnly={field.readOnly}
+          onChange={event => update({ property: tag.property, content: event.target.value })}
+          onBlur={onBlur}
+      />
+  );
+};
+
+const VALUE_EDITORS: Partial<Record<OgKind, ComponentType<ValueEditorProps>>> = {
+  IMAGE: ImageValue,
+  DATE: DateValue,
+};
+
 // One value of vog:customTags: an Open Graph property of the og:type of the mapping, then its value.
-const VogTag = ({ id, value, field, editorContext, onChange, onBlur }: VogTagProps) => {
+const VogTag = (props: VogTagProps) => {
+  const { value, field, editorContext, onChange, onBlur } = props;
   const { t } = useTranslation(NAMESPACE);
   const uuid = editorContext.nodeData?.uuid ?? "";
   const tag = parseTag(value);
@@ -48,9 +158,11 @@ const VogTag = ({ id, value, field, editorContext, onChange, onBlur }: VogTagPro
   const ogType = data?.jcr?.nodeById?.openGraphTags?.find(ogTag => ogTag.property === "og:type")?.content;
   const properties = data?.openGraphVocabulary.ogTypes.find(type => type.name === ogType)?.properties ?? [];
   const kind = properties.find(property => property.name === tag.property)?.kind ?? "TEXT";
+  const ValueEditor = VALUE_EDITORS[kind] ?? TextValue;
 
   const update = (next: Tag) => {
-    onChange(next.property === "" && next.content === "" ? undefined : JSON.stringify(next));
+    const isEmpty = next.property === "" && !next.content && !next.node;
+    onChange(isEmpty ? undefined : JSON.stringify(next));
   };
 
   return (
@@ -69,19 +181,12 @@ const VogTag = ({ id, value, field, editorContext, onChange, onBlur }: VogTagPro
               isDisabled={field.readOnly || loading}
               isLoading={loading}
               onChange={(_event, item) => {
-                update({ ...tag, property: item.value ?? "" });
+                // A new property starts with no value, because each kind of value has its own editor.
+                update({ property: item.value ?? "" });
                 onBlur();
               }}
           />
-          <Input
-              id={id}
-              data-sel-role="vog-tag-content"
-              value={tag.content}
-              placeholder={t(`customTags.placeholder.${kind}`)}
-              isReadOnly={field.readOnly}
-              onChange={event => update({ ...tag, content: event.target.value })}
-              onBlur={onBlur}
-          />
+          <ValueEditor key={kind} {...props} tag={tag} kind={kind} update={update}/>
       </>
   );
 };

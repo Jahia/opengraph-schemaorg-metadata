@@ -1,11 +1,12 @@
-import {Collapsible, getComponentBySelector} from '@jahia/cypress';
 import {LOAD_TIMEOUT} from './mappingScreen';
 
 const FIXTURES = 'graphql/veryOpenGraph';
 
-export const SECTION = 'veryOpenGraph';
+// The module adds its fieldsets to the section seo, which also holds the fieldsets of other modules.
+export const SECTION = 'seo';
 // The Content Editor names a field after its fieldset and its property.
 const PREVIEW_FIELD = 'vogOpenGraphValues_vog:ogPreview';
+const CUSTOM_TAGS_FIELD_SET = 'vogmix:customTags';
 
 export type FormField = {name: string; selectorType: string; readOnly: boolean};
 export type NodeProperty = {name: string; value: string};
@@ -26,11 +27,6 @@ export const editFormSections = (uuidOrPath: string): Cypress.Chainable<FormSect
         .apollo({queryFile: `${FIXTURES}/editForm.graphql`, variables: {uuidOrPath}})
         .then(result => result.data.forms.editForm.sections as FormSection[]);
 
-export const createFormSections = (primaryNodeType: string, parentPath: string): Cypress.Chainable<FormSection[]> =>
-    cy
-        .apollo({queryFile: `${FIXTURES}/createForm.graphql`, variables: {primaryNodeType, uuidOrPath: parentPath}})
-        .then(result => result.data.forms.createForm.sections as FormSection[]);
-
 // Every property of a node in English, with no filter on the names.
 export const nodeProperties = (path: string): Cypress.Chainable<NodeProperty[]> =>
     cy
@@ -48,11 +44,39 @@ export const openContentEditor = (siteKey: string, uuid: string, fieldName: stri
     );
 };
 
-export const sectionShouldNotExist = () => cy.get(SECTION_SELECTOR).should('not.exist');
+// Opens the create form of a content type under a parent node, with the Content Editor API of jContent.
+export const openCreateForm = (siteKey: string, parentPath: string, nodeType: string, fieldName: string) => {
+    cy.visit(`/jahia/jcontent/${siteKey}/en/content-folders/contents`);
+    cy.window()
+        .its('CE_API', {timeout: LOAD_TIMEOUT})
+        .then((api: {create: (config: Record<string, unknown>) => void}) =>
+            api.create({path: parentPath, nodeTypes: [nodeType], includeSubTypes: false, isFullscreen: true})
+        );
+    cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${fieldName}"]`, {timeout: LOAD_TIMEOUT}).should(
+        'be.visible'
+    );
+};
 
-export const expandSection = (name: string) => getComponentBySelector(Collapsible, sectionSelector(name)).expand();
+// The section re-renders when it opens, so the button is found again for each step.
+export const expandSection = (name: string) => {
+    const button = `${sectionSelector(name)} .moonstone-collapsible_button`;
+    cy.get(button, {timeout: LOAD_TIMEOUT}).then($button => {
+        if ($button.attr('aria-expanded') !== 'true') {
+            cy.get(button).click();
+        }
+    });
+    cy.get(button).should('have.attr', 'aria-expanded', 'true');
+};
 
-// Expands the section "Open Graph", and waits for its values.
+// Expands the section seo, then checks that it holds no fieldset of the module. The fieldsets show until the
+// preview knows that the type has no mapping, so the check waits for them to go.
+export const fieldSetsShouldNotExist = () => {
+    expandSection(SECTION);
+    cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${PREVIEW_FIELD}"]`).should('not.exist');
+    cy.get(`${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${CUSTOM_TAGS_FIELD_SET}"]`).should('not.exist');
+};
+
+// Expands the section seo, and waits for the Open Graph values.
 export const openSection = () => {
     expandSection(SECTION);
     cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}`, {timeout: LOAD_TIMEOUT}).should('have.length.at.least', 1);

@@ -2,13 +2,14 @@ import {addNode, createSite, deleteSite, enableModule, getNodeByPath} from '@jah
 import {deleteMapping, expectNoError, saveMapping, TypeMapping} from '../support/openGraphApi';
 import {deleteEverywhere} from '../support/livePage';
 import {
-    createFormSections,
     editFormSections,
     fieldNamed,
+    fieldSetsShouldNotExist,
     FormSection,
     nodeProperties,
     NodeProperty,
     openContentEditor,
+    openCreateForm,
     openSection,
     previewValue,
     save,
@@ -16,7 +17,6 @@ import {
     SECTION,
     SYSTEM_NAME_FIELD,
     sectionNames,
-    sectionShouldNotExist,
     typeInField
 } from '../support/editorField';
 import {LOAD_TIMEOUT} from '../support/mappingScreen';
@@ -103,15 +103,14 @@ describe('Open Graph values in the Content Editor', () => {
     });
 
     describe('the forms', () => {
-        it('give the edit form the section "Open Graph" with the read-only field vog:ogPreview', () => {
+        it('give the section seo of the edit form the read-only field vog:ogPreview', () => {
             editFormSections(NEWS_PATH).then(expectSection);
         });
 
-        it('give the create form no section "Open Graph"', () => {
-            createFormSections('jnt:news', `${SITE_PATH}/contents`).then(sections => {
-                expect(sectionNames(sections)).to.include('content');
-                expect(sectionNames(sections)).not.to.include(SECTION);
-            });
+        it('have no section "Open Graph" of their own', () => {
+            editFormSections(NEWS_PATH).then(sections =>
+                expect(sectionNames(sections)).not.to.include('veryOpenGraph')
+            );
         });
     });
 
@@ -136,9 +135,9 @@ describe('Open Graph values in the Content Editor', () => {
             cy.get(SAVE_HINT).should('not.exist');
         });
 
-        it('hides the section on a page with no mapping, and shows it once jnt:page has a mapping', () => {
+        it('hides the fieldsets on a page with no mapping, and shows them once jnt:page has a mapping', () => {
             uuidOf(PAGE_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, PAGE_TITLE_FIELD));
-            sectionShouldNotExist();
+            fieldSetsShouldNotExist();
             saveMapping(PAGE_MAPPING).then(expectNoError);
             // The same URL again changes the hash only, so a reload loads the form again.
             cy.reload();
@@ -150,9 +149,14 @@ describe('Open Graph values in the Content Editor', () => {
             deleteMapping(PAGE_MAPPING.nodeType).then(expectNoError);
         });
 
-        it('hides the section on a news item of a site with no mapping', () => {
+        it('hides the fieldsets on a news item of a site with no mapping', () => {
             uuidOf(OTHER_NEWS_PATH).then(uuid => openContentEditor(OTHER_SITE_KEY, uuid, TITLE_FIELD));
-            sectionShouldNotExist();
+            fieldSetsShouldNotExist();
+        });
+
+        it('hides the fieldsets in the create form of a mapped type', () => {
+            openCreateForm(SITE_KEY, `${SITE_PATH}/contents`, 'jnt:news', TITLE_FIELD);
+            fieldSetsShouldNotExist();
         });
 
         it('shows a typed title at once, asks to save for another change, and saves no vog:ogPreview', () => {

@@ -3,12 +3,11 @@
   "priority": 1.0,
   "sections": [
     {
-      "name": "veryOpenGraph",
-      "labelKey": "very-open-graph:section.openGraph",
-      "displayModes": ["edit"],
+      "name": "seo",
       "fieldSets": [
         {
           "name": "vogOpenGraphValues",
+          "rank": 10.0,
           "labelKey": "very-open-graph:fieldset.openGraphValues",
           "descriptionKey": "very-open-graph:fieldset.openGraphValues.description",
           "fields": [

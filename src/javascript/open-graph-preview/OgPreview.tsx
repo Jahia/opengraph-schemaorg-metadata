@@ -21,7 +21,12 @@ import { i18n, NAMESPACE } from "../i18n.ts";
 import { PREVIEW_QUERY, type OgTag, type PreviewData, type PreviewVariables } from "./ogPreview.gql.ts";
 import { plainText } from "./plainText.ts";
 
-const SECTION = "veryOpenGraph";
+const SECTION = "seo";
+// The fieldsets of the module in the section seo: this field, and the field vog:customTags of very-open-graph#12.
+const FIELD_SETS = ["vogOpenGraphValues", "vogmix:customTags"];
+
+// The types of jContent give a fieldset its fields only.
+type FieldSet = { name: string; visible?: boolean };
 const RICH_TEXT = "RichText";
 const PROPERTY_WIDTH = "240px";
 // The paths are plain text, and React escapes them.
@@ -77,13 +82,18 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
     skip: uuid === "",
   });
   const tags = data?.jcr?.nodeById?.openGraphTags ?? [];
-  // A type with no mapping on the site has no tag. The section then hides, and a failed request hides it too.
+  // A type with no mapping on the site has no tag. The fieldsets of the module then hide, and a failed request or a
+  // create form hides them too. The section seo keeps its other fieldsets, and hides when none is left.
   const isHidden = uuid === "" || (!loading && (error !== undefined || tags.length === 0));
 
   useEffect(() => {
-    const section = sections.find(candidate => candidate.name === SECTION);
-    if (isHidden && section && section.visible !== false) {
-      section.visible = false;
+    const fieldSets = ((sections.find(candidate => candidate.name === SECTION)?.fieldSets ?? []) as FieldSet[]).filter(
+      fieldSet => FIELD_SETS.includes(fieldSet.name) && fieldSet.visible !== false
+    );
+    if (isHidden && fieldSets.length > 0) {
+      fieldSets.forEach(fieldSet => {
+        fieldSet.visible = false;
+      });
       onSectionsUpdate?.();
     }
   }, [isHidden, sections, onSectionsUpdate]);
