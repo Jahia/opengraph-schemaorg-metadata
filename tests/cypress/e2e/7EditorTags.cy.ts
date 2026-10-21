@@ -16,7 +16,7 @@ import {
 } from '../support/editorTags';
 import {previewValue, save} from '../support/editorField';
 import {deleteEverywhere, getLivePage, LivePage, metaContents, publish} from '../support/livePage';
-import {cancelAndDiscard, menuItem, OPEN_MENU} from '../support/mappingScreen';
+import {cancelAndDiscard, close, menuItem, OPEN_MENU} from '../support/mappingScreen';
 import {
     deleteMapping,
     expectNoError,
@@ -178,6 +178,7 @@ describe('Open Graph tags that an editor sets on one content', () => {
         cy.get(tagImage(1)).should('have.text', IMAGE_NAME);
         cy.get(tagProperty(2)).should('contain', 'article:published_time');
         cy.get(tagDate(2)).should('have.value', EDITOR_DATE_TEXT);
+        close();
     });
 
     it('ignores a value that is not valid, and keeps the first value of a property that takes one value', () => {

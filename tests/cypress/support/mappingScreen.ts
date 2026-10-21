@@ -80,6 +80,12 @@ export const create = () => {
     cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
 };
 
+// Closes a form with no change. The Content Editor then releases the lock that it holds on the node.
+export const close = () => {
+    cy.get(CANCEL).click();
+    cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
+};
+
 export const cancelAndDiscard = () => {
     cy.get(CANCEL).click();
     cy.get(DISCARD).click();

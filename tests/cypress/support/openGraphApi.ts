@@ -94,7 +94,8 @@ export const setCustomTags = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
 
 export const expectNoError = <T>(result: GqlResult<T>) => {
-    expect(result.errors, 'GraphQL errors').to.be.undefined;
+    expect(result.errors, `GraphQL errors: ${JSON.stringify(result.errors?.map(error => error.message))}`).to.be
+        .undefined;
 };
 
 export const expectError =
