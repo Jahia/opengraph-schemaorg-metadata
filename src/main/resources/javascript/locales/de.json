@@ -23,10 +23,6 @@
     "urlOf": "Live-URL von {{path}}"
   },
   "customTags": {
-    "property": "Open-Graph-Eigenschaft",
-    "placeholder": {
-      "TEXT": "Wert",
-      "URL": "Absolute URL, zum Beispiel https://www.example.com/video.mp4"
-    }
+    "property": "Open-Graph-Eigenschaft"
   }
 }

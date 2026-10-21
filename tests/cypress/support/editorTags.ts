@@ -12,7 +12,8 @@ export const tagValue = (index: number) =>
     `${CONTENT_EDITOR} [data-sel-content-editor-multiple-generic-field="${CUSTOM_TAGS_MIXIN}_vog:customTags[${index}]"]`;
 
 export const tagProperty = (index: number) => `${tagValue(index)} [data-sel-role="vog-tag-property"]`;
-export const tagContent = (index: number) => `${tagValue(index)} input[data-sel-role="vog-tag-content"]`;
+// The text field of the Content Editor renders one text input.
+export const tagContent = (index: number) => `${tagValue(index)} input[type="text"]`;
 
 // Opens the edit form of a news item, then expands the section "Open Graph".
 export const openEditForm = (uuid: string) => {
