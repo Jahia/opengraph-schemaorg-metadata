@@ -18,6 +18,11 @@ export const metaContents = (page: LivePage, property: string): string[] =>
         meta.getAttribute('content')
     );
 
+// The content attribute of each twitter:card meta tag of the head. X names its tags with the attribute name, and not
+// with property.
+export const twitterCards = (page: LivePage): string[] =>
+    Array.from(page.doc.head.querySelectorAll('meta[name="twitter:card"]')).map(meta => meta.getAttribute('content'));
+
 // The property and the content of each meta tag of the head whose property starts with the prefix, in the order of
 // the page.
 export const metaTags = (page: LivePage, prefix: string): {property: string; content: string}[] =>
