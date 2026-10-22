@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export type OgKind = "TEXT" | "DATE" | "URL" | "IMAGE";
+export type OgKind = "TEXT" | "DATE" | "URL" | "IMAGE" | "INTEGER";
 
 export type OgProperty = { name: string; kind: OgKind };
 

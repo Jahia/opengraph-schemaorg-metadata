@@ -61,7 +61,11 @@ public final class OgTag {
 
     /**
      * @return the single-valued property of the content whose text is the content of the tag, or null when the tag
-     * comes from a date, a reference, a property with several values or a computed value
+     * comes from a date, a number, a reference, a property with several values, a value of a closed list such as
+     * {@code profile:gender}, or a computed value. The root of a structured array, such as {@code video:actor}, has
+     * no source property either. A root such as {@code og:video} has none when a structured property, such as
+     * {@code og:video:width}, follows it. Otherwise the preview of the Content Editor would hide an empty root and
+     * keep the structured values that follow it.
      */
     public String getSourceProperty() {
         return sourceProperty;

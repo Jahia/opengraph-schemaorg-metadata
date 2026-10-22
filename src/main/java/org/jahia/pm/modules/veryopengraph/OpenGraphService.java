@@ -36,10 +36,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Stores the Open Graph mappings of a site, and resolves the Open Graph tags of a content node.
@@ -69,6 +71,14 @@ public class OpenGraphService {
         OG_TYPE_MIXINS.put(OgType.ARTICLE, "vogmix:article");
         OG_TYPE_MIXINS.put(OgType.BOOK, "vogmix:book");
         OG_TYPE_MIXINS.put(OgType.PROFILE, "vogmix:profile");
+        OG_TYPE_MIXINS.put(OgType.MUSIC_SONG, "vogmix:musicSong");
+        OG_TYPE_MIXINS.put(OgType.MUSIC_ALBUM, "vogmix:musicAlbum");
+        OG_TYPE_MIXINS.put(OgType.MUSIC_PLAYLIST, "vogmix:musicPlaylist");
+        OG_TYPE_MIXINS.put(OgType.MUSIC_RADIO_STATION, "vogmix:musicRadioStation");
+        OG_TYPE_MIXINS.put(OgType.VIDEO_MOVIE, "vogmix:videoMovie");
+        OG_TYPE_MIXINS.put(OgType.VIDEO_EPISODE, "vogmix:videoEpisode");
+        OG_TYPE_MIXINS.put(OgType.VIDEO_TV_SHOW, "vogmix:videoTvShow");
+        OG_TYPE_MIXINS.put(OgType.VIDEO_OTHER, "vogmix:videoOther");
     }
 
     private static final String PAGE_TYPE = "jnt:page";
@@ -148,7 +158,8 @@ public class OpenGraphService {
             throws InvalidMappingException, RepositoryException {
         ExtendedNodeType type = mappableType(site, nodeType);
         OgType og = OgType.fromValue(ogType).orElseThrow(() -> new InvalidMappingException(
-                "Unknown og:type '" + ogType + "'. Use one of " + Arrays.toString(OgType.values()).toLowerCase(Locale.ROOT)));
+                "Unknown og:type '" + ogType + "'. Use one of "
+                        + Arrays.stream(OgType.values()).map(OgType::getValue).collect(Collectors.joining(", ", "[", "]"))));
         Map<String, ExtendedPropertyDefinition> sources = sourceDefinitions(site, type);
         Set<String> mapped = new HashSet<>();
         for (PropertyMapping property : properties) {
@@ -158,6 +169,7 @@ public class OpenGraphService {
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
                     JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType);
+                    // Two og:types that share a property name share its storage, so the second removal finds nothing.
                     for (OgType anyOgType : OgType.values()) {
                         for (OgProperty property : anyOgType.getProperties()) {
                             String name = storageName(property.getName());
@@ -248,6 +260,9 @@ public class OpenGraphService {
     }
 
     /**
+     * Two og:types that share a property name, such as {@code music.album} and {@code music.playlist} for
+     * {@code music:song}, hold the same property, so the first match is the answer.
+     *
      * @return the Open Graph property that a property of a mapping node holds, such as {@code og:image:alt} for
      * {@code vog:og_image_alt}
      */
@@ -291,7 +306,9 @@ public class OpenGraphService {
 
     /**
      * Resolves the Open Graph tags of a content node with the mapping of its type, or of its closest supertype.
-     * A tag that the editor sets in {@code vog:customTags} replaces the mapped values of its property.
+     * A tag that the editor sets in {@code vog:customTags} replaces the mapped values of its property. A structured
+     * property, such as {@code og:video:width}, has a tag only when its root has one, except {@code og:image:alt}.
+     * {@link OgTag#getSourceProperty} states which root has no source property.
      * <p>
      * The {@code og:url} tag and the tags of a file hold a node, and the caller builds the absolute URL. When the
      * session of the node has another locale, the method reads the node again with the current user, in the
@@ -311,47 +328,12 @@ public class OpenGraphService {
             return Collections.emptyList();
         }
 
-        Map<String, List<OgTag>> mapped = new HashMap<>();
-        for (PropertyMapping property : mapping.getProperties()) {
-            OgProperty ogProperty = ogType.findProperty(property.getOgProperty()).orElse(null);
-            if (ogProperty != null) {
-                mapped.put(ogProperty.getName(), values(localized, ogProperty, property.getSourceProperty()));
-            }
-        }
-        // A tag of the editor replaces every mapped value of the same property.
-        mapped.putAll(customTags(localized, ogType));
-
+        Map<String, List<OgTag>> mapped = mappedTags(localized, mapping, ogType);
         List<OgTag> tags = new ArrayList<>();
-        List<OgTag> titles = mapped.getOrDefault(OgType.OG_TITLE, Collections.emptyList());
-        if (titles.isEmpty()) {
-            String title = localized.getPropertyAsString(TITLE_PROPERTY);
-            if (title != null && !title.trim().isEmpty()) {
-                tags.add(OgTag.text(OgType.OG_TITLE, title.trim(), TITLE_PROPERTY));
-            }
-        } else {
-            tags.addAll(titles);
-        }
+        addTitle(tags, mapped, localized);
         tags.add(OgTag.text("og:type", ogType.getValue()));
         tags.add(OgTag.node("og:url", localized));
-
-        JCRNodeWrapper image = null;
-        for (OgProperty property : ogType.getProperties()) {
-            String name = property.getName();
-            List<OgTag> values = mapped.getOrDefault(name, Collections.emptyList());
-            if (OgType.OG_TITLE.equals(name)) {
-                continue;
-            }
-            if (OgType.OG_IMAGE_ALT.equals(name) && values.isEmpty() && image != null) {
-                addText(tags, OgType.OG_IMAGE_ALT, image.getPropertyAsString(TITLE_PROPERTY));
-                continue;
-            }
-            tags.addAll(values);
-            // An og:image that an editor typed as a URL, before the image picker, has no file node and no image details.
-            if (OgType.OG_IMAGE.equals(name) && !values.isEmpty() && values.get(0).getNode() != null) {
-                image = values.get(0).getNode();
-                addImageDetails(tags, image);
-            }
-        }
+        addProperties(tags, ogType, mapped);
 
         addText(tags, "og:site_name", site.getTitle());
         tags.add(OgTag.text("og:locale", OgValues.ogLocale(locale)));
@@ -361,6 +343,172 @@ public class OpenGraphService {
             }
         }
         return tags;
+    }
+
+    /**
+     * @return the tags of each Open Graph property of the og:type, from the mapping and from {@code vog:customTags}
+     */
+    private static Map<String, List<OgTag>> mappedTags(JCRNodeWrapper node, TypeMapping mapping, OgType ogType)
+            throws RepositoryException {
+        Map<String, List<OgTag>> mapped = new HashMap<>();
+        for (PropertyMapping property : mapping.getProperties()) {
+            OgProperty ogProperty = ogType.findProperty(property.getOgProperty()).orElse(null);
+            if (ogProperty != null) {
+                mapped.put(ogProperty.getName(), values(node, ogProperty, property.getSourceProperty()));
+            }
+        }
+        // A tag of the editor replaces every mapped value of the same property.
+        mapped.putAll(customTags(node, ogType));
+        return mapped;
+    }
+
+    /**
+     * Writes the og:title tags, or the {@code jcr:title} of the node when no mapping and no tag of the editor sets
+     * og:title.
+     */
+    private static void addTitle(List<OgTag> tags, Map<String, List<OgTag>> mapped, JCRNodeWrapper node) {
+        List<OgTag> titles = mapped.getOrDefault(OgType.OG_TITLE, Collections.emptyList());
+        if (titles.isEmpty()) {
+            String title = node.getPropertyAsString(TITLE_PROPERTY);
+            if (title != null && !title.trim().isEmpty()) {
+                tags.add(OgTag.text(OgType.OG_TITLE, title.trim(), TITLE_PROPERTY));
+            }
+        } else {
+            tags.addAll(titles);
+        }
+    }
+
+    /**
+     * Writes the tags of the properties of the og:type, except og:title, in the order of the list. An og:image file
+     * without og:image:alt writes the title of the file as og:image:alt.
+     */
+    private static void addProperties(List<OgTag> tags, OgType ogType, Map<String, List<OgTag>> mapped)
+            throws RepositoryException {
+        // og:image comes before og:image:alt in the list of every og:type.
+        JCRNodeWrapper image = imageFile(mapped);
+        Set<String> written = new HashSet<>();
+        Set<String> withTag = new HashSet<>();
+        Set<String> rootsWithStructuredTag = new HashSet<>();
+        for (OgProperty property : ogType.getProperties()) {
+            String name = property.getName();
+            String root = rootOf(ogType, name);
+            if (!canWrite(name, root, written, withTag)) {
+                continue;
+            }
+            if (OgType.OG_IMAGE_ALT.equals(name) && mapped.getOrDefault(name, Collections.emptyList()).isEmpty()
+                    && image != null) {
+                addText(tags, OgType.OG_IMAGE_ALT, image.getPropertyAsString(TITLE_PROPERTY));
+            } else if (addValues(tags, ogType, property, mapped, image, written)) {
+                withTag.add(name);
+                if (root != null) {
+                    rootsWithStructuredTag.add(root);
+                }
+            }
+        }
+        // A single root, such as og:video, loses its source property only when a structured property follows it.
+        tags.replaceAll(tag -> rootsWithStructuredTag.contains(tag.getProperty()) ? withoutSource(tag) : tag);
+    }
+
+    /**
+     * An og:image that an editor typed as a URL, before the image picker, has no file node and no image details.
+     *
+     * @return the file of the og:image tag, or null when og:image has no tag or its tag holds a URL
+     */
+    private static JCRNodeWrapper imageFile(Map<String, List<OgTag>> mapped) {
+        List<OgTag> images = mapped.getOrDefault(OgType.OG_IMAGE, Collections.emptyList());
+        return images.isEmpty() ? null : images.get(0).getNode();
+    }
+
+    /**
+     * A structured array writes its structured properties with its root, so the loop does not write them again.
+     *
+     * @param written the structured properties that a structured array wrote
+     * @param withTag the properties that wrote at least one tag
+     * @return true when the loop of {@link #addProperties} writes the property: og:title has its own place, and a
+     * structured property needs a tag of its root
+     */
+    private static boolean canWrite(String name, String root, Set<String> written, Set<String> withTag) {
+        if (OgType.OG_TITLE.equals(name) || written.contains(name)) {
+            return false;
+        }
+        // The protocol writes a structured property after its root. og:image:alt keeps its tag without og:image.
+        return root == null || withTag.contains(root) || OgType.OG_IMAGE_ALT.equals(name);
+    }
+
+    /**
+     * Writes the values of a property. An og:image file adds its image details, and a root with several values
+     * writes a structured array.
+     *
+     * @param image   the file of the og:image tag, or null
+     * @param written receives the structured properties that a structured array writes
+     * @return true when the property wrote at least one tag
+     */
+    private static boolean addValues(List<OgTag> tags, OgType ogType, OgProperty property,
+                                     Map<String, List<OgTag>> mapped, JCRNodeWrapper image, Set<String> written)
+            throws RepositoryException {
+        String name = property.getName();
+        List<OgTag> values = mapped.getOrDefault(name, Collections.emptyList());
+        int size = tags.size();
+        // A root with several values, such as video:actor, writes each value with its structured values.
+        List<OgProperty> structured = property.isMultiple() ? ogType.findStructuredProperties(name) : Collections.emptyList();
+        if (structured.isEmpty()) {
+            // A property with several values holds a null for a value that writes no tag.
+            values.stream().filter(Objects::nonNull).forEach(tags::add);
+            if (OgType.OG_IMAGE.equals(name) && image != null) {
+                addImageDetails(tags, image);
+            }
+        } else {
+            addArray(tags, values, structured, mapped);
+            structured.forEach(child -> written.add(child.getName()));
+        }
+        return tags.size() > size;
+    }
+
+    /**
+     * @return the root of a structured property in the og:type, such as {@code og:video} for {@code og:video:width},
+     * or null when the name before the last colon is not a property of the og:type
+     */
+    private static String rootOf(OgType ogType, String name) {
+        int separator = name.lastIndexOf(':');
+        if (separator < 0) {
+            return null;
+        }
+        String root = name.substring(0, separator);
+        return ogType.findProperty(root).isPresent() ? root : null;
+    }
+
+    /**
+     * The preview of the Content Editor hides a tag whose live text is empty. A root keeps no source property, so the
+     * preview does not show the structured values of that root alone.
+     *
+     * @return the tag without its source property
+     */
+    private static OgTag withoutSource(OgTag tag) {
+        return tag.getSourceProperty() == null ? tag : OgTag.text(tag.getProperty(), tag.getContent());
+    }
+
+    /**
+     * Writes a structured array, such as {@code music:album} with {@code music:album:disc} and
+     * {@code music:album:track}: each value of the root, then the value of each structured property at the same
+     * index. A null value writes no tag and keeps its index. The method does not write a structured value that has
+     * no root value at its index. A root has no source property.
+     */
+    private static void addArray(List<OgTag> tags, List<OgTag> roots, List<OgProperty> structured,
+                                 Map<String, List<OgTag>> mapped) {
+        for (int index = 0; index < roots.size(); index++) {
+            OgTag root = roots.get(index);
+            if (root == null) {
+                continue;
+            }
+            tags.add(withoutSource(root));
+            for (OgProperty child : structured) {
+                List<OgTag> childValues = mapped.getOrDefault(child.getName(), Collections.emptyList());
+                OgTag childValue = index < childValues.size() ? childValues.get(index) : null;
+                if (childValue != null) {
+                    tags.add(childValue);
+                }
+            }
+        }
     }
 
     private static void validate(PropertyMapping property, OgType og, String nodeType,
@@ -389,12 +537,13 @@ public class OpenGraphService {
     }
 
     /**
-     * @return true when a source property of these kinds can fill the Open Graph property. A text Open Graph property
-     * with one value takes a source property with one value only.
+     * @return true when a source property of these kinds can fill the Open Graph property. A text or an integer Open
+     * Graph property with one value takes a source property with one value only.
      */
     public static boolean canFill(Set<OgKind> kinds, boolean multipleSource, OgProperty ogProperty) {
-        return kinds.contains(ogProperty.getKind())
-                && !(ogProperty.getKind() == OgKind.TEXT && !ogProperty.isMultiple() && multipleSource);
+        OgKind kind = ogProperty.getKind();
+        return kinds.contains(kind)
+                && !((kind == OgKind.TEXT || kind == OgKind.INTEGER) && !ogProperty.isMultiple() && multipleSource);
     }
 
     /**
@@ -464,8 +613,8 @@ public class OpenGraphService {
     }
 
     /**
-     * @return the kinds of Open Graph property that the property can fill: a text comes from a STRING only, and a
-     * reference fills an image or a URL when it points to a file
+     * @return the kinds of Open Graph property that the property can fill: a text comes from a STRING only, an integer
+     * from a LONG only, and a reference fills an image or a URL when it points to a file
      */
     private static Set<OgKind> compatibleKinds(ExtendedPropertyDefinition definition) {
         switch (definition.getRequiredType()) {
@@ -473,6 +622,8 @@ public class OpenGraphService {
                 return definition.getSelector() == SelectorType.RICHTEXT ? EnumSet.of(OgKind.TEXT) : EnumSet.of(OgKind.TEXT, OgKind.URL);
             case PropertyType.URI:
                 return EnumSet.of(OgKind.URL);
+            case PropertyType.LONG:
+                return EnumSet.of(OgKind.INTEGER);
             case PropertyType.DATE:
                 return EnumSet.of(OgKind.DATE);
             case PropertyType.REFERENCE:
@@ -520,6 +671,12 @@ public class OpenGraphService {
         return null;
     }
 
+    /**
+     * A property with several values keeps a null in place of a value that converts to nothing, because a structured
+     * array pairs its values by index.
+     *
+     * @return the tags of the values of the source property, in their order
+     */
     private static List<OgTag> values(JCRNodeWrapper node, OgProperty ogProperty, String sourceName) throws RepositoryException {
         if (!node.hasProperty(sourceName)) {
             return Collections.emptyList();
@@ -532,11 +689,11 @@ public class OpenGraphService {
         List<OgTag> tags = new ArrayList<>();
         for (JCRValueWrapper value : values) {
             OgTag tag = convert(value, ogProperty, richText, singleSource);
-            if (tag != null) {
+            if (ogProperty.isMultiple()) {
                 tags.add(tag);
-                if (!ogProperty.isMultiple()) {
-                    break;
-                }
+            } else if (tag != null) {
+                tags.add(tag);
+                break;
             }
         }
         return tags;
@@ -544,10 +701,12 @@ public class OpenGraphService {
 
     /**
      * Reads the tags that the editor set in {@code vog:customTags}. The method ignores a value that is not valid
-     * JSON, that sets nothing, or whose property the og:type does not have. A property with one value keeps the
-     * first value of the editor.
+     * JSON, or whose property the og:type does not have. A property with one value keeps the first value of the
+     * editor that sets a tag. A property with several values keeps a null in place of a value that sets nothing,
+     * because a structured array pairs its values by index.
      *
-     * @return the tags of the editor, by Open Graph property, in the order of the field
+     * @return the tags of the editor, by Open Graph property, in the order of the field, for each property with at
+     * least one value that sets a tag
      */
     private static Map<String, List<OgTag>> customTags(JCRNodeWrapper node, OgType ogType) throws RepositoryException {
         if (!node.hasProperty(CUSTOM_TAGS_PROPERTY)) {
@@ -564,15 +723,17 @@ public class OpenGraphService {
                 continue;
             }
             OgProperty ogProperty = ogType.findProperty(json.optString("property")).orElse(null);
-            OgTag tag = ogProperty == null ? null : customTag(node.getSession(), ogProperty, json);
-            if (tag == null) {
+            if (ogProperty == null) {
                 continue;
             }
+            OgTag tag = customTag(node.getSession(), ogProperty, json);
             List<OgTag> propertyTags = tags.computeIfAbsent(ogProperty.getName(), name -> new ArrayList<>());
-            if (ogProperty.isMultiple() || propertyTags.isEmpty()) {
+            if (ogProperty.isMultiple() || (tag != null && propertyTags.isEmpty())) {
                 propertyTags.add(tag);
             }
         }
+        // A property whose values of the editor all set nothing, such as an empty value, keeps its mapped values.
+        tags.values().removeIf(propertyTags -> propertyTags.stream().allMatch(Objects::isNull));
         return tags;
     }
 
@@ -589,11 +750,19 @@ public class OpenGraphService {
         if (!fileId.isEmpty()) {
             return ogProperty.getKind() == OgKind.IMAGE || ogProperty.getKind() == OgKind.URL ? fileTag(session, fileId, name) : null;
         }
-        String content = json.optString("content").trim();
-        if (OgType.PROFILE_GENDER.equals(name)) {
-            content = OgValues.gender(content);
-        }
+        String content = accepted(ogProperty, json.optString("content").trim());
         return content == null || content.isEmpty() ? null : OgTag.text(name, content);
+    }
+
+    /**
+     * @return the text that the protocol accepts for the property, or null: a value of its closed list in lower case,
+     * an integer of 1 or more for an integer property, or else the text itself
+     */
+    private static String accepted(OgProperty ogProperty, String text) {
+        if (!ogProperty.getValues().isEmpty()) {
+            return OgValues.allowedValue(text, ogProperty.getValues());
+        }
+        return ogProperty.getKind() == OgKind.INTEGER ? OgValues.positiveInteger(text) : text;
     }
 
     /**
@@ -620,16 +789,11 @@ public class OpenGraphService {
         switch (value.getType()) {
             case PropertyType.STRING:
             case PropertyType.URI:
-                if (kind != OgKind.TEXT && kind != OgKind.URL) {
-                    return null;
-                }
-                String text = richText ? OgValues.plainText(value.getString()) : value.getString().trim();
-                // The gender is not the text of its source, because the protocol accepts two values only.
-                boolean isGender = OgType.PROFILE_GENDER.equals(name);
-                if (isGender) {
-                    text = OgValues.gender(text);
-                }
-                return text == null || text.isEmpty() ? null : OgTag.text(name, text, isGender ? null : singleSource);
+                return textValue(value, ogProperty, richText, singleSource);
+            case PropertyType.LONG:
+                // No source property: the preview would copy the text of the field, and 007 or 0 is not the tag.
+                String integer = kind == OgKind.INTEGER ? OgValues.positiveInteger(value.getLong()) : null;
+                return integer == null ? null : OgTag.text(name, integer);
             case PropertyType.DATE:
                 return kind == OgKind.DATE ? OgTag.text(name, OgValues.isoDate(value.getDate())) : null;
             case PropertyType.REFERENCE:
@@ -638,6 +802,23 @@ public class OpenGraphService {
             default:
                 return null;
         }
+    }
+
+    /**
+     * @param singleSource the name of the source property when it has one value, or null
+     * @return the tag of a STRING or a URI value, or null when the property takes no text and no URL, or when the
+     * protocol does not accept the text
+     */
+    private static OgTag textValue(JCRValueWrapper value, OgProperty ogProperty, boolean richText, String singleSource)
+            throws RepositoryException {
+        OgKind kind = ogProperty.getKind();
+        if (kind != OgKind.TEXT && kind != OgKind.URL) {
+            return null;
+        }
+        String text = accepted(ogProperty, richText ? OgValues.plainText(value.getString()) : value.getString().trim());
+        // A value of a closed list is not the text of its source, so the preview cannot copy the field.
+        String liveSource = ogProperty.getValues().isEmpty() ? singleSource : null;
+        return text == null || text.isEmpty() ? null : OgTag.text(ogProperty.getName(), text, liveSource);
     }
 
     private static OgTag fileValue(JCRValueWrapper value, String name) throws RepositoryException {

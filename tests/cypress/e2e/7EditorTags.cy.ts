@@ -15,13 +15,14 @@ import {
     tagProperty
 } from '../support/editorTags';
 import {previewValue, save} from '../support/editorField';
-import {deleteEverywhere, getLivePage, LivePage, metaContents, publish} from '../support/livePage';
+import {deleteEverywhere, getLivePage, LivePage, metaContents, metaTags, publish} from '../support/livePage';
 import {cancelAndDiscard, close, menuItem, OPEN_MENU} from '../support/mappingScreen';
 import {
     deleteMapping,
     expectNoError,
     getCustomTags,
     getTags,
+    OgTag,
     saveMapping,
     setCustomTags,
     TypeMapping
@@ -42,14 +43,35 @@ const NEWS_MAPPING: TypeMapping = {
     ]
 };
 
+const SONG_MAPPING: TypeMapping = {
+    nodeType: 'jnt:news',
+    ogType: 'music.song',
+    properties: [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}]
+};
+
+const MOVIE_MAPPING: TypeMapping = {
+    nodeType: 'jnt:news',
+    ogType: 'video.movie',
+    properties: [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}]
+};
+
 // The Open Graph properties of the og:type article, in the order of the vocabulary. The module sets og:type and og:url.
 const ARTICLE_PROPERTIES = [
     'og:title',
     'og:description',
+    'og:determiner',
     'og:image',
+    'og:image:secure_url',
     'og:image:alt',
     'og:audio',
+    'og:audio:secure_url',
+    'og:audio:type',
     'og:video',
+    'og:video:secure_url',
+    'og:video:type',
+    'og:video:width',
+    'og:video:height',
+    'og:video:alt',
     'article:published_time',
     'article:modified_time',
     'article:expiration_time',
@@ -66,6 +88,15 @@ const EDITOR_DATE = new Date(2026, 9, 10, 9, 30).toISOString().replace(/\.\d{3}Z
 
 const tag = (property: string, content: string) => JSON.stringify({property, content});
 const fileTag = (property: string, node: string) => JSON.stringify({property, node});
+
+const contentsOf = (tags: OgTag[], property: string) =>
+    tags.filter(ogTag => ogTag.property === property).map(ogTag => ogTag.content);
+
+// The property and the content of each tag whose property starts with the prefix, in their order.
+const tagsWithPrefix = (tags: OgTag[], prefix: string) =>
+    tags
+        .filter(ogTag => ogTag.property.startsWith(prefix))
+        .map(ogTag => ({property: ogTag.property, content: ogTag.content}));
 
 // Checks that a URL is the absolute live URL of the image, on the server name of the site.
 const expectImageUrl = (url: string) => {
@@ -225,6 +256,141 @@ describe('Open Graph tags that an editor sets on one content', () => {
         getLivePage(NEWS_PATH).then(page => {
             expect(metaContents(page, 'og:title')).to.deep.equal(['Tags news']);
             expect(metaContents(page, 'article:tag')).to.be.empty;
+        });
+    });
+
+    it('edits music:duration with a number field, and writes the whole number', () => {
+        saveMapping(SONG_MAPPING).then(expectNoError);
+        cy.login(EDITOR.username, EDITOR.password);
+        openEditForm(uuid);
+        switchCustomTags(true);
+        // The number field drops the letter. A text field would keep it, and the module would then write no tag.
+        addTag(0, 'music:duration', 'x215');
+        cy.get(tagContent(0)).should('have.value', '215');
+        save();
+        close();
+
+        getCustomTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(result.data.jcr.nodeByPath.property.values).to.deep.equal([tag('music:duration', '215')]);
+        });
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'og:type')).to.deep.equal(['music.song']);
+            expect(contentsOf(tags, 'music:duration')).to.deep.equal(['215']);
+        });
+    });
+
+    it('writes a music:duration of the editor only when it is a whole number of 1 or more', () => {
+        saveMapping(SONG_MAPPING).then(expectNoError);
+        setCustomTags(NEWS_PATH, [
+            tag('music:duration', 'abc'),
+            tag('music:duration', '0'),
+            tag('music:duration', '-5')
+        ]).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(contentsOf(result.data.jcr.nodeByPath.openGraphTags, 'music:duration')).to.be.empty;
+        });
+
+        setCustomTags(NEWS_PATH, [tag('music:duration', '215')]).then(expectNoError);
+        publish(NEWS_PATH);
+        getLivePage(NEWS_PATH).then(page => {
+            expect(metaContents(page, 'og:type')).to.deep.equal(['music.song']);
+            expect(metaContents(page, 'music:duration')).to.deep.equal(['215']);
+        });
+    });
+
+    it('writes each video:actor of the editor followed by its video:actor:role', () => {
+        const actors = ['https://www.example.com/actors/ada', 'https://www.example.com/actors/bob'];
+        saveMapping(MOVIE_MAPPING).then(expectNoError);
+        // The field lists the actors, then the roles. A role with no actor at the same position has no tag.
+        setCustomTags(NEWS_PATH, [
+            tag('video:actor', actors[0]),
+            tag('video:actor', actors[1]),
+            tag('video:actor:role', 'Captain'),
+            tag('video:actor:role', 'Pilot'),
+            tag('video:actor:role', 'Extra')
+        ]).then(expectNoError);
+        const interleaved = [
+            {property: 'video:actor', content: actors[0]},
+            {property: 'video:actor:role', content: 'Captain'},
+            {property: 'video:actor', content: actors[1]},
+            {property: 'video:actor:role', content: 'Pilot'}
+        ];
+
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'og:type')).to.deep.equal(['video.movie']);
+            expect(tagsWithPrefix(tags, 'video:actor')).to.deep.equal(interleaved);
+        });
+        publish(NEWS_PATH);
+        getLivePage(NEWS_PATH).then(page => {
+            expect(metaContents(page, 'og:type')).to.deep.equal(['video.movie']);
+            expect(metaTags(page, 'video:actor')).to.deep.equal(interleaved);
+        });
+    });
+
+    it('keeps the position of a video:actor:role of the editor that sets nothing', () => {
+        const actors = [
+            'https://www.example.com/actors/ada',
+            'https://www.example.com/actors/bob',
+            'https://www.example.com/actors/cy'
+        ];
+        saveMapping(MOVIE_MAPPING).then(expectNoError);
+        // The blank role of the second actor writes no tag, and the role Pilot stays with the third actor.
+        setCustomTags(NEWS_PATH, [
+            ...actors.map(actor => tag('video:actor', actor)),
+            tag('video:actor:role', 'Captain'),
+            tag('video:actor:role', ' '),
+            tag('video:actor:role', 'Pilot')
+        ]).then(expectNoError);
+
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(tagsWithPrefix(result.data.jcr.nodeByPath.openGraphTags, 'video:actor')).to.deep.equal([
+                {property: 'video:actor', content: actors[0]},
+                {property: 'video:actor:role', content: 'Captain'},
+                {property: 'video:actor', content: actors[1]},
+                {property: 'video:actor', content: actors[2]},
+                {property: 'video:actor:role', content: 'Pilot'}
+            ]);
+        });
+    });
+
+    it('writes og:determiner in lower case when the protocol allows the value, and no tag for another value', () => {
+        saveMapping(NEWS_MAPPING).then(expectNoError);
+        setCustomTags(NEWS_PATH, [tag('og:determiner', 'The')]).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(contentsOf(result.data.jcr.nodeByPath.openGraphTags, 'og:determiner')).to.deep.equal(['the']);
+        });
+
+        setCustomTags(NEWS_PATH, [tag('og:determiner', 'foo')]).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(contentsOf(result.data.jcr.nodeByPath.openGraphTags, 'og:determiner')).to.be.empty;
+        });
+    });
+
+    it('writes og:video:width of the editor only after an og:video', () => {
+        saveMapping(NEWS_MAPPING).then(expectNoError);
+        setCustomTags(NEWS_PATH, [tag('og:video:width', '640')]).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(tagsWithPrefix(result.data.jcr.nodeByPath.openGraphTags, 'og:video')).to.be.empty;
+        });
+
+        const video = 'https://www.example.com/videos/mykonos.mp4';
+        setCustomTags(NEWS_PATH, [tag('og:video', video), tag('og:video:width', '640')]).then(expectNoError);
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(tagsWithPrefix(result.data.jcr.nodeByPath.openGraphTags, 'og:video')).to.deep.equal([
+                {property: 'og:video', content: video},
+                {property: 'og:video:width', content: '640'}
+            ]);
         });
     });
 });

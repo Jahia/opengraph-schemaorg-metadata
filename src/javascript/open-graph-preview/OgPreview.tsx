@@ -23,7 +23,7 @@ import { plainText } from "./plainText.ts";
 
 const SECTION = "seo";
 // The fieldsets of the module in the section seo: this field, and the field vog:customTags of very-open-graph#12.
-const FIELD_SETS = ["vogOpenGraphValues", "vogmix:customTags"];
+const FIELD_SETS = new Set(["vogOpenGraphValues", "vogmix:customTags"]);
 
 // The types of jContent give a fieldset its fields only.
 type FieldSet = { name: string; visible?: boolean };
@@ -88,7 +88,7 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
 
   useEffect(() => {
     const fieldSets = ((sections.find(candidate => candidate.name === SECTION)?.fieldSets ?? []) as FieldSet[]).filter(
-      fieldSet => FIELD_SETS.includes(fieldSet.name) && fieldSet.visible !== false
+      fieldSet => FIELD_SETS.has(fieldSet.name) && fieldSet.visible !== false
     );
     if (isHidden && fieldSets.length > 0) {
       fieldSets.forEach(fieldSet => {

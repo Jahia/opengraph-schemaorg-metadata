@@ -42,8 +42,10 @@ public class GqlOgTag {
     @GraphQLField
     @GraphQLName("sourceProperty")
     @GraphQLDescription("The single-valued property of the content whose text is the value of the tag, with the HTML "
-            + "of a rich text removed. Null when the value comes from a date, a reference, a property with several "
-            + "values, or the server")
+            + "of a rich text removed. Null when the value comes from a date, a number, a reference, a property with "
+            + "several values, a property with a closed list of values such as profile:gender, or the server. Null "
+            + "too for the root of a structured array, such as video:actor, and for a root such as og:video when a "
+            + "structured property such as og:video:width follows it")
     public String getSourceProperty() {
         return tag.getSourceProperty();
     }

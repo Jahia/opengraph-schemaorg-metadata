@@ -1,5 +1,7 @@
 export const SITE_KEY = 'vogSite';
 export const SITE_PATH = `/sites/${SITE_KEY}`;
+// The node of the site that holds its mappings.
+export const SETTINGS_PATH = `${SITE_PATH}/very-open-graph`;
 export const SERVER_NAME = 'vogsite';
 export const TEMPLATE_SET = 'templates-system';
 export const SITE_MODULES = ['very-open-graph', 'news'];

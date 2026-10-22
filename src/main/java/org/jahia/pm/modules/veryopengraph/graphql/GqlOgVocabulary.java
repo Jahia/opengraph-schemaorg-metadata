@@ -19,7 +19,7 @@ public class GqlOgVocabulary {
     @GraphQLField
     @GraphQLName("ogTypes")
     @GraphQLNonNull
-    @GraphQLDescription("The og:type values of v1")
+    @GraphQLDescription("The og:type values of the Open Graph protocol")
     public List<GqlOgType> getOgTypes() {
         return Arrays.stream(OgType.values()).map(GqlOgType::new).collect(Collectors.toList());
     }
