@@ -1,10 +1,18 @@
-import {EDITOR, EDITOR_IN_CHIEF, PERMISSION, SITE_ADMIN, SITE_KEY, SITE_PATH, USERS} from '../support/veryOpenGraph';
+import {
+    EDITOR,
+    EDITOR_IN_CHIEF,
+    PERMISSION,
+    SITE_ADMIN,
+    SITE_KEY,
+    SITE_PATH,
+    USERS
+} from '../support/structuredDataMapper';
 
-const ROUTE_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/veryOpenGraph`;
+const ROUTE_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/structuredDataMapper`;
 const ACCORDION_HEADERS = '.moonstone-accordion section.moonstone-accordionItem header';
 const APPS_ACCORDION = `${ACCORDION_HEADERS}[aria-controls="apps"]`;
-const ENTRY = '[role="treeitem"][data-sel-role="veryOpenGraph"]';
-const SCREEN = '[data-sel-role="very-open-graph"]';
+const ENTRY = '[role="treeitem"][data-sel-role="structuredDataMapper"]';
+const SCREEN = '[data-sel-role="structured-data-mapper"]';
 const LOAD_TIMEOUT = 30000;
 
 describe('Open Graph entry in jContent', () => {
@@ -12,11 +20,11 @@ describe('Open Graph entry in jContent', () => {
         cy.logout();
     });
 
-    it('grants veryOpenGraphManage on vogSite to the site administrator and the editor in chief only', () => {
+    it('grants structuredDataMapperManage on sdmSite to the site administrator and the editor in chief only', () => {
         USERS.forEach(user => {
             cy.apolloClient({username: user.username, password: user.password})
                 .apollo({
-                    queryFile: 'graphql/veryOpenGraph/hasPermission.graphql',
+                    queryFile: 'graphql/structuredDataMapper/hasPermission.graphql',
                     variables: {path: SITE_PATH, permission: PERMISSION}
                 })
                 .then(result => {

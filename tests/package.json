@@ -1,7 +1,7 @@
 {
-    "name": "@jahia/very-open-graph-cypress",
+    "name": "@jahia/structured-data-mapper-cypress",
     "version": "1.0.0",
-    "description": "Cypress tests for the very-open-graph module",
+    "description": "Cypress tests for the structured-data-mapper module",
     "private": true,
     "devDependencies": {
         "@apollo/client": "^3.11.7",

@@ -19,7 +19,7 @@ import {
   type TypeMapping,
 } from "./openGraph.gql.ts";
 
-const MAPPING_TYPE = "vognt:typeMapping";
+const MAPPING_TYPE = "sdmnt:typeMapping";
 
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
 
@@ -96,7 +96,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   };
 
   const addButton = (
-      <Button data-sel-role="vog-add-mapping"
+      <Button data-sel-role="sdm-add-mapping"
               color="accent"
               icon={<Add/>}
               label={t("openGraph.addMapping")}
@@ -108,7 +108,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   let errorText: ReactNode = null;
   const shownError = error?.message ?? actionError;
   if (shownError) {
-    errorText = <Typography data-sel-role="vog-error" weight="bold">{shownError}</Typography>;
+    errorText = <Typography data-sel-role="sdm-error" weight="bold">{shownError}</Typography>;
   }
 
   let list: ReactNode = null;
@@ -123,14 +123,14 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   } else if (data) {
     list = (
         <Paper hasPadding>
-            <Typography data-sel-role="very-open-graph-empty">{t("openGraph.empty")}</Typography>
+            <Typography data-sel-role="structured-data-mapper-empty">{t("openGraph.empty")}</Typography>
         </Paper>
     );
   }
 
   return (
       <LayoutContent hasPadding
-                     data-sel-role="very-open-graph"
+                     data-sel-role="structured-data-mapper"
                      isLoading={loading && data === undefined}
                      header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
       >

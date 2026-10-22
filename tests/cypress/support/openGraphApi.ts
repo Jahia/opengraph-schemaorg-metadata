@@ -1,6 +1,6 @@
-import {SETTINGS_PATH, SITE_PATH, TestUser} from './veryOpenGraph';
+import {SETTINGS_PATH, SITE_PATH, TestUser} from './structuredDataMapper';
 
-const FIXTURES = 'graphql/veryOpenGraph';
+const FIXTURES = 'graphql/structuredDataMapper';
 
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
 export type TypeMapping = {nodeType: string; ogType: string; properties: PropertyMapping[]};
@@ -50,7 +50,7 @@ const run = <T>(request: ApolloRequest, user?: TestUser): Cypress.Chainable<GqlR
 export const getVocabulary = (user?: TestUser) =>
     run<{openGraphVocabulary: OgVocabulary}>({queryFile: `${FIXTURES}/vocabulary.graphql`}, user);
 
-// The user runs the request, root when absent, on the site node at path, vogSite when absent.
+// The user runs the request, root when absent, on the site node at path, sdmSite when absent.
 export type Scope = {user?: TestUser; path?: string};
 
 export const getMappings = ({user, path = SITE_PATH}: Scope = {}) =>
@@ -85,11 +85,11 @@ export const deleteMapping = (nodeType: string, {user, path = SITE_PATH}: Scope 
 
 export type CustomTagsNode = {uuid: string; mixinTypes: {name: string}[]; property: {values: string[]} | null};
 
-// The mixin types of a node, and the English values of vog:customTags.
+// The mixin types of a node, and the English values of sdm:customTags.
 export const getCustomTags = (path: string) =>
     run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customTags.graphql`, variables: {path}});
 
-// Adds the mixin vogmix:customTags to a node, and sets the English values of vog:customTags.
+// Adds the mixin sdmmix:customTags to a node, and sets the English values of sdm:customTags.
 export const setCustomTags = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
 

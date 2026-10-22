@@ -1,0 +1,10 @@
+mutation structuredDataMapperSetCustomTags($path: String!, $values: [String]!) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            addMixins(mixins: ["sdmmix:customTags"])
+            mutateProperty(name: "sdm:customTags") {
+                setValues(values: $values, language: "en")
+            }
+        }
+    }
+}

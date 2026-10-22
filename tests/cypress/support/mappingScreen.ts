@@ -1,16 +1,16 @@
 import {PropertyMapping} from './openGraphApi';
-import {SITE_KEY, TestUser} from './veryOpenGraph';
+import {SITE_KEY, TestUser} from './structuredDataMapper';
 
 export const LOAD_TIMEOUT = 30000;
-export const SCREEN_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/veryOpenGraph`;
+export const SCREEN_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/structuredDataMapper`;
 
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
-export const EMPTY = role('very-open-graph-empty');
-export const ADD_MAPPING = role('vog-add-mapping');
-export const EDIT = role('vog-edit');
-export const DELETE = role('vog-delete');
-export const CONFIRM_DELETE = role('vog-confirm-delete');
+export const EMPTY = role('structured-data-mapper-empty');
+export const ADD_MAPPING = role('sdm-add-mapping');
+export const EDIT = role('sdm-edit');
+export const DELETE = role('sdm-delete');
+export const CONFIRM_DELETE = role('sdm-confirm-delete');
 
 export const CONTENT_EDITOR = '[aria-labelledby="dialog-content-editor"]';
 const CREATE = role('createButton');
@@ -20,13 +20,13 @@ const DISCARD = role('close-dialog-discard');
 
 const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-field="${name}"]`;
 
-export const NODE_TYPE_FIELD = field('vognt:typeMapping_vog:nodeType');
-export const OG_TYPE_FIELD = field('vogTypeMetadata_vog:ogType');
+export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
+export const OG_TYPE_FIELD = field('sdmTypeMetadata_sdm:ogType');
 
-// The Content Editor names a field after its fieldset and its property, such as vogBasicMetadata_vog:og_title, and
-// the mapping stores article:tag in vog:article_tag.
+// The Content Editor names a field after its fieldset and its property, such as sdmBasicMetadata_sdm:og_title, and
+// the mapping stores article:tag in sdm:article_tag.
 const sourceFieldSelector = (ogProperty: string) =>
-    `[data-sel-content-editor-field$="_vog:${ogProperty.replace(/:/g, '_')}"]`;
+    `[data-sel-content-editor-field$="_sdm:${ogProperty.replace(/:/g, '_')}"]`;
 
 export const sourceField = (ogProperty: string) => `${CONTENT_EDITOR} ${sourceFieldSelector(ogProperty)}`;
 
@@ -42,7 +42,7 @@ export const openScreen = (user: TestUser) => {
 };
 
 export const mappingRow = (nodeType: string) =>
-    cy.get(`${role('vog-mapping-row')}[data-sel-node-type="${nodeType}"]`, {timeout: LOAD_TIMEOUT});
+    cy.get(`${role('sdm-mapping-row')}[data-sel-node-type="${nodeType}"]`, {timeout: LOAD_TIMEOUT});
 
 export const propertiesText = (properties: PropertyMapping[]) =>
     properties.map(property => `${property.ogProperty} ← ${property.sourceProperty}`).join(', ');

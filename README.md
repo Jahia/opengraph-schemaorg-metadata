@@ -1,6 +1,6 @@
-# Very Open Graph
+# Structured Data Mapper
 
-Very Open Graph is a Jahia module that maps content types to Open Graph types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page` and for the types that inherit `jmix:mainResource`.
+Structured Data Mapper is a Jahia module that maps content types to Open Graph types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page` and for the types that inherit `jmix:mainResource`.
 
 ## Tracks
 
@@ -16,7 +16,7 @@ Skeleton, no feature yet. The Open Graph screen shows a placeholder, and the mod
 
 ## Permissions
 
-The module adds the permission `veryOpenGraphManage` under the `site-admin` permission group. The `site-administrator` role holds `site-admin`, and the module grants `veryOpenGraphManage` to the `editor-in-chief` role.
+The module adds the permission `structuredDataMapperManage` under the `site-admin` permission group. The `site-administrator` role holds `site-admin`, and the module grants `structuredDataMapperManage` to the `editor-in-chief` role.
 
 ## Build
 
@@ -26,4 +26,4 @@ The Maven settings file reads the Nexus credentials from the variables `NEXUS_US
 mvn -s .github/maven.settings.xml clean install
 ```
 
-The build runs the Vite build of the UI and writes `target/very-open-graph-0.1.0-SNAPSHOT.jar`.
+The build runs the Vite build of the UI and writes `target/structured-data-mapper-0.1.0-SNAPSHOT.jar`.
