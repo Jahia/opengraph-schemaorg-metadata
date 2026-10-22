@@ -3,6 +3,7 @@
 /* eslint-disable no-var -- a global that globalThis exposes must be declared with var */
 declare var contextJsParameters: {
   uilang?: string;
+  contextPath?: string;
   [key: string]: unknown;
 } | undefined;
 

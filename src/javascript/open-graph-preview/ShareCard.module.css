@@ -1,0 +1,32 @@
+/* A share card in a feed is about 500px wide. */
+.card {
+  max-width: 500px;
+  margin: 8px 0 16px;
+  padding-bottom: 8px;
+  overflow: hidden;
+}
+
+/* Each network crops the image to its own ratio from the center, as in its feed. */
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.facebook {
+  aspect-ratio: 1200 / 630;
+}
+
+.linkedin {
+  aspect-ratio: 1200 / 627;
+}
+
+.x {
+  aspect-ratio: 1200 / 600;
+}
+
+.line {
+  display: block;
+  padding: 4px 12px 0;
+}

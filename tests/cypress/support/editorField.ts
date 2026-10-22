@@ -87,6 +87,26 @@ export const previewValue = (property: string) =>
         timeout: LOAD_TIMEOUT
     });
 
+export const SHARE_CARD = `${PREVIEW_SELECTOR} ${role('vog-share-card')}`;
+
+// Shows the share card of a network, and waits for the card of that network. Moonstone takes the mouse events away from
+// the selected tab, so the function clicks an unselected tab only.
+export const selectShareTab = (network: string) => {
+    const tab = `${PREVIEW_SELECTOR} ${role('vog-share-tab')}[data-sel-network="${network}"]`;
+    cy.get(tab).then($tab => {
+        if ($tab.attr('aria-selected') !== 'true') {
+            cy.get(tab).click({scrollBehavior: 'center'});
+        }
+    });
+    cy.get(SHARE_CARD).should('have.attr', 'data-sel-network', network);
+};
+
+// The roles of the image and the text lines of the share card, in the order of the card.
+export const shareCardRoles = (): Cypress.Chainable<string[]> =>
+    cy.get(`${SHARE_CARD} > [data-sel-role]`).then($items => Array.from($items).map(item => item.dataset.selRole));
+
+export const shareCardPart = (part: string) => cy.get(`${SHARE_CARD} ${role(`vog-share-card-${part}`)}`);
+
 export const fieldNamed = (name: string) => `[data-sel-content-editor-field="${name}"]`;
 
 // The Content Editor names the system name field after the fieldset that holds it.
