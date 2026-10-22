@@ -9,11 +9,11 @@ import {
     ogProperties,
     publish
 } from '../support/livePage';
-import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/veryOpenGraph';
+import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
 
-const PAGE_PATH = `${SITE_PATH}/home/vog-filter-page`;
-const NEWS_PATH = `${SITE_PATH}/contents/vog-filter-news`;
-const IMAGE_NAME = 'vog-filter-image.png';
+const PAGE_PATH = `${SITE_PATH}/home/sdm-filter-page`;
+const NEWS_PATH = `${SITE_PATH}/contents/sdm-filter-news`;
+const IMAGE_NAME = 'sdm-filter-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
 
 const PAGE_MAPPING: TypeMapping = {
@@ -60,7 +60,7 @@ describe('Open Graph tags in the head of live pages', () => {
         [PAGE_PATH, NEWS_PATH, IMAGE_PATH].forEach(deleteEverywhere);
         addNode({
             parentPathOrId: `${SITE_PATH}/home`,
-            name: 'vog-filter-page',
+            name: 'sdm-filter-page',
             primaryNodeType: 'jnt:page',
             properties: [
                 {name: 'jcr:title', value: 'Filter page', language: 'en'},
@@ -71,7 +71,7 @@ describe('Open Graph tags in the head of live pages', () => {
         uploadFile(`images/${IMAGE_NAME}`, `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result => {
             addNode({
                 parentPathOrId: `${SITE_PATH}/contents`,
-                name: 'vog-filter-news',
+                name: 'sdm-filter-news',
                 primaryNodeType: 'jnt:news',
                 properties: [
                     {name: 'jcr:title', value: 'Filter news', language: 'en'},
@@ -104,7 +104,7 @@ describe('Open Graph tags in the head of live pages', () => {
             expect(single(page, 'og:description')).to.equal('A page for the filter test');
             expect(single(page, 'og:site_name')).to.equal(SITE_KEY);
             expect(single(page, 'og:locale')).to.equal('en');
-            expectLiveUrl(single(page, 'og:url'), ['/sites/vogSite/home/vog-filter-page.html']);
+            expectLiveUrl(single(page, 'og:url'), ['/sites/sdmSite/home/sdm-filter-page.html']);
             expect(page.html.indexOf('property="og:title"')).to.be.lessThan(page.html.search(/<\/head>/i));
         });
     });

@@ -60,14 +60,14 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
     if (confirming === mapping.nodeType) {
       return (
           <>
-              <Button data-sel-role="vog-confirm-delete"
+              <Button data-sel-role="sdm-confirm-delete"
                       color="danger"
                       label={t("openGraph.list.confirmDelete")}
                       isDisabled={isDeleting}
                       onClick={() => confirmDeletion(mapping.nodeType)}
               />
               {" "}
-              <Button data-sel-role="vog-cancel-delete"
+              <Button data-sel-role="sdm-cancel-delete"
                       variant="ghost"
                       label={t("openGraph.list.cancel")}
                       isDisabled={isDeleting}
@@ -79,14 +79,14 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
 
     return (
         <>
-            <Button data-sel-role="vog-edit"
+            <Button data-sel-role="sdm-edit"
                     variant="ghost"
                     icon={<Edit/>}
                     label={t("openGraph.list.edit")}
                     onClick={() => onEdit(mapping)}
             />
             {" "}
-            <Button data-sel-role="vog-delete"
+            <Button data-sel-role="sdm-delete"
                     variant="ghost"
                     icon={<Delete/>}
                     label={t("openGraph.list.delete")}
@@ -97,7 +97,7 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
   };
 
   return (
-      <Paper hasPadding={false} data-sel-role="vog-mappings">
+      <Paper hasPadding={false} data-sel-role="sdm-mappings">
           <Table>
               <TableHead>
                   <TableRow>
@@ -109,7 +109,7 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
               </TableHead>
               <TableBody>
                   {mappings.map(mapping => (
-                      <TableRow key={mapping.nodeType} data-sel-role="vog-mapping-row" data-sel-node-type={mapping.nodeType}>
+                      <TableRow key={mapping.nodeType} data-sel-role="sdm-mapping-row" data-sel-node-type={mapping.nodeType}>
                           <TableBodyCell>{contentTypeOf(mapping.nodeType)}</TableBodyCell>
                           <TableBodyCell width={OG_TYPE_WIDTH}>{mapping.ogType}</TableBodyCell>
                           <TableBodyCell title={propertiesOf(mapping)}>{propertiesOf(mapping)}</TableBodyCell>

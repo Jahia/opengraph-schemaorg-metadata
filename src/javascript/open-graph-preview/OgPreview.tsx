@@ -22,8 +22,8 @@ import { PREVIEW_QUERY, type OgTag, type PreviewData, type PreviewVariables } fr
 import { plainText } from "./plainText.ts";
 
 const SECTION = "seo";
-// The fieldsets of the module in the section seo: this field, and the field vog:customTags of very-open-graph#12.
-const FIELD_SETS = new Set(["vogOpenGraphValues", "vogmix:customTags"]);
+// The fieldsets of the module in the section seo: this field, and the field sdm:customTags of structured-data-mapper#12.
+const FIELD_SETS = new Set(["sdmOpenGraphValues", "sdmmix:customTags"]);
 
 // The types of jContent give a fieldset its fields only.
 type FieldSet = { name: string; visible?: boolean };
@@ -136,11 +136,11 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
   return (
       <>
           {hasOtherChange && (
-          <Typography data-sel-role="vog-preview-save-hint" variant="caption">
+          <Typography data-sel-role="sdm-preview-save-hint" variant="caption">
               {t("preview.saveHint")}
           </Typography>
           )}
-          <Table id={id} data-sel-role="vog-preview">
+          <Table id={id} data-sel-role="sdm-preview">
               <TableHead>
                   <TableRow>
                       <TableHeadCell width={PROPERTY_WIDTH}>{t("preview.property")}</TableHeadCell>
@@ -151,9 +151,9 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
                   {rows.map((tag, index) => (
                       // A property such as og:locale:alternate can repeat, so the key needs the index.
                       // eslint-disable-next-line react/no-array-index-key
-                      <TableRow key={`${tag.property}-${index}`} data-sel-role="vog-preview-row" data-sel-property={tag.property}>
+                      <TableRow key={`${tag.property}-${index}`} data-sel-role="sdm-preview-row" data-sel-property={tag.property}>
                           <TableBodyCell width={PROPERTY_WIDTH}>{tag.property}</TableBodyCell>
-                          <TableBodyCell data-sel-role="vog-preview-value">{valueOf(tag)}</TableBodyCell>
+                          <TableBodyCell data-sel-role="sdm-preview-value">{valueOf(tag)}</TableBodyCell>
                       </TableRow>
                   ))}
               </TableBody>

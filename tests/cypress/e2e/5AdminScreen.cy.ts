@@ -31,18 +31,18 @@ import {
     sourceField,
     sourceFieldIn
 } from '../support/mappingScreen';
-import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/veryOpenGraph';
+import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/structuredDataMapper';
 
 const NEWS_TYPE = 'jnt:news';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
 const VIDEO_TAG: PropertyMapping = {ogProperty: 'video:tag', sourceProperty: 'j:tagList'};
-const BASIC_METADATA = 'vogBasicMetadata';
-const TYPE_METADATA = 'vogTypeMetadata';
+const BASIC_METADATA = 'sdmBasicMetadata';
+const TYPE_METADATA = 'sdmTypeMetadata';
 
-// The properties of a mapping node that hold the source of a video property, such as vog:video_tag.
-const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('vog:video_'));
+// The properties of a mapping node that hold the source of a video property, such as sdm:video_tag.
+const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('sdm:video_'));
 
 describe('Open Graph mapping screen', () => {
     before(() => {
@@ -141,8 +141,8 @@ describe('Open Graph mapping screen', () => {
                 .should('contain.text', 'video.movie')
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION, VIDEO_TAG]));
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).to.include('vogmix:videoMovie');
-                expect(stored.properties).to.include('vog:video_tag');
+                expect(stored.mixins).to.include('sdmmix:videoMovie');
+                expect(stored.properties).to.include('sdm:video_tag');
             });
 
             mappingRow(NEWS_TYPE).find(EDIT).click();
@@ -155,7 +155,7 @@ describe('Open Graph mapping screen', () => {
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION]))
                 .and('not.contain.text', VIDEO_TAG.ogProperty);
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).not.to.include('vogmix:videoMovie');
+                expect(stored.mixins).not.to.include('sdmmix:videoMovie');
                 expect(videoProperties(stored)).to.be.empty;
             });
             getMappings({user: SITE_ADMIN}).then(result => {
