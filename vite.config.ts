@@ -21,6 +21,8 @@ export default defineConfig({
         "@jahia/ui-extender": { singleton: true, version: "0.0.0" },
         i18next: { singleton: true, version: "0.0.0" },
         "react-i18next": { singleton: true, version: "0.0.0" },
+        // A private Moonstone loads its global CSS after the CSS of jContent, and breaks the Content Editor layout.
+        "@jahia/moonstone": { singleton: true, version: "0.0.0" },
       },
     }),
   ],

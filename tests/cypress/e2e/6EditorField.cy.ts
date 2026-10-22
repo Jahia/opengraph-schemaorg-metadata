@@ -135,6 +135,14 @@ describe('Open Graph values in the Content Editor', () => {
             cy.get(SAVE_HINT).should('not.exist');
         });
 
+        it('keeps the inactive tab of the full-screen editor hidden once the Open Graph values are shown', () => {
+            uuidOf(NEWS_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, TITLE_FIELD));
+            openSection();
+            previewValue('og:title').should('have.text', TITLE);
+            // A CSS module class of jContent hides the inactive tab, and its name ends with a hash.
+            cy.get('[class*="EditPanel__hideTab"]').should('have.css', 'display', 'none');
+        });
+
         it('hides the fieldsets on a page with no mapping, and shows them once jnt:page has a mapping', () => {
             uuidOf(PAGE_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, PAGE_TITLE_FIELD));
             fieldSetsShouldNotExist();

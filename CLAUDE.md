@@ -36,7 +36,7 @@ The provisioning manifests install `news` 3.4.0, because the specs use its conte
 
 ## Rules
 
-- Use Moonstone components only in the UI, and do not style a raw `div` or `span`. Moonstone is a devDependency, and Vite bundles it privately.
+- Use Moonstone components only in the UI, and do not style a raw `div` or `span`. Moonstone is a devDependency, and `vite.config.ts` shares it with jContent, so the module loads no global Moonstone CSS of its own.
 - Do not use Spring. Write each Java service as an OSGi Declarative Services component, and get its dependencies through `@Reference`.
 - Write few unit tests, because Cypress carries the coverage. A unit test covers a pure value conversion only.
 - A GraphQL resolver checks the permission `veryOpenGraphManage` on the site node, `/sites/<siteKey>`, before it reads or writes a mapping.
