@@ -282,8 +282,9 @@ public class OpenGraphService {
     }
 
     /**
-     * A mixin is mappable when its {@code extends=} names a page or a main resource, such as {@code jahootmix:session}
-     * with {@code extends = jnt:page}. The mixins of the module are not mappable.
+     * A mixin is mappable when it inherits {@code jmix:mainResource}, or when its {@code extends=} names a page or a
+     * main resource, such as {@code jahootmix:session} with {@code extends = jnt:page}. The mixins of the module are
+     * not mappable.
      *
      * @return true for {@code jnt:page}, a type that inherits {@code jmix:mainResource}, or a mappable mixin
      */
@@ -291,8 +292,8 @@ public class OpenGraphService {
         if (!type.isMixin()) {
             return isPageOrMainResource(type);
         }
-        return !MODULE_ID.equals(type.getSystemId())
-                && type.getMixinExtends().stream().anyMatch(OpenGraphService::isPageOrMainResource);
+        return !MODULE_ID.equals(type.getSystemId()) && (type.isNodeType(MAIN_RESOURCE_TYPE)
+                || type.getMixinExtends().stream().anyMatch(OpenGraphService::isPageOrMainResource));
     }
 
     private static boolean isPageOrMainResource(ExtendedNodeType type) {
@@ -328,8 +329,12 @@ public class OpenGraphService {
         Map<String, Object> context = new HashMap<>();
         context.put("contextType", type);
         context.put("contextParent", site);
+        // The option names the kind of template, such as templatesNode=pageTemplate, and the default depends on the type.
+        Map<String, String> options = definition.getSelectorOptions();
+        String param = options == null ? null : options.get(TEMPLATES_INITIALIZER);
         Map<String, String> templates = new LinkedHashMap<>();
-        for (ChoiceListValue value : initializer.getChoiceListValues(definition, "", new ArrayList<>(), locale, context)) {
+        for (ChoiceListValue value : initializer.getChoiceListValues(definition, param == null ? "" : param,
+                new ArrayList<>(), locale, context)) {
             String name = stringValue(value);
             // A heading of the list has an empty value, and a page model has the path of its page.
             if (name != null && !name.isEmpty() && !name.startsWith("/")) {
