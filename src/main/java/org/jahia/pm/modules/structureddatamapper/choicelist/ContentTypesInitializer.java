@@ -22,8 +22,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Lists the content types that a new mapping can use: the mappable types of the site that have no mapping yet.
- * The form of an existing mapping lists its own content type only, so the content type of a mapping never changes.
+ * Lists the content types and the mixins that a new mapping can use: the mappable types of the site that have no
+ * mapping of every template yet. A new template mapping lists the content types that have templates, because each
+ * of them can have one template mapping per template. The form of an existing mapping lists its own content type
+ * only, so the content type of a mapping never changes.
  */
 @Component(service = ModuleChoiceListInitializer.class)
 public class ContentTypesInitializer implements ModuleChoiceListInitializer {
@@ -45,10 +47,12 @@ public class ContentTypesInitializer implements ModuleChoiceListInitializer {
             if (site == null) {
                 return Collections.emptyList();
             }
-            Set<String> mapped = openGraphService.getMappings(site).stream().map(TypeMapping::getNodeType).collect(Collectors.toSet());
+            boolean templateForm = ChoiceListContext.isTemplateForm(context);
+            Set<String> mapped = openGraphService.getMappings(site).stream().filter(mapping -> mapping.getTemplateName() == null)
+                    .map(TypeMapping::getNodeType).collect(Collectors.toSet());
             List<ChoiceListValue> choices = new ArrayList<>();
             for (ExtendedNodeType type : openGraphService.getMappableTypes(site)) {
-                if (!mapped.contains(type.getName())) {
+                if (templateForm ? OpenGraphService.hasTemplates(type) : !mapped.contains(type.getName())) {
                     choices.add(new ChoiceListValue(ChoiceListContext.label(type.getLabel(locale), type.getName()), type.getName()));
                 }
             }

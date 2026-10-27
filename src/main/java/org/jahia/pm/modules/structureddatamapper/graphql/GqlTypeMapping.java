@@ -6,12 +6,15 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.annotations.annotationTypes.GraphQLNonNull;
 import org.jahia.pm.modules.structureddatamapper.PropertyMapping;
 import org.jahia.pm.modules.structureddatamapper.TypeMapping;
+import org.jahia.services.content.nodetypes.NodeTypeRegistry;
+import org.jahia.utils.LanguageCodeConverters;
 
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @GraphQLName("OpenGraphTypeMapping")
-@GraphQLDescription("The mapping of a content type to an og:type")
+@GraphQLDescription("The mapping of a content type or of a mixin to an og:type")
 public class GqlTypeMapping {
 
     private final TypeMapping mapping;
@@ -31,9 +34,29 @@ public class GqlTypeMapping {
     @GraphQLField
     @GraphQLName("nodeType")
     @GraphQLNonNull
-    @GraphQLDescription("The content type, such as jnt:news")
+    @GraphQLDescription("The content type or the mixin, such as jnt:news")
     public String getNodeType() {
         return mapping.getNodeType();
+    }
+
+    @GraphQLField
+    @GraphQLName("nodeTypeDisplayName")
+    @GraphQLDescription("The label of the content type or of the mixin, or null when no module defines it any longer")
+    public String getNodeTypeDisplayName(
+            @GraphQLName("language") @GraphQLNonNull @GraphQLDescription("The language of the label") String language) {
+        try {
+            return NodeTypeRegistry.getInstance().getNodeType(mapping.getNodeType())
+                    .getLabel(LanguageCodeConverters.languageCodeToLocale(language));
+        } catch (NoSuchNodeTypeException e) {
+            return null;
+        }
+    }
+
+    @GraphQLField
+    @GraphQLName("templateName")
+    @GraphQLDescription("The template of a template mapping, such as home, or null when the mapping applies to every template")
+    public String getTemplateName() {
+        return mapping.getTemplateName();
     }
 
     @GraphQLField

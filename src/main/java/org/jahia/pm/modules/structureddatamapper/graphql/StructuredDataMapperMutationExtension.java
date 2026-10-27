@@ -42,19 +42,21 @@ public class StructuredDataMapperMutationExtension {
     @GraphQLField
     @GraphQLName("saveOpenGraphMapping")
     @GraphQLNonNull
-    @GraphQLDescription("Creates the Open Graph mapping of a content type on this site node, or replaces all its values. "
-            + "Requires the permission 'structuredDataMapperManage' on the site")
+    @GraphQLDescription("Creates the Open Graph mapping of a content type or of a mixin on this site node, or replaces all "
+            + "its values. Requires the permission 'structuredDataMapperManage' on the site")
     public boolean saveOpenGraphMapping(
-            @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type, such as jnt:news") String nodeType,
+            @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type or the mixin, such as jnt:news") String nodeType,
             @GraphQLName("ogType") @GraphQLNonNull @GraphQLDescription("The og:type, such as article") String ogType,
             @GraphQLName("properties") @GraphQLNonNull @GraphQLDescription("The Open Graph properties and their source property")
-                    List<GqlPropertyMappingInput> properties) {
+                    List<GqlPropertyMappingInput> properties,
+            @GraphQLName("templateName") @GraphQLDescription("The template of a template mapping, such as home. A template "
+                    + "mapping applies only to the contents of the type that use the template") String templateName) {
         JCRSiteNode site = Resolvers.managedSite(mutation.jcrNode);
         List<PropertyMapping> mappings = properties.stream()
                 .map(property -> new PropertyMapping(property.getOgProperty(), property.getSourceProperty()))
                 .collect(Collectors.toList());
         try {
-            Resolvers.service().saveMapping(site, nodeType, ogType, mappings);
+            Resolvers.service().saveMapping(site, nodeType, templateName, ogType, mappings);
         } catch (InvalidMappingException e) {
             throw new GqlJcrWrongInputException(e.getMessage(), e);
         } catch (RepositoryException e) {
@@ -66,13 +68,15 @@ public class StructuredDataMapperMutationExtension {
     @GraphQLField
     @GraphQLName("deleteOpenGraphMapping")
     @GraphQLNonNull
-    @GraphQLDescription("Deletes the Open Graph mapping of a content type on this site node. Does nothing when no mapping "
-            + "exists. Requires the permission 'structuredDataMapperManage' on the site")
+    @GraphQLDescription("Deletes the Open Graph mapping of a content type or of a mixin on this site node. Does nothing when "
+            + "no mapping exists. Requires the permission 'structuredDataMapperManage' on the site")
     public boolean deleteOpenGraphMapping(
-            @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type, such as jnt:news") String nodeType) {
+            @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type or the mixin, such as jnt:news") String nodeType,
+            @GraphQLName("templateName") @GraphQLDescription("The template of a template mapping. Without it, the mutation "
+                    + "deletes the mapping of every template") String templateName) {
         JCRSiteNode site = Resolvers.managedSite(mutation.jcrNode);
         try {
-            Resolvers.service().deleteMapping(site, nodeType);
+            Resolvers.service().deleteMapping(site, nodeType, templateName);
         } catch (RepositoryException e) {
             throw new DataFetchingException(e);
         }

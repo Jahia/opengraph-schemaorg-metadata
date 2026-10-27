@@ -5,8 +5,11 @@
     "title": "Open Graph",
     "empty": "No mapping yet.",
     "addMapping": "Add a mapping",
+    "addTemplateMapping": "Add a template mapping",
     "list": {
-      "contentType": "Content type",
+      "contentType": "Content type or mixin",
+      "template": "Template",
+      "anyTemplate": "Any",
       "ogType": "og:type",
       "properties": "Open Graph properties",
       "actions": "Actions",

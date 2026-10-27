@@ -17,6 +17,9 @@ import org.jahia.services.content.nodetypes.ExtendedNodeType;
 import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 import org.jahia.services.content.nodetypes.NodeTypeRegistry;
 import org.jahia.services.content.nodetypes.SelectorType;
+import org.jahia.services.content.nodetypes.initializers.ChoiceListInitializer;
+import org.jahia.services.content.nodetypes.initializers.ChoiceListInitializerService;
+import org.jahia.services.content.nodetypes.initializers.ChoiceListValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osgi.service.component.annotations.Component;
@@ -56,9 +59,11 @@ public class OpenGraphService {
     public static final String MANAGE_PERMISSION = "structuredDataMapperManage";
     public static final String SETTINGS_NODE_NAME = "structured-data-mapper";
     public static final String NODE_TYPE_PROPERTY = "sdm:nodeType";
+    public static final String TEMPLATE_PROPERTY = "sdm:templateName";
 
     private static final String SETTINGS_TYPE = "sdmnt:settings";
     private static final String TYPE_MAPPING_TYPE = "sdmnt:typeMapping";
+    private static final String TEMPLATE_MAPPING_TYPE = "sdmnt:templateMapping";
     private static final String OG_TYPE_PROPERTY = "sdm:ogType";
     private static final String STORAGE_PREFIX = "sdm:";
 
@@ -83,6 +88,10 @@ public class OpenGraphService {
 
     private static final String PAGE_TYPE = "jnt:page";
     private static final String MAIN_RESOURCE_TYPE = "jmix:mainResource";
+    private static final String HAS_TEMPLATE_MIXIN = "jmix:hasTemplateNode";
+    private static final String TEMPLATE_NAME_PROPERTY = "j:templateName";
+    private static final String TEMPLATES_INITIALIZER = "templatesNode";
+    private static final String MODULE_ID = "structured-data-mapper";
     private static final String FILE_TYPE = "jnt:file";
     private static final String IMAGE_MIXIN = "jmix:image";
     private static final String TITLE_PROPERTY = "jcr:title";
@@ -140,7 +149,7 @@ public class OpenGraphService {
                         }
                     }
                     mappings.add(new TypeMapping(typeNode.getIdentifier(), typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
-                            ogType, properties));
+                            templateName(typeNode), ogType, properties));
                 }
                 return Collections.unmodifiableList(mappings);
             });
@@ -150,13 +159,28 @@ public class OpenGraphService {
     }
 
     /**
-     * Creates the mapping of a content type, or replaces all its values.
-     *
-     * @throws InvalidMappingException when the site cannot use the content type, the og:type or a property
+     * @return the template of a template mapping, or null for a mapping of every template
      */
-    public void saveMapping(JCRSiteNode site, String nodeType, String ogType, List<PropertyMapping> properties)
-            throws InvalidMappingException, RepositoryException {
+    private static String templateName(JCRNodeWrapper typeNode) {
+        String templateName = typeNode.getPropertyAsString(TEMPLATE_PROPERTY);
+        return templateName == null || templateName.isEmpty() ? null : templateName;
+    }
+
+    /**
+     * Creates the mapping of a content type or of a mixin, or replaces all its values. A template creates or replaces
+     * the template mapping of the content type for that template.
+     *
+     * @param templateName the template, or null or empty for a mapping of every template
+     * @throws InvalidMappingException when the site cannot use the content type, the template, the og:type or a property
+     */
+    public void saveMapping(JCRSiteNode site, String nodeType, String templateName, String ogType,
+                            List<PropertyMapping> properties) throws InvalidMappingException, RepositoryException {
         ExtendedNodeType type = mappableType(site, nodeType);
+        String template = templateName == null || templateName.isEmpty() ? null : templateName;
+        if (template != null && !getTemplates(site, nodeType, Locale.ENGLISH).containsKey(template)) {
+            throw new InvalidMappingException("The site '" + site.getSiteKey() + "' has no template '" + template
+                    + "' for the content type '" + nodeType + "'");
+        }
         OgType og = OgType.fromValue(ogType).orElseThrow(() -> new InvalidMappingException(
                 "Unknown og:type '" + ogType + "'. Use one of "
                         + Arrays.stream(OgType.values()).map(OgType::getValue).collect(Collectors.joining(", ", "[", "]"))));
@@ -168,7 +192,7 @@ public class OpenGraphService {
 
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
-                    JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType);
+                    JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType, template);
                     // Two og:types that share a property name share its storage, so the second removal finds nothing.
                     for (OgType anyOgType : OgType.values()) {
                         for (OgProperty property : anyOgType.getProperties()) {
@@ -188,6 +212,9 @@ public class OpenGraphService {
                         mapping.addMixin(mixin);
                     }
                     mapping.setProperty(NODE_TYPE_PROPERTY, nodeType);
+                    if (template != null) {
+                        mapping.setProperty(TEMPLATE_PROPERTY, template);
+                    }
                     mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
                     for (PropertyMapping property : properties) {
                         mapping.setProperty(storageName(property.getOgProperty()), property.getSourceProperty());
@@ -199,9 +226,12 @@ public class OpenGraphService {
     }
 
     /**
-     * Deletes the mapping of a content type. Does nothing when the site has no mapping for it.
+     * Deletes the mapping of a content type or of a mixin. Does nothing when the site has no mapping for it.
+     *
+     * @param templateName the template of a template mapping, or null or empty for the mapping of every template
      */
-    public void deleteMapping(JCRSiteNode site, String nodeType) throws RepositoryException {
+    public void deleteMapping(JCRSiteNode site, String nodeType, String templateName) throws RepositoryException {
+        String template = templateName == null || templateName.isEmpty() ? null : templateName;
         String settingsPath = site.getPath() + "/" + SETTINGS_NODE_NAME;
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
@@ -210,7 +240,8 @@ public class OpenGraphService {
                     }
                     // Match on the stored value: the argument is free text and never becomes a path.
                     for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(session.getNode(settingsPath), TYPE_MAPPING_TYPE)) {
-                        if (nodeType.equals(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY))) {
+                        if (nodeType.equals(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY))
+                                && Objects.equals(template, templateName(typeNode))) {
                             typeNode.remove();
                             session.save();
                         }
@@ -236,19 +267,84 @@ public class OpenGraphService {
     }
 
     /**
-     * @return the content types that the site can map: {@code jnt:page} and the types that inherit
-     * {@code jmix:mainResource}, from the modules of the site
+     * @return the content types and the mixins that the site can map, from the modules of the site: {@code jnt:page},
+     * the types that inherit {@code jmix:mainResource}, and the mixins that extend one of them
      */
     public List<ExtendedNodeType> getMappableTypes(JCRSiteNode site) {
         Set<String> siteModules = site.getInstalledModulesWithAllDependencies();
         List<ExtendedNodeType> types = new ArrayList<>();
         for (ExtendedNodeType type : NodeTypeRegistry.getInstance().getAllNodeTypes()) {
-            if (!type.isMixin() && !type.isAbstract() && (type.isNodeType(PAGE_TYPE) || type.isNodeType(MAIN_RESOURCE_TYPE))
-                    && isActiveOnSite(siteModules, type)) {
+            if (!type.isAbstract() && isMappable(type) && isActiveOnSite(siteModules, type)) {
                 types.add(type);
             }
         }
         return types;
+    }
+
+    /**
+     * A mixin is mappable when its {@code extends=} names a page or a main resource, such as {@code jahootmix:session}
+     * with {@code extends = jnt:page}. The mixins of the module are not mappable.
+     *
+     * @return true for {@code jnt:page}, a type that inherits {@code jmix:mainResource}, or a mappable mixin
+     */
+    private static boolean isMappable(ExtendedNodeType type) {
+        if (!type.isMixin()) {
+            return isPageOrMainResource(type);
+        }
+        return !MODULE_ID.equals(type.getSystemId())
+                && type.getMixinExtends().stream().anyMatch(OpenGraphService::isPageOrMainResource);
+    }
+
+    private static boolean isPageOrMainResource(ExtendedNodeType type) {
+        return type.isNodeType(PAGE_TYPE) || type.isNodeType(MAIN_RESOURCE_TYPE);
+    }
+
+    /**
+     * @return true when a template mapping can use the type: a content type, not a mixin, with {@code j:templateName}
+     */
+    public static boolean hasTemplates(ExtendedNodeType type) {
+        return !type.isMixin() && type.isNodeType(HAS_TEMPLATE_MIXIN);
+    }
+
+    /**
+     * Lists the templates that a template mapping of the content type can use. The list comes from the choice list of
+     * {@code j:templateName}, so it holds the templates of the template set and of the modules of the site.
+     *
+     * @return the display name of each template, by name, in the order of the choice list
+     * @throws InvalidMappingException when the site cannot map the content type, or when the type has no template
+     */
+    public Map<String, String> getTemplates(JCRSiteNode site, String nodeType, Locale locale) throws InvalidMappingException {
+        ExtendedNodeType type = mappableType(site, nodeType);
+        if (!hasTemplates(type)) {
+            throw new InvalidMappingException("The content type '" + nodeType + "' has no " + TEMPLATE_NAME_PROPERTY
+                    + ", so a template mapping cannot use it");
+        }
+        ChoiceListInitializer initializer = ChoiceListInitializerService.getInstance().getInitializers().get(TEMPLATES_INITIALIZER);
+        ExtendedPropertyDefinition definition = type.getPropertyDefinitionsAsMap().get(TEMPLATE_NAME_PROPERTY);
+        if (initializer == null || definition == null) {
+            return Collections.emptyMap();
+        }
+        // The context of the creation form of a page: the choice list reads the site of the parent node.
+        Map<String, Object> context = new HashMap<>();
+        context.put("contextType", type);
+        context.put("contextParent", site);
+        Map<String, String> templates = new LinkedHashMap<>();
+        for (ChoiceListValue value : initializer.getChoiceListValues(definition, "", new ArrayList<>(), locale, context)) {
+            String name = stringValue(value);
+            // A heading of the list has an empty value, and a page model has the path of its page.
+            if (name != null && !name.isEmpty() && !name.startsWith("/")) {
+                templates.putIfAbsent(name, value.getDisplayName());
+            }
+        }
+        return templates;
+    }
+
+    private static String stringValue(ChoiceListValue value) {
+        try {
+            return value.getValue() == null ? null : value.getValue().getString();
+        } catch (RepositoryException e) {
+            return null;
+        }
     }
 
     /**
@@ -305,9 +401,10 @@ public class OpenGraphService {
     }
 
     /**
-     * Resolves the Open Graph tags of a content node with the mapping of its type, or of its closest supertype.
-     * A tag that the editor sets in {@code sdm:customTags} replaces the mapped values of its property. A structured
-     * property, such as {@code og:video:width}, has a tag only when its root has one, except {@code og:image:alt}.
+     * Resolves the Open Graph tags of a content node with its mapping, which {@link #findMapping} selects from the
+     * template, the mixins and the type of the node. A tag that the editor sets in {@code sdm:customTags} replaces the
+     * mapped values of its property. A structured property, such as {@code og:video:width}, has a tag only when its
+     * root has one, except {@code og:image:alt}.
      * {@link OgTag#getSourceProperty} states which root has no source property.
      * <p>
      * The {@code og:url} tag and the tags of a file hold a node, and the caller builds the absolute URL. When the
@@ -322,7 +419,7 @@ public class OpenGraphService {
             return Collections.emptyList();
         }
         JCRNodeWrapper localized = inLocale(node, locale);
-        TypeMapping mapping = findMapping(getMappings(site), localized.getPrimaryNodeType());
+        TypeMapping mapping = findMapping(getMappings(site), localized);
         OgType ogType = mapping == null ? null : OgType.fromValue(mapping.getOgType()).orElse(null);
         if (ogType == null) {
             return Collections.emptyList();
@@ -560,9 +657,9 @@ public class OpenGraphService {
         } catch (NoSuchNodeTypeException e) {
             throw new InvalidMappingException("Unknown content type '" + nodeType + "'");
         }
-        if (!type.isNodeType(PAGE_TYPE) && !type.isNodeType(MAIN_RESOURCE_TYPE)) {
+        if (!isMappable(type)) {
             throw new InvalidMappingException("The content type '" + nodeType + "' is not " + PAGE_TYPE
-                    + " and does not inherit " + MAIN_RESOURCE_TYPE);
+                    + ", does not inherit " + MAIN_RESOURCE_TYPE + ", and is not a mixin that extends one of them");
         }
         if (!isActiveOnSite(site.getInstalledModulesWithAllDependencies(), type)) {
             throw new InvalidMappingException("The content type '" + nodeType + "' belongs to the module '"
@@ -576,16 +673,25 @@ public class OpenGraphService {
     }
 
     /**
+     * A mixin also offers the properties of the types that it extends, such as {@code jnt:page} for
+     * {@code jahootmix:session}.
+     *
      * @return the properties that can fill an Open Graph property, by name, the first definition winning
      */
     private static Map<String, ExtendedPropertyDefinition> sourceDefinitions(JCRSiteNode site, ExtendedNodeType type) {
+        List<ExtendedNodeType> mappedTypes = new ArrayList<>();
+        mappedTypes.add(type);
+        if (type.isMixin()) {
+            mappedTypes.addAll(type.getMixinExtends());
+        }
         Map<String, ExtendedPropertyDefinition> definitions = new LinkedHashMap<>();
-        addDefinitions(definitions, type.getPropertyDefinitions());
-
         Set<String> extendedTypes = new HashSet<>();
-        extendedTypes.add(type.getName());
-        for (ExtendedNodeType supertype : type.getSupertypes()) {
-            extendedTypes.add(supertype.getName());
+        for (ExtendedNodeType mappedType : mappedTypes) {
+            addDefinitions(definitions, mappedType.getPropertyDefinitions());
+            extendedTypes.add(mappedType.getName());
+            for (ExtendedNodeType supertype : mappedType.getSupertypes()) {
+                extendedTypes.add(supertype.getName());
+            }
         }
         Set<String> siteModules = site.getInstalledModulesWithAllDependencies();
         Map<String, ExtendedNodeType> mixins = new TreeMap<>();
@@ -655,17 +761,58 @@ public class OpenGraphService {
         }
     }
 
-    private static TypeMapping findMapping(List<TypeMapping> mappings, ExtendedNodeType primaryType) {
+    /**
+     * Selects the mapping of a node. The template mappings for the {@code j:templateName} of the node come first, then
+     * the mappings of every template. In each group, a mixin of the node comes first, in the order of the list, then
+     * the primary type, then the closest supertype.
+     *
+     * @return the mapping, or null when no mapping applies to the node
+     */
+    private static TypeMapping findMapping(List<TypeMapping> mappings, JCRNodeWrapper node) throws RepositoryException {
+        String templateName = node.getPropertyAsString(TEMPLATE_NAME_PROPERTY);
+        List<TypeMapping> ofTemplate = new ArrayList<>();
+        List<TypeMapping> ofEveryTemplate = new ArrayList<>();
+        for (TypeMapping mapping : mappings) {
+            if (mapping.getTemplateName() == null) {
+                ofEveryTemplate.add(mapping);
+            } else if (mapping.getTemplateName().equals(templateName)) {
+                ofTemplate.add(mapping);
+            }
+        }
+        List<String> types = new ArrayList<>();
+        types.add(node.getPrimaryNodeType().getName());
+        for (ExtendedNodeType supertype : node.getPrimaryNodeType().getSupertypes()) {
+            types.add(supertype.getName());
+        }
+        Set<String> mixins = new HashSet<>();
+        for (ExtendedNodeType mixin : node.getMixinNodeTypes()) {
+            mixins.add(mixin.getName());
+            for (ExtendedNodeType supertype : mixin.getSupertypes()) {
+                mixins.add(supertype.getName());
+            }
+        }
+        TypeMapping mapping = findTypeMapping(ofTemplate, types, mixins);
+        return mapping == null ? findTypeMapping(ofEveryTemplate, types, mixins) : mapping;
+    }
+
+    /**
+     * @param types  the primary type of the node, then its supertypes, closest first
+     * @param mixins the mixins of the node, and their supertypes
+     * @return the mapping of a mixin of the node, else of its primary type, else of its closest supertype, or null
+     */
+    private static TypeMapping findTypeMapping(List<TypeMapping> mappings, List<String> types, Set<String> mixins) {
+        for (TypeMapping mapping : mappings) {
+            if (mixins.contains(mapping.getNodeType()) && !types.contains(mapping.getNodeType())) {
+                return mapping;
+            }
+        }
         Map<String, TypeMapping> byType = new HashMap<>();
         for (TypeMapping mapping : mappings) {
-            byType.put(mapping.getNodeType(), mapping);
+            byType.putIfAbsent(mapping.getNodeType(), mapping);
         }
-        if (byType.containsKey(primaryType.getName())) {
-            return byType.get(primaryType.getName());
-        }
-        for (ExtendedNodeType supertype : primaryType.getSupertypes()) {
-            if (byType.containsKey(supertype.getName())) {
-                return byType.get(supertype.getName());
+        for (String type : types) {
+            if (byType.containsKey(type)) {
+                return byType.get(type);
             }
         }
         return null;
@@ -860,17 +1007,21 @@ public class OpenGraphService {
     }
 
     /**
-     * @return the mapping node of the content type, found by its value, because the Content Editor names a new node
-     * after the label of its type
+     * @param templateName the template of a template mapping, or null for the mapping of every template
+     * @return the mapping node of the content type and the template, found by its values, because the Content Editor
+     * names a new node after the label of its type
      */
-    private static JCRNodeWrapper typeNode(JCRSessionWrapper session, String sitePath, String nodeType) throws RepositoryException {
+    private static JCRNodeWrapper typeNode(JCRSessionWrapper session, String sitePath, String nodeType, String templateName)
+            throws RepositoryException {
         JCRNodeWrapper settings = settingsNode(session, sitePath);
         for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(settings, TYPE_MAPPING_TYPE)) {
-            if (nodeType.equals(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY))) {
+            if (nodeType.equals(typeNode.getPropertyAsString(NODE_TYPE_PROPERTY))
+                    && Objects.equals(templateName, templateName(typeNode))) {
                 return typeNode;
             }
         }
-        return settings.addNode(JCRContentUtils.findAvailableNodeName(settings, nodeName(nodeType)), TYPE_MAPPING_TYPE);
+        return settings.addNode(JCRContentUtils.findAvailableNodeName(settings, nodeName(nodeType)),
+                templateName == null ? TYPE_MAPPING_TYPE : TEMPLATE_MAPPING_TYPE);
     }
 
     /**

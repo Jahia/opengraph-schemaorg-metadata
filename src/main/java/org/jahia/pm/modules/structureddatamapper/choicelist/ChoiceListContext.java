@@ -2,6 +2,7 @@ package org.jahia.pm.modules.structureddatamapper.choicelist;
 
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
+import org.jahia.services.content.nodetypes.ExtendedNodeType;
 import org.jahia.services.content.nodetypes.initializers.ChoiceListValue;
 
 import javax.jcr.RepositoryException;
@@ -13,7 +14,7 @@ import java.util.Map;
  * Reads the context that the Content Editor gives to a choicelist initializer.
  * <p>
  * The context holds the parent node in {@code contextParent}, and the edited node in {@code contextNode}, which is
- * null in a creation form. When a field declares {@code dependentProperties}, the context also holds the unsaved
+ * null in a creation form. It holds the node type of the form in {@code contextType}. When a field declares {@code dependentProperties}, the context also holds the unsaved
  * value of each property it depends on, as a list of strings under the name of the property.
  */
 final class ChoiceListContext {
@@ -23,6 +24,8 @@ final class ChoiceListContext {
 
     private static final String PARENT = "contextParent";
     private static final String NODE = "contextNode";
+    private static final String TYPE = "contextType";
+    private static final String TEMPLATE_MAPPING_TYPE = "sdmnt:templateMapping";
 
     private ChoiceListContext() {
     }
@@ -33,6 +36,14 @@ final class ChoiceListContext {
     static JCRSiteNode site(Map<String, Object> context) throws RepositoryException {
         Object parent = context.get(PARENT);
         return parent instanceof JCRNodeWrapper ? ((JCRNodeWrapper) parent).getResolveSite() : null;
+    }
+
+    /**
+     * @return true when the form creates or edits a template mapping
+     */
+    static boolean isTemplateForm(Map<String, Object> context) {
+        Object type = context.get(TYPE);
+        return type instanceof ExtendedNodeType && ((ExtendedNodeType) type).isNodeType(TEMPLATE_MAPPING_TYPE);
     }
 
     /**

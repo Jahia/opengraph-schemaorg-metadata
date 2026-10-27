@@ -20,6 +20,7 @@ import {
 } from "./openGraph.gql.ts";
 
 const MAPPING_TYPE = "sdmnt:typeMapping";
+const TEMPLATE_MAPPING_TYPE = "sdmnt:templateMapping";
 
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
 
@@ -33,7 +34,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
 
   // The queries bypass the Apollo cache, so they never replace the jcr data of jContent.
   const { data, loading, error, refetch } = useQuery<ScreenData, ScreenVariables>(SCREEN_QUERY, {
-    variables: { path: sitePath, siteKey, language },
+    variables: { path: sitePath, language },
     fetchPolicy: "no-cache",
     client,
     skip: siteKey === "",
@@ -48,8 +49,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   });
 
   const mappings = data?.jcr?.nodeByPath?.openGraphMappings ?? [];
-  const contentTypes = data?.jcr?.nodeTypes?.nodes ?? [];
-  const displayNameOf = (nodeType: string) => contentTypes.find(type => type.name === nodeType)?.displayName ?? null;
 
   const refreshAfterSave = (_config: unknown, needRefresh: boolean) => {
     if (needRefresh) {
@@ -58,7 +57,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   };
 
   // The Content Editor creates the mapping under the settings node, so the node must exist first.
-  const openCreateForm = async () => {
+  const openCreateForm = async (nodeType: string) => {
     setActionError(null);
     setIsOpening(true);
     try {
@@ -67,7 +66,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       if (path) {
         globalThis.CE_API?.create({
           path,
-          nodeTypes: [MAPPING_TYPE],
+          nodeTypes: [nodeType],
           includeSubTypes: false,
           isFullscreen: false,
           onClosedCallback: refreshAfterSave,
@@ -85,24 +84,34 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     globalThis.CE_API?.edit({ uuid: mapping.uuid, isFullscreen: false, onClosedCallback: refreshAfterSave });
   };
 
-  const deleteAndRefresh = async (nodeType: string) => {
+  const deleteAndRefresh = async ({ nodeType, templateName }: TypeMapping) => {
     setActionError(null);
     try {
-      await deleteMapping({ variables: { path: sitePath, nodeType } });
+      await deleteMapping({ variables: { path: sitePath, nodeType, templateName } });
       await refetch();
     } catch (failure) {
       setActionError(errorMessage(failure));
     }
   };
 
-  const addButton = (
-      <Button data-sel-role="sdm-add-mapping"
-              color="accent"
-              icon={<Add/>}
-              label={t("openGraph.addMapping")}
-              isDisabled={isOpening || data === undefined}
-              onClick={openCreateForm}
-      />
+  const addButtons = (
+      <>
+          <Button data-sel-role="sdm-add-template-mapping"
+                  variant="outlined"
+                  icon={<Add/>}
+                  label={t("openGraph.addTemplateMapping")}
+                  isDisabled={isOpening || data === undefined}
+                  onClick={() => openCreateForm(TEMPLATE_MAPPING_TYPE)}
+          />
+          {" "}
+          <Button data-sel-role="sdm-add-mapping"
+                  color="accent"
+                  icon={<Add/>}
+                  label={t("openGraph.addMapping")}
+                  isDisabled={isOpening || data === undefined}
+                  onClick={() => openCreateForm(MAPPING_TYPE)}
+          />
+      </>
   );
 
   let errorText: ReactNode = null;
@@ -115,7 +124,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   if (mappings.length > 0) {
     list = (
         <MappingTable mappings={mappings}
-                      displayNameOf={displayNameOf}
                       onEdit={openEditForm}
                       onDelete={deleteAndRefresh}
         />
@@ -132,7 +140,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       <LayoutContent hasPadding
                      data-sel-role="structured-data-mapper"
                      isLoading={loading && data === undefined}
-                     header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
+                     header={<Header title={t("openGraph.title")} mainActions={addButtons}/>}
       >
           {errorText}
           {list}

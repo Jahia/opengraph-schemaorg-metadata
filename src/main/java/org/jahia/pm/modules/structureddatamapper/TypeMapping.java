@@ -4,18 +4,21 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Maps a content type of a site to an og:type, and some of its properties to Open Graph properties.
+ * Maps a content type or a mixin of a site to an og:type, and some of its properties to Open Graph properties. A
+ * template mapping also names a template, and applies only to the contents that use it.
  */
 public final class TypeMapping {
 
     private final String uuid;
     private final String nodeType;
+    private final String templateName;
     private final String ogType;
     private final List<PropertyMapping> properties;
 
-    public TypeMapping(String uuid, String nodeType, String ogType, List<PropertyMapping> properties) {
+    public TypeMapping(String uuid, String nodeType, String templateName, String ogType, List<PropertyMapping> properties) {
         this.uuid = uuid;
         this.nodeType = nodeType;
+        this.templateName = templateName;
         this.ogType = ogType;
         this.properties = Collections.unmodifiableList(properties);
     }
@@ -28,10 +31,17 @@ public final class TypeMapping {
     }
 
     /**
-     * @return the content type, such as {@code jnt:news}
+     * @return the content type or the mixin, such as {@code jnt:news}
      */
     public String getNodeType() {
         return nodeType;
+    }
+
+    /**
+     * @return the template, such as {@code event}, or null when the mapping applies to every template
+     */
+    public String getTemplateName() {
+        return templateName;
     }
 
     /**

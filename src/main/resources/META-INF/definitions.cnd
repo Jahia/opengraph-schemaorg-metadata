@@ -26,6 +26,10 @@
  - sdm:og_video_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:ogType (string, choicelist[sdmOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
 
+// A template mapping applies to the contents of its type whose j:templateName holds sdm:templateName.
+[sdmnt:templateMapping] > sdmnt:typeMapping
+ - sdm:templateName (string, choicelist[sdmTemplates,dependentProperties='sdm:nodeType']) mandatory
+
 // The value of sdm:ogType adds the mixin of its own Open Graph properties.
 [sdmmix:article] > jmix:dynamicFieldset mixin
  extends = sdmnt:typeMapping

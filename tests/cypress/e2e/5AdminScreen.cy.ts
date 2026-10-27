@@ -9,6 +9,7 @@ import {
 } from '../support/openGraphApi';
 import {
     ADD_MAPPING,
+    ADD_TEMPLATE_MAPPING,
     cancelAndDiscard,
     choose,
     chooseSources,
@@ -29,11 +30,15 @@ import {
     save,
     shouldOfferOnly,
     sourceField,
-    sourceFieldIn
+    sourceFieldIn,
+    TEMPLATE_FIELD
 } from '../support/mappingScreen';
 import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/structuredDataMapper';
 
 const NEWS_TYPE = 'jnt:news';
+const PAGE_TYPE = 'jnt:page';
+const PAGE_MIXIN = 'jmix:canBeUseAsTemplateModel';
+const TEMPLATE = 'home';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
@@ -47,10 +52,12 @@ const videoProperties = (stored: StoredMapping) => stored.properties.filter(name
 describe('Open Graph mapping screen', () => {
     before(() => {
         deleteMapping(NEWS_TYPE);
+        deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});
     });
 
     after(() => {
         deleteMapping(NEWS_TYPE);
+        deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});
     });
 
     afterEach(() => {
@@ -179,6 +186,44 @@ describe('Open Graph mapping screen', () => {
             mappingRow(NEWS_TYPE).find(CONFIRM_DELETE).click();
             cy.get(EMPTY, {timeout: LOAD_TIMEOUT}).should('contain.text', 'No mapping yet.');
             mappingRow(NEWS_TYPE).should('not.exist');
+        });
+
+        it('offers a mixin that extends jnt:page to a new mapping', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            openDropdown(NODE_TYPE_FIELD);
+            cy.get(menuItem(PAGE_MIXIN)).should('exist');
+            cy.get(menuItem('sdmmix:customTags')).should('not.exist');
+        });
+
+        it('creates a template mapping of jnt:page for the template home in the Content Editor', () => {
+            cy.get(ADD_TEMPLATE_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            openDropdown(NODE_TYPE_FIELD);
+            cy.get(menuItem(NEWS_TYPE)).should('not.exist');
+            cy.get(menuItem(PAGE_MIXIN)).should('not.exist');
+            cy.get(menuItem(PAGE_TYPE)).click();
+            choose(TEMPLATE_FIELD, TEMPLATE);
+            chooseSources([TITLE]);
+            choose(OG_TYPE_FIELD, 'website');
+            create();
+            mappingRow(PAGE_TYPE, TEMPLATE)
+                .should('contain.text', TEMPLATE)
+                .and('contain.text', 'website')
+                .and('contain.text', propertiesText([TITLE]));
+        });
+
+        it('still offers jnt:page to a mapping of every template', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            openDropdown(NODE_TYPE_FIELD);
+            cy.get(menuItem(PAGE_TYPE)).should('exist');
+        });
+
+        it('deletes the template mapping', () => {
+            mappingRow(PAGE_TYPE, TEMPLATE).find(DELETE).click();
+            mappingRow(PAGE_TYPE, TEMPLATE).find(CONFIRM_DELETE).click();
+            cy.get(EMPTY, {timeout: LOAD_TIMEOUT}).should('contain.text', 'No mapping yet.');
         });
     });
 

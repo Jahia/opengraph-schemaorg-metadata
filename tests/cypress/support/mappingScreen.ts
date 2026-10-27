@@ -8,6 +8,7 @@ const role = (name: string) => `[data-sel-role="${name}"]`;
 
 export const EMPTY = role('structured-data-mapper-empty');
 export const ADD_MAPPING = role('sdm-add-mapping');
+export const ADD_TEMPLATE_MAPPING = role('sdm-add-template-mapping');
 export const EDIT = role('sdm-edit');
 export const DELETE = role('sdm-delete');
 export const CONFIRM_DELETE = role('sdm-confirm-delete');
@@ -21,6 +22,7 @@ const DISCARD = role('close-dialog-discard');
 const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-field="${name}"]`;
 
 export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
+export const TEMPLATE_FIELD = field('sdmnt:templateMapping_sdm:templateName');
 export const OG_TYPE_FIELD = field('sdmTypeMetadata_sdm:ogType');
 
 // The Content Editor names a field after its fieldset and its property, such as sdmBasicMetadata_sdm:og_title, and
@@ -41,8 +43,11 @@ export const openScreen = (user: TestUser) => {
     cy.get(ADD_MAPPING, {timeout: LOAD_TIMEOUT}).should('not.be.disabled');
 };
 
-export const mappingRow = (nodeType: string) =>
-    cy.get(`${role('sdm-mapping-row')}[data-sel-node-type="${nodeType}"]`, {timeout: LOAD_TIMEOUT});
+// The row of the mapping of every template, or of the template mapping of templateName.
+export const mappingRow = (nodeType: string, templateName = '') =>
+    cy.get(`${role('sdm-mapping-row')}[data-sel-node-type="${nodeType}"][data-sel-template="${templateName}"]`, {
+        timeout: LOAD_TIMEOUT
+    });
 
 export const propertiesText = (properties: PropertyMapping[]) =>
     properties.map(property => `${property.ogProperty} ← ${property.sourceProperty}`).join(', ');

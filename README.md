@@ -1,6 +1,8 @@
 # Structured Data Mapper
 
-Structured Data Mapper is a Jahia module that maps content types to Open Graph types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page` and for the types that inherit `jmix:mainResource`.
+Structured Data Mapper is a Jahia module that maps content types to Open Graph types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page`, for the types that inherit `jmix:mainResource`, and for the mixins that extend one of them with `extends=`. A template mapping applies only to the contents of its type that use its template, such as the pages with the template `event`.
+
+One mapping applies to a content: a template mapping for the template of the content first, then the mapping of a mixin of the content, then the mapping of its type or of its closest supertype.
 
 ## Tracks
 
