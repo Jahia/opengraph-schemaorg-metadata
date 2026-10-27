@@ -36,7 +36,7 @@ export default function registerStructuredDataMapper() {
       i18n.loadNamespaces(NAMESPACE);
 
       registry.add("adminRoute", "structuredDataMapper", {
-        targets: ["jcontent:60"],
+        targets: ["jcontent-siteSettingsSeo:90"],
         icon: <Share/>,
         label: "structured-data-mapper:openGraph.nav",
         isSelectable: true,
