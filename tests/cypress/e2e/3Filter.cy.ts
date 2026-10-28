@@ -7,7 +7,8 @@ import {
     livePathsOf,
     metaContents,
     ogProperties,
-    publish
+    publish,
+    twitterCards
 } from '../support/livePage';
 import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
 
@@ -93,6 +94,7 @@ describe('Open Graph tags in the head of live pages', () => {
         getLivePage(PAGE_PATH).then(page => {
             expect(page.doc.title).to.equal('Filter page');
             expect(ogProperties(page)).to.be.empty;
+            expect(page.html).not.to.include('twitter:card');
         });
     });
 
@@ -106,6 +108,8 @@ describe('Open Graph tags in the head of live pages', () => {
             expect(single(page, 'og:locale')).to.equal('en');
             expectLiveUrl(single(page, 'og:url'), ['/sites/sdmSite/home/sdm-filter-page.html']);
             expect(page.html.indexOf('property="og:title"')).to.be.lessThan(page.html.search(/<\/head>/i));
+            expect(metaContents(page, 'og:image'), 'the page has no image').to.be.empty;
+            expect(twitterCards(page)).to.deep.equal(['summary']);
         });
     });
 
@@ -119,12 +123,16 @@ describe('Open Graph tags in the head of live pages', () => {
             expect(single(page, 'og:image:type')).to.equal('image/png');
             livePathsOf(NEWS_PATH).then(livePaths => expectLiveUrl(single(page, 'og:url'), livePaths));
             expectLiveUrl(single(page, 'og:image'), [`/files/live${IMAGE_PATH}`]);
+            expect(twitterCards(page)).to.deep.equal(['summary_large_image']);
         });
     });
 
     it('stops writing the tags of a type as soon as its mapping is deleted', () => {
         deleteMapping('jnt:page').then(expectNoError);
-        getLivePage(PAGE_PATH).then(page => expect(ogProperties(page)).to.be.empty);
+        getLivePage(PAGE_PATH).then(page => {
+            expect(ogProperties(page)).to.be.empty;
+            expect(page.html).not.to.include('twitter:card');
+        });
         getLivePage(NEWS_PATH).then(page => expect(single(page, 'og:type')).to.equal('article'));
     });
 });

@@ -22,4 +22,10 @@ class HeadWriterTest {
         assertEquals("<meta property=\"og:title\" content=\"Tom &#34;Jerry&#34; &lt;script>alert(1)&lt;/script> &amp; co\"/>\n",
                 HeadWriter.meta("og:title", "Tom \"Jerry\" <script>alert(1)</script> & co"));
     }
+
+    @Test
+    void metaWritesATwitterTagWithTheAttributeName() {
+        assertEquals("<meta name=\"twitter:card\" content=\"summary_large_image\"/>\n",
+                HeadWriter.meta("twitter:card", "summary_large_image"));
+    }
 }

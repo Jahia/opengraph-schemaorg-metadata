@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 final class HeadWriter {
 
     private static final Pattern HEAD_END = Pattern.compile("</head\\s*>", Pattern.CASE_INSENSITIVE);
+    private static final String TWITTER_PREFIX = "twitter:";
 
     private HeadWriter() {
     }
@@ -24,10 +25,13 @@ final class HeadWriter {
     }
 
     /**
+     * X documents its {@code twitter:*} tags with the attribute {@code name}, and Open Graph uses {@code property}.
+     *
      * @return one meta tag on its own line, with both attribute values encoded for a double-quoted attribute
      */
     static String meta(String property, String content) {
-        return "<meta property=\"" + Encode.forHtmlAttribute(property) + "\" content=\""
+        String attribute = property.startsWith(TWITTER_PREFIX) ? "name" : "property";
+        return "<meta " + attribute + "=\"" + Encode.forHtmlAttribute(property) + "\" content=\""
                 + Encode.forHtmlAttribute(content) + "\"/>\n";
     }
 }

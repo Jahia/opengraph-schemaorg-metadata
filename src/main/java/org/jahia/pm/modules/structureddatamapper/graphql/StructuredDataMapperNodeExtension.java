@@ -59,7 +59,8 @@ public class StructuredDataMapperNodeExtension {
 
     @GraphQLField
     @GraphQLName("openGraphTags")
-    @GraphQLDescription("The Open Graph tags of this content node, from the mapping of its type. Empty when no mapping applies")
+    @GraphQLDescription("The Open Graph tags of this content node, from the mapping of its type, and its twitter:card "
+            + "tag. Empty when no mapping applies")
     public List<GqlOgTag> getOpenGraphTags(
             @GraphQLName("language") @GraphQLNonNull @GraphQLDescription("The language of the values") String language) {
         try {

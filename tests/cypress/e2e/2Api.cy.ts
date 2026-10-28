@@ -250,6 +250,12 @@ describe('Open Graph mapping API', () => {
             expect(contentsOf(tags, 'og:locale')).to.deep.equal(['en']);
             expect(contentsOf(tags, 'og:site_name')).to.have.length(1);
             expect(contentsOf(tags, 'og:image'), 'the news item has no image').to.be.empty;
+            expect(tags[tags.length - 1]).to.deep.equal({
+                property: 'twitter:card',
+                content: 'summary',
+                nodePath: null,
+                sourceProperty: null
+            });
         });
     });
 

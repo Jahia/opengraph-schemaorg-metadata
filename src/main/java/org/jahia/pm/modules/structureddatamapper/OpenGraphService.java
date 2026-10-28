@@ -100,6 +100,7 @@ public class OpenGraphService {
     private static final String TITLE_PROPERTY = "jcr:title";
     private static final String CUSTOM_TAGS_PROPERTY = "sdm:customTags";
     private static final String SYSTEM_MODULE = "system-jahia";
+    private static final String TWITTER_CARD = "twitter:card";
     private static final Set<String> FILE_PICKER_TYPES = new HashSet<>(Arrays.asList("image", "file"));
 
     /**
@@ -439,6 +440,9 @@ public class OpenGraphService {
      * The {@code og:url} tag and the tags of a file hold a node, and the caller builds the absolute URL. When the
      * session of the node has another locale, the method reads the node again with the current user, in the
      * same workspace.
+     * <p>
+     * The last tag is {@code twitter:card}, because X has no Open Graph fallback for it: {@code summary_large_image}
+     * when the tags include {@code og:image}, else {@code summary}.
      *
      * @return the tags, or an empty list when no mapping applies to the node
      */
@@ -468,6 +472,8 @@ public class OpenGraphService {
                 tags.add(OgTag.text("og:locale:alternate", OgValues.ogLocale(alternate)));
             }
         }
+        boolean hasImage = tags.stream().anyMatch(tag -> OgType.OG_IMAGE.equals(tag.getProperty()));
+        tags.add(OgTag.text(TWITTER_CARD, hasImage ? "summary_large_image" : "summary"));
         return tags;
     }
 

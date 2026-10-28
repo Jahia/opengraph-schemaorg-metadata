@@ -19,7 +19,7 @@ public class GqlOgTag {
     @GraphQLField
     @GraphQLName("property")
     @GraphQLNonNull
-    @GraphQLDescription("The Open Graph property, such as og:title")
+    @GraphQLDescription("The property of the meta tag, such as og:title or twitter:card")
     public String getProperty() {
         return tag.getProperty();
     }

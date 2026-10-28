@@ -132,6 +132,7 @@ describe('Open Graph values in the Content Editor', () => {
             previewValue('og:url').should('have.text', `Live URL of ${NEWS_PATH}`);
             previewValue('og:site_name').should('have.text', SITE_KEY);
             previewValue('og:locale').should('have.text', 'en');
+            previewValue('twitter:card').should('have.text', 'summary');
             cy.get(SAVE_HINT).should('not.exist');
         });
 
