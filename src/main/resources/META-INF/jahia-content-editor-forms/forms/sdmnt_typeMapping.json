@@ -1,0 +1,47 @@
+{
+  "nodeType": "sdmnt:typeMapping",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "content",
+      "fieldSets": [
+        {
+          "name": "sdmnt:typeMapping",
+          "rank": 0.0
+        },
+        {
+          "name": "sdmBasicMetadata",
+          "rank": 1.0,
+          "labelKey": "structured-data-mapper:fieldset.basicMetadata",
+          "descriptionKey": "structured-data-mapper:fieldset.basicMetadata.description",
+          "fields": [
+            {"name": "sdm:og_title", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0},
+            {"name": "sdm:og_description", "declaringNodeType": "sdmnt:typeMapping", "rank": 2.0},
+            {"name": "sdm:og_determiner", "declaringNodeType": "sdmnt:typeMapping", "rank": 3.0},
+            {"name": "sdm:og_image", "declaringNodeType": "sdmnt:typeMapping", "rank": 4.0},
+            {"name": "sdm:og_image_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 5.0},
+            {"name": "sdm:og_image_alt", "declaringNodeType": "sdmnt:typeMapping", "rank": 6.0},
+            {"name": "sdm:og_audio", "declaringNodeType": "sdmnt:typeMapping", "rank": 7.0},
+            {"name": "sdm:og_audio_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 8.0},
+            {"name": "sdm:og_audio_type", "declaringNodeType": "sdmnt:typeMapping", "rank": 9.0},
+            {"name": "sdm:og_video", "declaringNodeType": "sdmnt:typeMapping", "rank": 10.0},
+            {"name": "sdm:og_video_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 11.0},
+            {"name": "sdm:og_video_type", "declaringNodeType": "sdmnt:typeMapping", "rank": 12.0},
+            {"name": "sdm:og_video_width", "declaringNodeType": "sdmnt:typeMapping", "rank": 13.0},
+            {"name": "sdm:og_video_height", "declaringNodeType": "sdmnt:typeMapping", "rank": 14.0},
+            {"name": "sdm:og_video_alt", "declaringNodeType": "sdmnt:typeMapping", "rank": 15.0}
+          ]
+        },
+        {
+          "name": "sdmTypeMetadata",
+          "rank": 2.0,
+          "labelKey": "structured-data-mapper:fieldset.typeMetadata",
+          "descriptionKey": "structured-data-mapper:fieldset.typeMetadata.description",
+          "fields": [
+            {"name": "sdm:ogType", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0}
+          ]
+        }
+      ]
+    }
+  ]
+}

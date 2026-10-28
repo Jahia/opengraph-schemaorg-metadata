@@ -9,7 +9,7 @@ export type PreviewData = {
 export type PreviewVariables = { uuid: string; language: string };
 
 export const PREVIEW_QUERY = gql`
-  query veryOpenGraphPreview($uuid: String!, $language: String!) {
+  query structuredDataMapperPreview($uuid: String!, $language: String!) {
     jcr {
       nodeById(uuid: $uuid) {
         openGraphTags(language: $language) {

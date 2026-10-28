@@ -45,7 +45,7 @@ type VanityUrl = {url: {value: string}; language: {value: string}};
 // The module news adds the vanity URL /news/<title> to a news item when the module seo is installed, and the URL
 // rewriting of Jahia uses it on some images only, such as jahia-ee-dev:8-SNAPSHOT.
 export const livePathsOf = (path: string): Cypress.Chainable<string[]> =>
-    cy.apollo({queryFile: 'graphql/veryOpenGraph/liveVanityUrls.graphql', variables: {path}}).then(result => {
+    cy.apollo({queryFile: 'graphql/structuredDataMapper/liveVanityUrls.graphql', variables: {path}}).then(result => {
         const vanityUrls = result.data.jcr.nodeByPath.descendants.nodes as VanityUrl[];
         return [
             `${path}.html`,

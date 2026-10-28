@@ -20,12 +20,12 @@ import {
     typeInField
 } from '../support/editorField';
 import {LOAD_TIMEOUT} from '../support/mappingScreen';
-import {SITE_KEY, SITE_MODULES, SITE_PATH, TEMPLATE_SET} from '../support/veryOpenGraph';
+import {SITE_KEY, SITE_MODULES, SITE_PATH, TEMPLATE_SET} from '../support/structuredDataMapper';
 
-const NEWS_NAME = 'vog-editor-news';
+const NEWS_NAME = 'sdm-editor-news';
 const NEWS_PATH = `${SITE_PATH}/contents/${NEWS_NAME}`;
 const PAGE_PATH = `${SITE_PATH}/home`;
-const OTHER_SITE_KEY = 'vogSiteOther';
+const OTHER_SITE_KEY = 'sdmSiteOther';
 const OTHER_SITE_PATH = `/sites/${OTHER_SITE_KEY}`;
 const OTHER_NEWS_PATH = `${OTHER_SITE_PATH}/contents/${NEWS_NAME}`;
 const TITLE = 'Editor news';
@@ -64,24 +64,24 @@ const expectSection = (sections: FormSection[]) => {
     const fields = section.fieldSets
         .flatMap(fieldSet => fieldSet.fields)
         .map(({name, selectorType, readOnly}) => ({name, selectorType, readOnly}));
-    expect(fields).to.deep.include({name: 'vog:ogPreview', selectorType: 'VogPreview', readOnly: true});
+    expect(fields).to.deep.include({name: 'sdm:ogPreview', selectorType: 'SdmPreview', readOnly: true});
 };
 
-// The save request carries the new title, and no request carries the field vog:ogPreview.
+// The save request carries the new title, and no request carries the field sdm:ogPreview.
 const expectNoPreviewSent = (bodies: string[]) => {
     expect(
         bodies.some(body => body.includes(NEW_TITLE)),
         'a request saves the title'
     ).to.equal(true);
     expect(
-        bodies.filter(body => body.includes('vog:ogPreview')),
-        'requests with vog:ogPreview'
+        bodies.filter(body => body.includes('sdm:ogPreview')),
+        'requests with sdm:ogPreview'
     ).to.be.empty;
 };
 
 const expectSavedNews = (properties: NodeProperty[]) => {
     expect(properties.find(property => property.name === 'jcr:title')?.value).to.equal(NEW_TITLE);
-    expect(properties.map(property => property.name).filter(name => name.startsWith('vog:'))).to.be.empty;
+    expect(properties.map(property => property.name).filter(name => name.startsWith('sdm:'))).to.be.empty;
 };
 
 describe('Open Graph values in the Content Editor', () => {
@@ -89,7 +89,7 @@ describe('Open Graph values in the Content Editor', () => {
         ['jnt:news', 'jnt:page'].forEach(nodeType => deleteMapping(nodeType));
         deleteEverywhere(NEWS_PATH);
         deleteSite(OTHER_SITE_KEY);
-        createSite(OTHER_SITE_KEY, {templateSet: TEMPLATE_SET, serverName: 'vogsiteother', locale: 'en'});
+        createSite(OTHER_SITE_KEY, {templateSet: TEMPLATE_SET, serverName: 'sdmsiteother', locale: 'en'});
         SITE_MODULES.forEach(moduleName => enableModule(moduleName, OTHER_SITE_KEY));
         addNews(SITE_PATH);
         addNews(OTHER_SITE_PATH);
@@ -103,13 +103,13 @@ describe('Open Graph values in the Content Editor', () => {
     });
 
     describe('the forms', () => {
-        it('give the section seo of the edit form the read-only field vog:ogPreview', () => {
+        it('give the section seo of the edit form the read-only field sdm:ogPreview', () => {
             editFormSections(NEWS_PATH).then(expectSection);
         });
 
         it('have no section "Open Graph" of their own', () => {
             editFormSections(NEWS_PATH).then(sections =>
-                expect(sectionNames(sections)).not.to.include('veryOpenGraph')
+                expect(sectionNames(sections)).not.to.include('structuredDataMapper')
             );
         });
     });
@@ -168,7 +168,7 @@ describe('Open Graph values in the Content Editor', () => {
             fieldSetsShouldNotExist();
         });
 
-        it('shows a typed title at once, asks to save for another change, and saves no vog:ogPreview', () => {
+        it('shows a typed title at once, asks to save for another change, and saves no sdm:ogPreview', () => {
             const requests: string[] = [];
             cy.intercept('POST', '**/modules/graphql', request => {
                 requests.push(JSON.stringify(request.body));

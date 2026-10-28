@@ -19,7 +19,7 @@ import {
   type TypeMapping,
 } from "./openGraph.gql.ts";
 
-const MAPPING_TYPE = "vognt:typeMapping";
+const MAPPING_TYPE = "sdmnt:typeMapping";
 
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
 
@@ -33,7 +33,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
 
   // The queries bypass the Apollo cache, so they never replace the jcr data of jContent.
   const { data, loading, error, refetch } = useQuery<ScreenData, ScreenVariables>(SCREEN_QUERY, {
-    variables: { path: sitePath, siteKey, language },
+    variables: { path: sitePath, language },
     fetchPolicy: "no-cache",
     client,
     skip: siteKey === "",
@@ -48,8 +48,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   });
 
   const mappings = data?.jcr?.nodeByPath?.openGraphMappings ?? [];
-  const contentTypes = data?.jcr?.nodeTypes?.nodes ?? [];
-  const displayNameOf = (nodeType: string) => contentTypes.find(type => type.name === nodeType)?.displayName ?? null;
 
   const refreshAfterSave = (_config: unknown, needRefresh: boolean) => {
     if (needRefresh) {
@@ -85,10 +83,10 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     globalThis.CE_API?.edit({ uuid: mapping.uuid, isFullscreen: false, onClosedCallback: refreshAfterSave });
   };
 
-  const deleteAndRefresh = async (nodeType: string) => {
+  const deleteAndRefresh = async ({ nodeType, templateName }: TypeMapping) => {
     setActionError(null);
     try {
-      await deleteMapping({ variables: { path: sitePath, nodeType } });
+      await deleteMapping({ variables: { path: sitePath, nodeType, templateName } });
       await refetch();
     } catch (failure) {
       setActionError(errorMessage(failure));
@@ -96,7 +94,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   };
 
   const addButton = (
-      <Button data-sel-role="vog-add-mapping"
+      <Button data-sel-role="sdm-add-mapping"
               color="accent"
               icon={<Add/>}
               label={t("openGraph.addMapping")}
@@ -108,14 +106,13 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   let errorText: ReactNode = null;
   const shownError = error?.message ?? actionError;
   if (shownError) {
-    errorText = <Typography data-sel-role="vog-error" weight="bold">{shownError}</Typography>;
+    errorText = <Typography data-sel-role="sdm-error" weight="bold">{shownError}</Typography>;
   }
 
   let list: ReactNode = null;
   if (mappings.length > 0) {
     list = (
         <MappingTable mappings={mappings}
-                      displayNameOf={displayNameOf}
                       onEdit={openEditForm}
                       onDelete={deleteAndRefresh}
         />
@@ -123,14 +120,14 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   } else if (data) {
     list = (
         <Paper hasPadding>
-            <Typography data-sel-role="very-open-graph-empty">{t("openGraph.empty")}</Typography>
+            <Typography data-sel-role="structured-data-mapper-empty">{t("openGraph.empty")}</Typography>
         </Paper>
     );
   }
 
   return (
       <LayoutContent hasPadding
-                     data-sel-role="very-open-graph"
+                     data-sel-role="structured-data-mapper"
                      isLoading={loading && data === undefined}
                      header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
       >

@@ -27,10 +27,10 @@ import {
     setCustomTags,
     TypeMapping
 } from '../support/openGraphApi';
-import {EDITOR, SERVER_NAME, SITE_PATH} from '../support/veryOpenGraph';
+import {EDITOR, SERVER_NAME, SITE_PATH} from '../support/structuredDataMapper';
 
-const NEWS_PATH = `${SITE_PATH}/contents/vog-tags-news`;
-const IMAGE_NAME = 'vog-tags-image.png';
+const NEWS_PATH = `${SITE_PATH}/contents/sdm-tags-news`;
+const IMAGE_NAME = 'sdm-tags-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
 
 const NEWS_MAPPING: TypeMapping = {
@@ -124,12 +124,12 @@ describe('Open Graph tags that an editor sets on one content', () => {
     before(() => {
         deleteMapping('jnt:news');
         [NEWS_PATH, IMAGE_PATH].forEach(deleteEverywhere);
-        uploadFile(`images/vog-filter-image.png`, `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result => {
+        uploadFile(`images/sdm-filter-image.png`, `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result => {
             imageUuid = result.data.jcr.addNode.uuid;
         });
         addNode({
             parentPathOrId: `${SITE_PATH}/contents`,
-            name: 'vog-tags-news',
+            name: 'sdm-tags-news',
             primaryNodeType: 'jnt:news',
             properties: [
                 {name: 'jcr:title', value: 'Tags news', language: 'en'},
@@ -194,7 +194,7 @@ describe('Open Graph tags that an editor sets on one content', () => {
         });
     });
 
-    it('shows the saved tags of the editor in the field and in vog:ogPreview when the form opens again', () => {
+    it('shows the saved tags of the editor in the field and in sdm:ogPreview when the form opens again', () => {
         cy.login(EDITOR.username, EDITOR.password);
         openEditForm(uuid);
         previewValue('og:title').should('have.text', EDITOR_TITLE);

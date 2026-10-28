@@ -1,128 +1,130 @@
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
-<vognt = 'http://www.jahia.org/very-open-graph/nt/1.0'>
-<vogmix = 'http://www.jahia.org/very-open-graph/mix/1.0'>
-<vog = 'http://www.jahia.org/very-open-graph/1.0'>
+<sdmnt = 'http://www.jahia.org/structured-data-mapper/nt/1.0'>
+<sdmmix = 'http://www.jahia.org/structured-data-mapper/mix/1.0'>
+<sdm = 'http://www.jahia.org/structured-data-mapper/1.0'>
 
-[vognt:settings] > nt:base, jmix:nolive
- + * (vognt:typeMapping)
+[sdmnt:settings] > nt:base, jmix:nolive
+ + * (sdmnt:typeMapping)
 
-// Each vog:og_* property holds the name of the source property that fills one Open Graph property.
-[vognt:typeMapping] > nt:base
- - vog:nodeType (string, choicelist[vogContentTypes]) mandatory
- - vog:og_title (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_description (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_determiner (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_image (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_image_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_image_alt (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_audio (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_audio_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_audio_type (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video_secure_url (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video_type (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video_width (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video_height (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:og_video_alt (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:ogType (string, choicelist[vogOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
+// Each sdm:og_* property holds the name of the source property that fills one Open Graph property.
+[sdmnt:typeMapping] > nt:base
+ - sdm:nodeType (string, choicelist[sdmContentTypes]) mandatory
+// A template mapping applies to the contents whose j:templateName holds sdm:templateName. The value * applies to every template.
+ - sdm:templateName (string, choicelist[sdmTemplates,dependentProperties='sdm:nodeType']) = '*' mandatory
+ - sdm:og_title (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_determiner (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_image_secure_url (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_image_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_audio (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_audio_secure_url (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_audio_type (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video_secure_url (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video_type (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video_width (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video_height (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:og_video_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:ogType (string, choicelist[sdmOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
 
-// The value of vog:ogType adds the mixin of its own Open Graph properties.
-[vogmix:article] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:article_published_time (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:article_modified_time (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:article_expiration_time (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:article_author (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:article_section (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:article_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+// The value of sdm:ogType adds the mixin of its own Open Graph properties.
+[sdmmix:article] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:article_published_time (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:article_modified_time (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:article_expiration_time (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:article_author (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:article_section (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:article_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:book] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:book_author (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:book_isbn (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:book_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:book_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:book] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:book_author (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:book_isbn (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:book_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:book_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
 // Each value is a JSON object that sets one Open Graph tag, such as {"property":"og:title","content":"Summer in Mykonos"}.
 // An image holds the identifier of its file instead, such as {"property":"og:image","node":"<uuid>"}.
-// The selector type VogTag edits a value: a forms file sets it, because a CND accepts only the selector types of Jahia.
-[vogmix:customTags] mixin
+// The selector type SdmTag edits a value: a forms file sets it, because a CND accepts only the selector types of Jahia.
+[sdmmix:customTags] mixin
  extends = jmix:mainResource, jnt:page
- - vog:customTags (string) i18n multiple
+ - sdm:customTags (string) i18n multiple
 
-// Two mixins that share an Open Graph property declare the same storage name, such as vog:music_song.
+// Two mixins that share an Open Graph property declare the same storage name, such as sdm:music_song.
 // A mapping carries one of these mixins at a time, because the JCR refuses two declarations of one name on a node.
-[vogmix:musicAlbum] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:music_song (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_song_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_song_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_musician (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:musicAlbum] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:music_song (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_song_disc (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_song_track (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_musician (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:musicPlaylist] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:music_song (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_song_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_song_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_creator (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:musicPlaylist] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:music_song (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_song_disc (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_song_track (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_creator (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:musicRadioStation] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:music_creator (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:musicRadioStation] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:music_creator (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:musicSong] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:music_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_album (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_album_disc (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_album_track (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:music_musician (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:musicSong] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:music_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_album (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_album_disc (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_album_track (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:music_musician (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:profile] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:profile_first_name (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:profile_last_name (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:profile_username (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:profile_gender (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:profile] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:profile_first_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:profile_last_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:profile_username (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:profile_gender (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:videoEpisode] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_series (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:videoEpisode] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:video_actor (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_actor_role (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_director (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_writer (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_series (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:videoMovie] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:videoMovie] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:video_actor (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_actor_role (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_director (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_writer (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:videoOther] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:videoOther] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:video_actor (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_actor_role (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_director (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_writer (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
-[vogmix:videoTvShow] > jmix:dynamicFieldset mixin
- extends = vognt:typeMapping
- - vog:video_actor (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_actor_role (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_director (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_writer (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_duration (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_release_date (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
- - vog:video_tag (string, choicelist[vogSourceProperties,dependentProperties='vog:nodeType'])
+[sdmmix:videoTvShow] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:video_actor (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_actor_role (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_director (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_writer (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_release_date (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:video_tag (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])

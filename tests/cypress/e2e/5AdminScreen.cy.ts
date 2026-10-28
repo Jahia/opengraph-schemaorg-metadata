@@ -29,28 +29,35 @@ import {
     save,
     shouldOfferOnly,
     sourceField,
-    sourceFieldIn
+    sourceFieldIn,
+    TEMPLATE_FIELD
 } from '../support/mappingScreen';
-import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/veryOpenGraph';
+import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/structuredDataMapper';
 
 const NEWS_TYPE = 'jnt:news';
+const PAGE_TYPE = 'jnt:page';
+const PAGE_MIXIN = 'jmix:canBeUseAsTemplateModel';
+const TEMPLATE = 'home';
+const ALL_TEMPLATES = '*';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
 const VIDEO_TAG: PropertyMapping = {ogProperty: 'video:tag', sourceProperty: 'j:tagList'};
-const BASIC_METADATA = 'vogBasicMetadata';
-const TYPE_METADATA = 'vogTypeMetadata';
+const BASIC_METADATA = 'sdmBasicMetadata';
+const TYPE_METADATA = 'sdmTypeMetadata';
 
-// The properties of a mapping node that hold the source of a video property, such as vog:video_tag.
-const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('vog:video_'));
+// The properties of a mapping node that hold the source of a video property, such as sdm:video_tag.
+const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('sdm:video_'));
 
 describe('Open Graph mapping screen', () => {
     before(() => {
         deleteMapping(NEWS_TYPE);
+        deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});
     });
 
     after(() => {
         deleteMapping(NEWS_TYPE);
+        deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});
     });
 
     afterEach(() => {
@@ -141,8 +148,8 @@ describe('Open Graph mapping screen', () => {
                 .should('contain.text', 'video.movie')
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION, VIDEO_TAG]));
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).to.include('vogmix:videoMovie');
-                expect(stored.properties).to.include('vog:video_tag');
+                expect(stored.mixins).to.include('sdmmix:videoMovie');
+                expect(stored.properties).to.include('sdm:video_tag');
             });
 
             mappingRow(NEWS_TYPE).find(EDIT).click();
@@ -155,7 +162,7 @@ describe('Open Graph mapping screen', () => {
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION]))
                 .and('not.contain.text', VIDEO_TAG.ogProperty);
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).not.to.include('vogmix:videoMovie');
+                expect(stored.mixins).not.to.include('sdmmix:videoMovie');
                 expect(videoProperties(stored)).to.be.empty;
             });
             getMappings({user: SITE_ADMIN}).then(result => {
@@ -179,6 +186,45 @@ describe('Open Graph mapping screen', () => {
             mappingRow(NEWS_TYPE).find(CONFIRM_DELETE).click();
             cy.get(EMPTY, {timeout: LOAD_TIMEOUT}).should('contain.text', 'No mapping yet.');
             mappingRow(NEWS_TYPE).should('not.exist');
+        });
+
+        it('offers a mixin that extends jnt:page to a new mapping', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            openDropdown(NODE_TYPE_FIELD);
+            cy.get(menuItem(PAGE_MIXIN)).should('exist');
+            cy.get(menuItem('sdmmix:customTags')).should('not.exist');
+        });
+
+        it('creates a template mapping of jnt:page for the template home in the Content Editor', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            choose(NODE_TYPE_FIELD, PAGE_TYPE);
+            openDropdown(TEMPLATE_FIELD);
+            cy.get(menuItem(ALL_TEMPLATES)).should('exist');
+            cy.get(menuItem(TEMPLATE)).click();
+            chooseSources([TITLE]);
+            choose(OG_TYPE_FIELD, 'website');
+            create();
+            mappingRow(PAGE_TYPE, TEMPLATE)
+                .should('contain.text', TEMPLATE)
+                .and('contain.text', 'website')
+                .and('contain.text', propertiesText([TITLE]));
+        });
+
+        it('still offers jnt:page for every template, and no longer for the template home', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            choose(NODE_TYPE_FIELD, PAGE_TYPE);
+            openDropdown(TEMPLATE_FIELD);
+            cy.get(menuItem(ALL_TEMPLATES)).should('exist');
+            cy.get(menuItem(TEMPLATE)).should('not.exist');
+        });
+
+        it('deletes the template mapping', () => {
+            mappingRow(PAGE_TYPE, TEMPLATE).find(DELETE).click();
+            mappingRow(PAGE_TYPE, TEMPLATE).find(CONFIRM_DELETE).click();
+            cy.get(EMPTY, {timeout: LOAD_TIMEOUT}).should('contain.text', 'No mapping yet.');
         });
     });
 

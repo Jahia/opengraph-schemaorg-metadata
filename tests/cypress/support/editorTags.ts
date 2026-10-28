@@ -1,17 +1,17 @@
 import {openContentEditor, openSection} from './editorField';
 import {CONTENT_EDITOR, LOAD_TIMEOUT, menuItem} from './mappingScreen';
-import {SITE_KEY} from './veryOpenGraph';
+import {SITE_KEY} from './structuredDataMapper';
 
-export const CUSTOM_TAGS_MIXIN = 'vogmix:customTags';
+export const CUSTOM_TAGS_MIXIN = 'sdmmix:customTags';
 
 // The Content Editor names the field after its fieldset, which is the mixin.
-const FIELD = `${CONTENT_EDITOR} [data-sel-content-editor-field="${CUSTOM_TAGS_MIXIN}_vog:customTags"]`;
+const FIELD = `${CONTENT_EDITOR} [data-sel-content-editor-field="${CUSTOM_TAGS_MIXIN}_sdm:customTags"]`;
 const SWITCH = `${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${CUSTOM_TAGS_MIXIN}"]`;
 
 export const tagValue = (index: number) =>
-    `${CONTENT_EDITOR} [data-sel-content-editor-multiple-generic-field="${CUSTOM_TAGS_MIXIN}_vog:customTags[${index}]"]`;
+    `${CONTENT_EDITOR} [data-sel-content-editor-multiple-generic-field="${CUSTOM_TAGS_MIXIN}_sdm:customTags[${index}]"]`;
 
-export const tagProperty = (index: number) => `${tagValue(index)} [data-sel-role="vog-tag-property"]`;
+export const tagProperty = (index: number) => `${tagValue(index)} [data-sel-role="sdm-tag-property"]`;
 // The text field and the number field of the Content Editor render one text input.
 export const tagContent = (index: number) => `${tagValue(index)} input[type="text"]`;
 

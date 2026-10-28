@@ -1,6 +1,6 @@
 ---
 # Allowed version bumps: patch, minor, major
-very-open-graph: minor
+structured-data-mapper: minor
 ---
 
 Initial module skeleton with the Open Graph screen in jContent.

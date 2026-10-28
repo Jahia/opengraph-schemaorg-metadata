@@ -1,6 +1,6 @@
 ---
 # Allowed version bumps: patch, minor, major
-very-open-graph: minor
+structured-data-mapper: minor
 ---
 
 An editor can add Open Graph tags to one content in the Content Editor. On the live page, a tag of the editor replaces the mapped value of the same Open Graph property.

@@ -1,0 +1,18 @@
+mutation saveOpenGraphMapping(
+    $path: String!
+    $nodeType: String!
+    $templateName: String
+    $ogType: String!
+    $properties: [InputOpenGraphPropertyMapping]!
+) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            saveOpenGraphMapping(
+                nodeType: $nodeType
+                templateName: $templateName
+                ogType: $ogType
+                properties: $properties
+            )
+        }
+    }
+}

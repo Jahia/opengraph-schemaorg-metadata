@@ -14,13 +14,20 @@ import {
     SourceProperty,
     TypeMapping
 } from '../support/openGraphApi';
-import {EDITOR, EDITOR_IN_CHIEF, PERMISSION, SITE_ADMIN, SITE_PATH, TEMPLATE_SET} from '../support/veryOpenGraph';
+import {
+    EDITOR,
+    EDITOR_IN_CHIEF,
+    PERMISSION,
+    SITE_ADMIN,
+    SITE_PATH,
+    TEMPLATE_SET
+} from '../support/structuredDataMapper';
 
 const NEWS_TYPE = 'jnt:news';
-const NEWS_NAME = 'vog-api-news';
+const NEWS_NAME = 'sdm-api-news';
 const NEWS_PATH = `${SITE_PATH}/contents/${NEWS_NAME}`;
 const HOME_PATH = `${SITE_PATH}/home`;
-const SITE_WITHOUT_NEWS = 'vogSiteNoNews';
+const SITE_WITHOUT_NEWS = 'sdmSiteNoNews';
 
 const ARTICLE_PROPERTIES: PropertyMapping[] = [
     {ogProperty: 'og:title', sourceProperty: 'jcr:title'},
@@ -123,7 +130,7 @@ describe('Open Graph mapping API', () => {
                 {name: 'j:expiration', value: '215'}
             ]
         });
-        createSite(SITE_WITHOUT_NEWS, {templateSet: TEMPLATE_SET, serverName: 'vogsitenonews', locale: 'en'});
+        createSite(SITE_WITHOUT_NEWS, {templateSet: TEMPLATE_SET, serverName: 'sdmsitenonews', locale: 'en'});
     });
 
     after(() => {
@@ -280,8 +287,8 @@ describe('Open Graph mapping API', () => {
         saveMapping(VIDEO_MAPPING).then(expectNoError);
         expectMappings([VIDEO_MAPPING]);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins).to.include('vogmix:videoMovie');
-            expect(stored.properties).to.include.members(['vog:video_release_date', 'vog:video_tag']);
+            expect(stored.mixins).to.include('sdmmix:videoMovie');
+            expect(stored.properties).to.include.members(['sdm:video_release_date', 'sdm:video_tag']);
         });
         getTags(NEWS_PATH).then(result => {
             expectNoError(result);
@@ -300,8 +307,8 @@ describe('Open Graph mapping API', () => {
         saveMapping({nodeType: NEWS_TYPE, ogType: 'music.song', properties}).then(expectNoError);
         expectMappings([{nodeType: NEWS_TYPE, ogType: 'music.song', properties}]);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins).to.include('vogmix:musicSong').and.not.include('vogmix:videoMovie');
-            expect(stored.properties.filter(name => name.startsWith('vog:video_'))).to.be.empty;
+            expect(stored.mixins).to.include('sdmmix:musicSong').and.not.include('sdmmix:videoMovie');
+            expect(stored.properties.filter(name => name.startsWith('sdm:video_'))).to.be.empty;
         });
         getTags(NEWS_PATH).then(result => {
             expectNoError(result);
@@ -383,10 +390,10 @@ describe('Open Graph mapping API', () => {
             },
             {
                 reason: 'an unknown content type',
-                nodeType: 'vognt:doesNotExist',
+                nodeType: 'sdmnt:doesNotExist',
                 ogType: 'website',
                 properties: title,
-                message: "Unknown content type 'vognt:doesNotExist'"
+                message: "Unknown content type 'sdmnt:doesNotExist'"
             },
             {
                 reason: 'a content type of a module that is not active on the site',
@@ -477,7 +484,7 @@ describe('Open Graph mapping API', () => {
         });
     });
 
-    describe('checks the permission veryOpenGraphManage on the site', () => {
+    describe('checks the permission structuredDataMapperManage on the site', () => {
         it('denies every mapping field to the editor', () => {
             getMappings({user: EDITOR}).then(expectError(PERMISSION));
             getSourceProperties(NEWS_TYPE, {user: EDITOR}).then(expectError(PERMISSION));
