@@ -20,6 +20,7 @@ import { I18nextProvider, useTranslation } from "react-i18next";
 import { i18n, NAMESPACE } from "../i18n.ts";
 import { PREVIEW_QUERY, type OgTag, type PreviewData, type PreviewVariables } from "./ogPreview.gql.ts";
 import { plainText } from "./plainText.ts";
+import ShareCard from "./ShareCard.tsx";
 
 const SECTION = "seo";
 // The fieldsets of the module in the section seo: this field, and the field sdm:customTags of structured-data-mapper#12.
@@ -82,6 +83,8 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
     skip: uuid === "",
   });
   const tags = data?.jcr?.nodeById?.openGraphTags ?? [];
+  // The live URL of og:url has the server name of the site as its host.
+  const domain = data?.jcr?.nodeById?.site?.serverName ?? "";
   // A type with no mapping on the site has no tag. The fieldsets of the module then hide, and a failed request or a
   // create form hides them too. The section seo keeps its other fieldsets, and hides when none is left.
   const isHidden = uuid === "" || (!loading && (error !== undefined || tags.length === 0));
@@ -140,6 +143,7 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
               {t("preview.saveHint")}
           </Typography>
           )}
+          <ShareCard tags={rows} domain={domain}/>
           <Table id={id} data-sel-role="sdm-preview">
               <TableHead>
                   <TableRow>

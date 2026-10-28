@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 export type OgTag = { property: string; content: string | null; nodePath: string | null; sourceProperty: string | null };
 
 export type PreviewData = {
-  jcr: { nodeById: { openGraphTags: OgTag[] | null } | null } | null;
+  jcr: { nodeById: { openGraphTags: OgTag[] | null; site: { serverName: string | null } | null } | null } | null;
 };
 
 export type PreviewVariables = { uuid: string; language: string };
@@ -17,6 +17,9 @@ export const PREVIEW_QUERY = gql`
           content
           nodePath
           sourceProperty
+        }
+        site {
+          serverName
         }
       }
     }
