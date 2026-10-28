@@ -11,11 +11,11 @@ import {
     shareCardRoles,
     typeInField
 } from '../support/editorField';
-import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/veryOpenGraph';
+import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
 
-const IMAGE_NEWS_PATH = `${SITE_PATH}/contents/vog-share-image-news`;
-const TEXT_NEWS_PATH = `${SITE_PATH}/contents/vog-share-text-news`;
-const IMAGE_NAME = 'vog-share-image.png';
+const IMAGE_NEWS_PATH = `${SITE_PATH}/contents/sdm-share-image-news`;
+const TEXT_NEWS_PATH = `${SITE_PATH}/contents/sdm-share-text-news`;
+const IMAGE_NAME = 'sdm-share-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
 const TITLE = 'Share news';
 const DESCRIPTION = 'A news item for the share card test';
@@ -31,19 +31,19 @@ const NEWS_MAPPING: TypeMapping = {
     ]
 };
 
-// The ratio of the image and the order of the card of each network, as the issue very-open-graph#24 lists them.
+// The ratio of the image and the order of the card of each network, as the issue Jahia/very-open-graph#24 lists them.
 const NETWORKS = [
     {
         name: 'facebook',
         ratio: 1200 / 630,
-        roles: ['vog-share-card-image', 'vog-share-card-domain', 'vog-share-card-title', 'vog-share-card-description']
+        roles: ['sdm-share-card-image', 'sdm-share-card-domain', 'sdm-share-card-title', 'sdm-share-card-description']
     },
     {
         name: 'linkedin',
         ratio: 1200 / 627,
-        roles: ['vog-share-card-image', 'vog-share-card-title', 'vog-share-card-domain']
+        roles: ['sdm-share-card-image', 'sdm-share-card-title', 'sdm-share-card-domain']
     },
-    {name: 'x', ratio: 1200 / 600, roles: ['vog-share-card-image', 'vog-share-card-title', 'vog-share-card-domain']}
+    {name: 'x', ratio: 1200 / 600, roles: ['sdm-share-card-image', 'sdm-share-card-title', 'sdm-share-card-domain']}
 ];
 
 const addNews = (path: string, imageUuid?: string) =>
@@ -70,7 +70,7 @@ describe('Share card of a content in the Content Editor', () => {
     before(() => {
         deleteMapping('jnt:news');
         [IMAGE_NEWS_PATH, TEXT_NEWS_PATH, IMAGE_PATH].forEach(deleteEverywhere);
-        uploadFile('images/vog-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
+        uploadFile('images/sdm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
             addNews(IMAGE_NEWS_PATH, result.data.jcr.addNode.uuid)
         );
         addNews(TEXT_NEWS_PATH);
@@ -117,7 +117,7 @@ describe('Share card of a content in the Content Editor', () => {
             selectShareTab(network.name);
             shareCardRoles().should(
                 'deep.equal',
-                network.roles.filter(cardRole => cardRole !== 'vog-share-card-image')
+                network.roles.filter(cardRole => cardRole !== 'sdm-share-card-image')
             );
             shareCardPart('title').should('have.text', TITLE);
         });

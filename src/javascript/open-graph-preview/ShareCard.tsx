@@ -42,7 +42,7 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
     text === ""
       ? []
       : [
-          <Typography key={role} data-sel-role={`vog-share-card-${role}`} className={styles.line} {...props}>
+          <Typography key={role} data-sel-role={`sdm-share-card-${role}`} className={styles.line} {...props}>
               {text}
           </Typography>,
         ];
@@ -55,12 +55,12 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
 
   return (
       <>
-          <Tab data-sel-role="vog-share-tabs">
+          <Tab data-sel-role="sdm-share-tabs">
               {NETWORKS.map(item => (
                   <TabItem
                     key={item.name}
                     type="button"
-                    data-sel-role="vog-share-tab"
+                    data-sel-role="sdm-share-tab"
                     data-sel-network={item.name}
                     label={item.label}
                     isSelected={item.name === network}
@@ -68,10 +68,10 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
                   />
               ))}
           </Tab>
-          <Paper data-sel-role="vog-share-card" data-sel-network={network} className={styles.card} hasPadding={false}>
+          <Paper data-sel-role="sdm-share-card" data-sel-network={network} className={styles.card} hasPadding={false}>
               {src !== null && (
               <img
-                data-sel-role="vog-share-card-image"
+                data-sel-role="sdm-share-card-image"
                 className={`${styles.image} ${styles[network]}`}
                 src={src}
                 alt={textOf("og:image:alt")}
