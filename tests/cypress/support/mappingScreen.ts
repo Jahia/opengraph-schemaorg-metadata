@@ -8,7 +8,6 @@ const role = (name: string) => `[data-sel-role="${name}"]`;
 
 export const EMPTY = role('structured-data-mapper-empty');
 export const ADD_MAPPING = role('sdm-add-mapping');
-export const ADD_TEMPLATE_MAPPING = role('sdm-add-template-mapping');
 export const EDIT = role('sdm-edit');
 export const DELETE = role('sdm-delete');
 export const CONFIRM_DELETE = role('sdm-confirm-delete');
@@ -22,7 +21,7 @@ const DISCARD = role('close-dialog-discard');
 const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-field="${name}"]`;
 
 export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
-export const TEMPLATE_FIELD = field('sdmnt:templateMapping_sdm:templateName');
+export const TEMPLATE_FIELD = field('sdmnt:typeMapping_sdm:templateName');
 export const OG_TYPE_FIELD = field('sdmTypeMetadata_sdm:ogType');
 
 // The Content Editor names a field after its fieldset and its property, such as sdmBasicMetadata_sdm:og_title, and

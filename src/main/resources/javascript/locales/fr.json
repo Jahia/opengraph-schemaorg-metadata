@@ -5,11 +5,10 @@
     "title": "Open Graph",
     "empty": "Aucune correspondance pour l'instant.",
     "addMapping": "Ajouter une correspondance",
-    "addTemplateMapping": "Ajouter une correspondance de template",
     "list": {
       "contentType": "Type de contenu ou mixin",
       "template": "Template",
-      "anyTemplate": "Tous",
+      "anyTemplate": "Tous les templates",
       "ogType": "og:type",
       "properties": "Propriétés Open Graph",
       "actions": "Actions",

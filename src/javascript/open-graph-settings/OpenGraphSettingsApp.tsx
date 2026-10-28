@@ -20,7 +20,6 @@ import {
 } from "./openGraph.gql.ts";
 
 const MAPPING_TYPE = "sdmnt:typeMapping";
-const TEMPLATE_MAPPING_TYPE = "sdmnt:templateMapping";
 
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
 
@@ -57,7 +56,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   };
 
   // The Content Editor creates the mapping under the settings node, so the node must exist first.
-  const openCreateForm = async (nodeType: string) => {
+  const openCreateForm = async () => {
     setActionError(null);
     setIsOpening(true);
     try {
@@ -66,7 +65,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       if (path) {
         globalThis.CE_API?.create({
           path,
-          nodeTypes: [nodeType],
+          nodeTypes: [MAPPING_TYPE],
           includeSubTypes: false,
           isFullscreen: false,
           onClosedCallback: refreshAfterSave,
@@ -94,24 +93,14 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     }
   };
 
-  const addButtons = (
-      <>
-          <Button data-sel-role="sdm-add-template-mapping"
-                  variant="outlined"
-                  icon={<Add/>}
-                  label={t("openGraph.addTemplateMapping")}
-                  isDisabled={isOpening || data === undefined}
-                  onClick={() => openCreateForm(TEMPLATE_MAPPING_TYPE)}
-          />
-          {" "}
-          <Button data-sel-role="sdm-add-mapping"
-                  color="accent"
-                  icon={<Add/>}
-                  label={t("openGraph.addMapping")}
-                  isDisabled={isOpening || data === undefined}
-                  onClick={() => openCreateForm(MAPPING_TYPE)}
-          />
-      </>
+  const addButton = (
+      <Button data-sel-role="sdm-add-mapping"
+              color="accent"
+              icon={<Add/>}
+              label={t("openGraph.addMapping")}
+              isDisabled={isOpening || data === undefined}
+              onClick={openCreateForm}
+      />
   );
 
   let errorText: ReactNode = null;
@@ -140,7 +129,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       <LayoutContent hasPadding
                      data-sel-role="structured-data-mapper"
                      isLoading={loading && data === undefined}
-                     header={<Header title={t("openGraph.title")} mainActions={addButtons}/>}
+                     header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
       >
           {errorText}
           {list}

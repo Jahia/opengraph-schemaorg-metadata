@@ -60,10 +60,13 @@ public class OpenGraphService {
     public static final String SETTINGS_NODE_NAME = "structured-data-mapper";
     public static final String NODE_TYPE_PROPERTY = "sdm:nodeType";
     public static final String TEMPLATE_PROPERTY = "sdm:templateName";
+    /**
+     * The value of {@code sdm:templateName} for a mapping of every template.
+     */
+    public static final String ALL_TEMPLATES = "*";
 
     private static final String SETTINGS_TYPE = "sdmnt:settings";
     private static final String TYPE_MAPPING_TYPE = "sdmnt:typeMapping";
-    private static final String TEMPLATE_MAPPING_TYPE = "sdmnt:templateMapping";
     private static final String OG_TYPE_PROPERTY = "sdm:ogType";
     private static final String STORAGE_PREFIX = "sdm:";
 
@@ -162,21 +165,29 @@ public class OpenGraphService {
      * @return the template of a template mapping, or null for a mapping of every template
      */
     private static String templateName(JCRNodeWrapper typeNode) {
-        String templateName = typeNode.getPropertyAsString(TEMPLATE_PROPERTY);
-        return templateName == null || templateName.isEmpty() ? null : templateName;
+        return templateOrNull(typeNode.getPropertyAsString(TEMPLATE_PROPERTY));
+    }
+
+    /**
+     * A mapping created before {@code sdm:templateName} existed has no value, and applies to every template.
+     *
+     * @return the template, or null for null, an empty value and {@link #ALL_TEMPLATES}
+     */
+    public static String templateOrNull(String templateName) {
+        return templateName == null || templateName.isEmpty() || ALL_TEMPLATES.equals(templateName) ? null : templateName;
     }
 
     /**
      * Creates the mapping of a content type or of a mixin, or replaces all its values. A template creates or replaces
      * the template mapping of the content type for that template.
      *
-     * @param templateName the template, or null or empty for a mapping of every template
+     * @param templateName the template, or null, empty or {@link #ALL_TEMPLATES} for a mapping of every template
      * @throws InvalidMappingException when the site cannot use the content type, the template, the og:type or a property
      */
     public void saveMapping(JCRSiteNode site, String nodeType, String templateName, String ogType,
                             List<PropertyMapping> properties) throws InvalidMappingException, RepositoryException {
         ExtendedNodeType type = mappableType(site, nodeType);
-        String template = templateName == null || templateName.isEmpty() ? null : templateName;
+        String template = templateOrNull(templateName);
         if (template != null && !getTemplates(site, nodeType, Locale.ENGLISH).containsKey(template)) {
             throw new InvalidMappingException("The site '" + site.getSiteKey() + "' has no template '" + template
                     + "' for the content type '" + nodeType + "'");
@@ -193,28 +204,10 @@ public class OpenGraphService {
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
                     JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType, template);
-                    // Two og:types that share a property name share its storage, so the second removal finds nothing.
-                    for (OgType anyOgType : OgType.values()) {
-                        for (OgProperty property : anyOgType.getProperties()) {
-                            String name = storageName(property.getName());
-                            if (mapping.hasProperty(name)) {
-                                mapping.getProperty(name).remove();
-                            }
-                        }
-                    }
-                    for (Map.Entry<OgType, String> mixin : OG_TYPE_MIXINS.entrySet()) {
-                        if (mixin.getKey() != og && mapping.isNodeType(mixin.getValue())) {
-                            mapping.removeMixin(mixin.getValue());
-                        }
-                    }
-                    String mixin = OG_TYPE_MIXINS.get(og);
-                    if (mixin != null && !mapping.isNodeType(mixin)) {
-                        mapping.addMixin(mixin);
-                    }
+                    removeOgProperties(mapping);
+                    setOgTypeMixin(mapping, og);
                     mapping.setProperty(NODE_TYPE_PROPERTY, nodeType);
-                    if (template != null) {
-                        mapping.setProperty(TEMPLATE_PROPERTY, template);
-                    }
+                    mapping.setProperty(TEMPLATE_PROPERTY, template == null ? ALL_TEMPLATES : template);
                     mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
                     for (PropertyMapping property : properties) {
                         mapping.setProperty(storageName(property.getOgProperty()), property.getSourceProperty());
@@ -226,12 +219,43 @@ public class OpenGraphService {
     }
 
     /**
+     * Removes the source of every Open Graph property from a mapping node.
+     */
+    private static void removeOgProperties(JCRNodeWrapper mapping) throws RepositoryException {
+        // Two og:types that share a property name share its storage, so the second removal finds nothing.
+        for (OgType anyOgType : OgType.values()) {
+            for (OgProperty property : anyOgType.getProperties()) {
+                String name = storageName(property.getName());
+                if (mapping.hasProperty(name)) {
+                    mapping.getProperty(name).remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Keeps on a mapping node the mixin of the own Open Graph properties of its og:type only.
+     */
+    private static void setOgTypeMixin(JCRNodeWrapper mapping, OgType og) throws RepositoryException {
+        for (Map.Entry<OgType, String> mixin : OG_TYPE_MIXINS.entrySet()) {
+            if (mixin.getKey() != og && mapping.isNodeType(mixin.getValue())) {
+                mapping.removeMixin(mixin.getValue());
+            }
+        }
+        String mixin = OG_TYPE_MIXINS.get(og);
+        if (mixin != null && !mapping.isNodeType(mixin)) {
+            mapping.addMixin(mixin);
+        }
+    }
+
+    /**
      * Deletes the mapping of a content type or of a mixin. Does nothing when the site has no mapping for it.
      *
-     * @param templateName the template of a template mapping, or null or empty for the mapping of every template
+     * @param templateName the template of a template mapping, or null, empty or {@link #ALL_TEMPLATES} for the mapping
+     *                     of every template
      */
     public void deleteMapping(JCRSiteNode site, String nodeType, String templateName) throws RepositoryException {
-        String template = templateName == null || templateName.isEmpty() ? null : templateName;
+        String template = templateOrNull(templateName);
         String settingsPath = site.getPath() + "/" + SETTINGS_NODE_NAME;
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
@@ -1025,8 +1049,7 @@ public class OpenGraphService {
                 return typeNode;
             }
         }
-        return settings.addNode(JCRContentUtils.findAvailableNodeName(settings, nodeName(nodeType)),
-                templateName == null ? TYPE_MAPPING_TYPE : TEMPLATE_MAPPING_TYPE);
+        return settings.addNode(JCRContentUtils.findAvailableNodeName(settings, nodeName(nodeType)), TYPE_MAPPING_TYPE);
     }
 
     /**

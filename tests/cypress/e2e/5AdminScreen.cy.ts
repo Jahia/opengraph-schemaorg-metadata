@@ -9,7 +9,6 @@ import {
 } from '../support/openGraphApi';
 import {
     ADD_MAPPING,
-    ADD_TEMPLATE_MAPPING,
     cancelAndDiscard,
     choose,
     chooseSources,
@@ -39,6 +38,7 @@ const NEWS_TYPE = 'jnt:news';
 const PAGE_TYPE = 'jnt:page';
 const PAGE_MIXIN = 'jmix:canBeUseAsTemplateModel';
 const TEMPLATE = 'home';
+const ALL_TEMPLATES = '*';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
@@ -197,13 +197,12 @@ describe('Open Graph mapping screen', () => {
         });
 
         it('creates a template mapping of jnt:page for the template home in the Content Editor', () => {
-            cy.get(ADD_TEMPLATE_MAPPING).click();
+            cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
-            openDropdown(NODE_TYPE_FIELD);
-            cy.get(menuItem(NEWS_TYPE)).should('not.exist');
-            cy.get(menuItem(PAGE_MIXIN)).should('not.exist');
-            cy.get(menuItem(PAGE_TYPE)).click();
-            choose(TEMPLATE_FIELD, TEMPLATE);
+            choose(NODE_TYPE_FIELD, PAGE_TYPE);
+            openDropdown(TEMPLATE_FIELD);
+            cy.get(menuItem(ALL_TEMPLATES)).should('exist');
+            cy.get(menuItem(TEMPLATE)).click();
             chooseSources([TITLE]);
             choose(OG_TYPE_FIELD, 'website');
             create();
@@ -213,11 +212,13 @@ describe('Open Graph mapping screen', () => {
                 .and('contain.text', propertiesText([TITLE]));
         });
 
-        it('still offers jnt:page to a mapping of every template', () => {
+        it('still offers jnt:page for every template, and no longer for the template home', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
-            openDropdown(NODE_TYPE_FIELD);
-            cy.get(menuItem(PAGE_TYPE)).should('exist');
+            choose(NODE_TYPE_FIELD, PAGE_TYPE);
+            openDropdown(TEMPLATE_FIELD);
+            cy.get(menuItem(ALL_TEMPLATES)).should('exist');
+            cy.get(menuItem(TEMPLATE)).should('not.exist');
         });
 
         it('deletes the template mapping', () => {
