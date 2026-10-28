@@ -36,10 +36,11 @@ The provisioning manifests install `news` 3.4.0, because the specs use its conte
 
 ## Rules
 
-- Use Moonstone components only in the UI, and do not style a raw `div` or `span`. Moonstone is a devDependency, and `vite.config.ts` shares it with jContent, so the module loads no global Moonstone CSS of its own.
+- Use Moonstone components only in the UI, and do not style a raw `div` or `span`. Moonstone is a dependency, and `vite.config.ts` makes the module use the Moonstone of the app shell, so the module loads no global Moonstone CSS of its own.
 - Do not use Spring. Write each Java service as an OSGi Declarative Services component, and get its dependencies through `@Reference`.
 - Write few unit tests, because Cypress carries the coverage. A unit test covers a pure value conversion only.
 - A GraphQL resolver checks the permission `structuredDataMapperManage` on the site node, `/sites/<siteKey>`, before it reads or writes a mapping.
 - Do not add a license header to a source file. The `LICENSE` file at the repository root is the license of the module.
 - Keep the package name `structureddatamapper` in `package.json`. A hyphen in the package name blocks the rendering of the UI.
 - Pin `vite`, `@jahia/vite-federation-plugin` and the `@module-federation/vite` resolution together.
+- Put a library that app-shell 4 provides as a singleton in `peerDependencies`, and a copy at the version of app-shell 4.0.0 in `devDependencies`. The build of `@jahia/vite-federation-plugin` fails on a library in the wrong section.
