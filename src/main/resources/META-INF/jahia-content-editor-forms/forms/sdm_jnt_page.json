@@ -1,0 +1,25 @@
+{
+  "nodeType": "jnt:page",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "seo",
+      "fieldSets": [
+        {
+          "name": "sdmOpenGraphValues",
+          "rank": 10.0,
+          "labelKey": "structured-data-mapper:fieldset.openGraphValues",
+          "descriptionKey": "structured-data-mapper:fieldset.openGraphValues.description",
+          "fields": [
+            {
+              "name": "sdm:ogPreview",
+              "selectorType": "SdmPreview",
+              "readOnly": true,
+              "labelKey": "structured-data-mapper:field.ogPreview"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,12 +1,14 @@
 {
-  "label": "Very Open Graph",
+  "label": "Structured Data Mapper",
   "openGraph": {
     "nav": "Open Graph",
     "title": "Open Graph",
     "empty": "No mapping yet.",
     "addMapping": "Add a mapping",
     "list": {
-      "contentType": "Content type",
+      "contentType": "Content type or mixin",
+      "template": "Template",
+      "anyTemplate": "All templates",
       "ogType": "og:type",
       "properties": "Open Graph properties",
       "actions": "Actions",

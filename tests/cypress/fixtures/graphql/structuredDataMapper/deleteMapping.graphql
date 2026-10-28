@@ -1,0 +1,7 @@
+mutation deleteOpenGraphMapping($path: String!, $nodeType: String!, $templateName: String) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            deleteOpenGraphMapping(nodeType: $nodeType, templateName: $templateName)
+        }
+    }
+}

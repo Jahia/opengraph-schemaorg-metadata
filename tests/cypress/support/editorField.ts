@@ -1,12 +1,12 @@
 import {LOAD_TIMEOUT} from './mappingScreen';
 
-const FIXTURES = 'graphql/veryOpenGraph';
+const FIXTURES = 'graphql/structuredDataMapper';
 
 // The module adds its fieldsets to the section seo, which also holds the fieldsets of other modules.
 export const SECTION = 'seo';
 // The Content Editor names a field after its fieldset and its property.
-const PREVIEW_FIELD = 'vogOpenGraphValues_vog:ogPreview';
-const CUSTOM_TAGS_FIELD_SET = 'vogmix:customTags';
+const PREVIEW_FIELD = 'sdmOpenGraphValues_sdm:ogPreview';
+const CUSTOM_TAGS_FIELD_SET = 'sdmmix:customTags';
 
 export type FormField = {name: string; selectorType: string; readOnly: boolean};
 export type NodeProperty = {name: string; value: string};
@@ -18,8 +18,8 @@ const SECTION_SELECTOR = sectionSelector(SECTION);
 const PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${PREVIEW_FIELD}"]`;
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
-export const PREVIEW_ROW = role('vog-preview-row');
-export const SAVE_HINT = role('vog-preview-save-hint');
+export const PREVIEW_ROW = role('sdm-preview-row');
+export const SAVE_HINT = role('sdm-preview-save-hint');
 
 // The sections of the edit form of a node, as the jContent GraphQL API gives them to the Content Editor.
 export const editFormSections = (uuidOrPath: string): Cypress.Chainable<FormSection[]> =>
@@ -83,7 +83,7 @@ export const openSection = () => {
 };
 
 export const previewValue = (property: string) =>
-    cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}[data-sel-property="${property}"] ${role('vog-preview-value')}`, {
+    cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}[data-sel-property="${property}"] ${role('sdm-preview-value')}`, {
         timeout: LOAD_TIMEOUT
     });
 

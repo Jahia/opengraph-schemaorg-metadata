@@ -1,0 +1,19 @@
+query structuredDataMapperMappingNodes($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            children {
+                nodes {
+                    nodeType: property(name: "sdm:nodeType") {
+                        value
+                    }
+                    mixinTypes {
+                        name
+                    }
+                    properties {
+                        name
+                    }
+                }
+            }
+        }
+    }
+}

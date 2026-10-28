@@ -1,0 +1,12 @@
+query openGraphMappingTargets($path: String!, $language: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            openGraphMappings {
+                nodeType
+                nodeTypeDisplayName(language: $language)
+                templateName
+                ogType
+            }
+        }
+    }
+}

@@ -6262,6 +6262,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"structureddatamapper@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "structureddatamapper@workspace:."
+  dependencies:
+    "@apollo/client": "npm:^3.11.0"
+    "@jahia/eslint-config": "npm:^2.2.0"
+    "@jahia/moonstone": "npm:2.20.3"
+    "@jahia/ui-extender": "npm:^1.2.0"
+    "@jahia/vite-federation-plugin": "npm:0.1.1"
+    "@types/react": "npm:^18.3.28"
+    "@types/react-dom": "npm:^18"
+    "@typescript-eslint/eslint-plugin": "npm:^8.51.0"
+    "@typescript-eslint/parser": "npm:^8.51.0"
+    eslint: "npm:^8.57.1"
+    eslint-plugin-json: "npm:^4.0.1"
+    formik: "npm:^2.4.9"
+    graphql: "npm:^16.13.1"
+    i18next: "npm:^20.6.1"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
+    react-i18next: "npm:^11.18.6"
+    typescript: "npm:^5.9.3"
+    vite: "npm:7.3.5"
+  languageName: unknown
+  linkType: soft
+
 "supports-color@npm:^7.1.0":
   version: 7.2.0
   resolution: "supports-color@npm:7.2.0"
@@ -6608,32 +6634,6 @@ __metadata:
   checksum: 10c0/f15d588d79f3675135ba783c91a4083dcd290a2a5be9fcb6514220a1634e23df116847b1cc51f66bfb0644cf9353b2abb7815ae499bab06e46dd33c1a6bf1f4f
   languageName: node
   linkType: hard
-
-"veryopengraph@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "veryopengraph@workspace:."
-  dependencies:
-    "@apollo/client": "npm:^3.11.0"
-    "@jahia/eslint-config": "npm:^2.2.0"
-    "@jahia/moonstone": "npm:2.20.3"
-    "@jahia/ui-extender": "npm:^1.2.0"
-    "@jahia/vite-federation-plugin": "npm:0.1.1"
-    "@types/react": "npm:^18.3.28"
-    "@types/react-dom": "npm:^18"
-    "@typescript-eslint/eslint-plugin": "npm:^8.51.0"
-    "@typescript-eslint/parser": "npm:^8.51.0"
-    eslint: "npm:^8.57.1"
-    eslint-plugin-json: "npm:^4.0.1"
-    formik: "npm:^2.4.9"
-    graphql: "npm:^16.13.1"
-    i18next: "npm:^20.6.1"
-    react: "npm:^18.3.1"
-    react-dom: "npm:^18.3.1"
-    react-i18next: "npm:^11.18.6"
-    typescript: "npm:^5.9.3"
-    vite: "npm:7.3.5"
-  languageName: unknown
-  linkType: soft
 
 "vite@npm:7.3.5":
   version: 7.3.5

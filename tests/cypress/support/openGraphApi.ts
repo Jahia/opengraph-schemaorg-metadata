@@ -1,9 +1,16 @@
-import {SETTINGS_PATH, SITE_PATH, TestUser} from './veryOpenGraph';
+import {SETTINGS_PATH, SITE_PATH, TestUser} from './structuredDataMapper';
 
-const FIXTURES = 'graphql/veryOpenGraph';
+const FIXTURES = 'graphql/structuredDataMapper';
 
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
-export type TypeMapping = {nodeType: string; ogType: string; properties: PropertyMapping[]};
+// A template mapping names its template. openGraphMappings does not read it, so a deep comparison ignores it.
+export type TypeMapping = {nodeType: string; templateName?: string; ogType: string; properties: PropertyMapping[]};
+export type MappingTarget = {
+    nodeType: string;
+    nodeTypeDisplayName: string | null;
+    templateName: string | null;
+    ogType: string;
+};
 export type OgTag = {property: string; content: string | null; nodePath: string | null; sourceProperty: string | null};
 export type SourceProperty = {
     name: string;
@@ -50,12 +57,19 @@ const run = <T>(request: ApolloRequest, user?: TestUser): Cypress.Chainable<GqlR
 export const getVocabulary = (user?: TestUser) =>
     run<{openGraphVocabulary: OgVocabulary}>({queryFile: `${FIXTURES}/vocabulary.graphql`}, user);
 
-// The user runs the request, root when absent, on the site node at path, vogSite when absent.
+// The user runs the request, root when absent, on the site node at path, sdmSite when absent.
 export type Scope = {user?: TestUser; path?: string};
 
 export const getMappings = ({user, path = SITE_PATH}: Scope = {}) =>
     run<NodeData<{openGraphMappings: TypeMapping[] | null}>>(
         {queryFile: `${FIXTURES}/mappings.graphql`, variables: {path}},
+        user
+    );
+
+// The target of each mapping: its content type or mixin, with its label, and its template.
+export const getMappingTargets = ({user, path = SITE_PATH}: Scope = {}) =>
+    run<NodeData<{openGraphMappings: MappingTarget[] | null}>>(
+        {queryFile: `${FIXTURES}/mappingTargets.graphql`, variables: {path, language: 'en'}},
         user
     );
 
@@ -71,25 +85,35 @@ export const getTags = (path: string, user?: TestUser) =>
         user
     );
 
-export const saveMapping = ({nodeType, ogType, properties}: TypeMapping, {user, path = SITE_PATH}: Scope = {}) =>
+export const saveMapping = (
+    {nodeType, templateName, ogType, properties}: TypeMapping,
+    {user, path = SITE_PATH}: Scope = {}
+) =>
     run<MutationData<{saveOpenGraphMapping: boolean | null}>>(
-        {mutationFile: `${FIXTURES}/saveMapping.graphql`, variables: {path, nodeType, ogType, properties}},
+        {
+            mutationFile: `${FIXTURES}/saveMapping.graphql`,
+            variables: {path, nodeType, templateName, ogType, properties}
+        },
         user
     );
 
-export const deleteMapping = (nodeType: string, {user, path = SITE_PATH}: Scope = {}) =>
+// Deletes the mapping of every template, or the template mapping of templateName.
+export const deleteMapping = (
+    nodeType: string,
+    {user, path = SITE_PATH, templateName}: Scope & {templateName?: string} = {}
+) =>
     run<MutationData<{deleteOpenGraphMapping: boolean | null}>>(
-        {mutationFile: `${FIXTURES}/deleteMapping.graphql`, variables: {path, nodeType}},
+        {mutationFile: `${FIXTURES}/deleteMapping.graphql`, variables: {path, nodeType, templateName}},
         user
     );
 
 export type CustomTagsNode = {uuid: string; mixinTypes: {name: string}[]; property: {values: string[]} | null};
 
-// The mixin types of a node, and the English values of vog:customTags.
+// The mixin types of a node, and the English values of sdm:customTags.
 export const getCustomTags = (path: string) =>
     run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customTags.graphql`, variables: {path}});
 
-// Adds the mixin vogmix:customTags to a node, and sets the English values of vog:customTags.
+// Adds the mixin sdmmix:customTags to a node, and sets the English values of sdm:customTags.
 export const setCustomTags = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
 

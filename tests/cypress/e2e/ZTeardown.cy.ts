@@ -1,10 +1,10 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
-import {SITE_KEY, USERS} from '../support/veryOpenGraph';
+import {SITE_KEY, USERS} from '../support/structuredDataMapper';
 
-describe('Very Open Graph test suite teardown', () => {
-    it('deletes the site vogSite and the users', () => {
-        if (Cypress.env('VERY_OPEN_GRAPH_KEEP_SITE') === true) {
-            cy.log('Skipping the site deletion because VERY_OPEN_GRAPH_KEEP_SITE=true');
+describe('Structured Data Mapper test suite teardown', () => {
+    it('deletes the site sdmSite and the users', () => {
+        if (Cypress.env('STRUCTURED_DATA_MAPPER_KEEP_SITE') === true) {
+            cy.log('Skipping the site deletion because STRUCTURED_DATA_MAPPER_KEEP_SITE=true');
             return;
         }
 

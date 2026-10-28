@@ -1,0 +1,13 @@
+query structuredDataMapperCustomTags($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            uuid
+            mixinTypes {
+                name
+            }
+            property(name: "sdm:customTags", language: "en") {
+                values
+            }
+        }
+    }
+}

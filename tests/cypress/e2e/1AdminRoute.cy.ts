@@ -1,10 +1,22 @@
-import {EDITOR, EDITOR_IN_CHIEF, PERMISSION, SITE_ADMIN, SITE_KEY, SITE_PATH, USERS} from '../support/veryOpenGraph';
+import {
+    EDITOR,
+    EDITOR_IN_CHIEF,
+    PERMISSION,
+    SITE_ADMIN,
+    SITE_KEY,
+    SITE_PATH,
+    USERS
+} from '../support/structuredDataMapper';
 
-const ROUTE_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/veryOpenGraph`;
+const ROUTE_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/structuredDataMapper`;
+const VANITY_URLS_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/siteSettingsSeo/VanityUrls`;
 const ACCORDION_HEADERS = '.moonstone-accordion section.moonstone-accordionItem header';
 const APPS_ACCORDION = `${ACCORDION_HEADERS}[aria-controls="apps"]`;
-const ENTRY = '[role="treeitem"][data-sel-role="veryOpenGraph"]';
-const SCREEN = '[data-sel-role="very-open-graph"]';
+const ENTRY = '[role="treeitem"][data-sel-role="structuredDataMapper"]';
+const SEO_GROUP = '[role="treeitem"][data-sel-role="siteSettingsSeo"]';
+// The attribute data-registry-target of each item of the Additional tree of jContent is "<target>:<priority>".
+const SEO_ITEMS = '[role="treeitem"][data-registry-target^="jcontent-siteSettingsSeo:"]';
+const SCREEN = '[data-sel-role="structured-data-mapper"]';
 const LOAD_TIMEOUT = 30000;
 
 describe('Open Graph entry in jContent', () => {
@@ -12,11 +24,11 @@ describe('Open Graph entry in jContent', () => {
         cy.logout();
     });
 
-    it('grants veryOpenGraphManage on vogSite to the site administrator and the editor in chief only', () => {
+    it('grants structuredDataMapperManage on sdmSite to the site administrator and the editor in chief only', () => {
         USERS.forEach(user => {
             cy.apolloClient({username: user.username, password: user.password})
                 .apollo({
-                    queryFile: 'graphql/veryOpenGraph/hasPermission.graphql',
+                    queryFile: 'graphql/structuredDataMapper/hasPermission.graphql',
                     variables: {path: SITE_PATH, permission: PERMISSION}
                 })
                 .then(result => {
@@ -37,6 +49,21 @@ describe('Open Graph entry in jContent', () => {
             cy.contains(SCREEN, 'Open Graph', {timeout: LOAD_TIMEOUT}).should('be.visible');
             cy.contains(SCREEN, 'No mapping yet.').should('be.visible');
         });
+    });
+
+    it('lists the Open Graph entry last in the SEO group, and a click on it opens the screen', () => {
+        cy.login(SITE_ADMIN.username, SITE_ADMIN.password);
+        cy.visit(VANITY_URLS_URL);
+        cy.get(SEO_GROUP, {timeout: LOAD_TIMEOUT}).should('have.attr', 'aria-expanded', 'true');
+        cy.get(SEO_ITEMS)
+            .should('have.length.at.least', 2)
+            .last()
+            .should('have.attr', 'data-sel-role', 'structuredDataMapper')
+            .and('contain.text', 'Open Graph');
+        cy.get(SCREEN).should('not.exist');
+        cy.get(ENTRY).click();
+        cy.location('pathname').should('eq', ROUTE_URL);
+        cy.contains(SCREEN, 'No mapping yet.', {timeout: LOAD_TIMEOUT}).should('be.visible');
     });
 
     it('hides the Open Graph entry from the editor', () => {

@@ -1,7 +1,0 @@
-mutation deleteOpenGraphMapping($path: String!, $nodeType: String!) {
-    jcr {
-        mutateNode(pathOrId: $path) {
-            deleteOpenGraphMapping(nodeType: $nodeType)
-        }
-    }
-}
