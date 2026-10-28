@@ -16,6 +16,7 @@ import { NAMESPACE } from "../i18n.ts";
 import type { TypeMapping } from "./openGraph.gql.ts";
 
 const OG_TYPE_WIDTH = "140px";
+const TEMPLATE_WIDTH = "140px";
 const ACTIONS_WIDTH = "300px";
 
 const propertiesOf = (mapping: TypeMapping) =>
@@ -23,33 +24,31 @@ const propertiesOf = (mapping: TypeMapping) =>
 
 type MappingTableProps = Readonly<{
   mappings: TypeMapping[];
-  displayNameOf: (nodeType: string) => string | null;
   onEdit: (mapping: TypeMapping) => void;
-  onDelete: (nodeType: string) => Promise<void>;
+  onDelete: (mapping: TypeMapping) => Promise<void>;
 }>;
 
-export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: MappingTableProps) => {
+export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) => {
   const { t } = useTranslation(NAMESPACE);
-  // The content type of the row that shows "Confirm deletion".
+  // The uuid of the mapping whose row shows "Confirm deletion".
   const [confirming, setConfirming] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const confirmDeletion = async (nodeType: string) => {
+  const confirmDeletion = async (mapping: TypeMapping) => {
     setIsDeleting(true);
-    await onDelete(nodeType);
+    await onDelete(mapping);
     setIsDeleting(false);
     setConfirming(null);
   };
 
-  const contentTypeOf = (nodeType: string) => {
-    const displayName = displayNameOf(nodeType);
-    if (!displayName || displayName === nodeType) {
+  const contentTypeOf = ({ nodeType, nodeTypeDisplayName }: TypeMapping) => {
+    if (!nodeTypeDisplayName || nodeTypeDisplayName === nodeType) {
       return nodeType;
     }
 
     return (
         <>
-            {displayName}
+            {nodeTypeDisplayName}
             {" "}
             <Typography component="span" variant="caption">({nodeType})</Typography>
         </>
@@ -57,14 +56,14 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
   };
 
   const actionsOf = (mapping: TypeMapping) => {
-    if (confirming === mapping.nodeType) {
+    if (confirming === mapping.uuid) {
       return (
           <>
               <Button data-sel-role="sdm-confirm-delete"
                       color="danger"
                       label={t("openGraph.list.confirmDelete")}
                       isDisabled={isDeleting}
-                      onClick={() => confirmDeletion(mapping.nodeType)}
+                      onClick={() => confirmDeletion(mapping)}
               />
               {" "}
               <Button data-sel-role="sdm-cancel-delete"
@@ -90,7 +89,7 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
                     variant="ghost"
                     icon={<Delete/>}
                     label={t("openGraph.list.delete")}
-                    onClick={() => setConfirming(mapping.nodeType)}
+                    onClick={() => setConfirming(mapping.uuid)}
             />
         </>
     );
@@ -102,6 +101,7 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
               <TableHead>
                   <TableRow>
                       <TableHeadCell>{t("openGraph.list.contentType")}</TableHeadCell>
+                      <TableHeadCell width={TEMPLATE_WIDTH}>{t("openGraph.list.template")}</TableHeadCell>
                       <TableHeadCell width={OG_TYPE_WIDTH}>{t("openGraph.list.ogType")}</TableHeadCell>
                       <TableHeadCell>{t("openGraph.list.properties")}</TableHeadCell>
                       <TableHeadCell width={ACTIONS_WIDTH}>{t("openGraph.list.actions")}</TableHeadCell>
@@ -109,8 +109,13 @@ export const MappingTable = ({ mappings, displayNameOf, onEdit, onDelete }: Mapp
               </TableHead>
               <TableBody>
                   {mappings.map(mapping => (
-                      <TableRow key={mapping.nodeType} data-sel-role="sdm-mapping-row" data-sel-node-type={mapping.nodeType}>
-                          <TableBodyCell>{contentTypeOf(mapping.nodeType)}</TableBodyCell>
+                      <TableRow key={mapping.uuid}
+                                data-sel-role="sdm-mapping-row"
+                                data-sel-node-type={mapping.nodeType}
+                                data-sel-template={mapping.templateName ?? ""}
+                      >
+                          <TableBodyCell>{contentTypeOf(mapping)}</TableBodyCell>
+                          <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("openGraph.list.anyTemplate")}</TableBodyCell>
                           <TableBodyCell width={OG_TYPE_WIDTH}>{mapping.ogType}</TableBodyCell>
                           <TableBodyCell title={propertiesOf(mapping)}>{propertiesOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={ACTIONS_WIDTH}>{actionsOf(mapping)}</TableBodyCell>

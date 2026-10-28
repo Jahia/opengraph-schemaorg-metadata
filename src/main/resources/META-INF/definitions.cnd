@@ -9,6 +9,8 @@
 // Each sdm:og_* property holds the name of the source property that fills one Open Graph property.
 [sdmnt:typeMapping] > nt:base
  - sdm:nodeType (string, choicelist[sdmContentTypes]) mandatory
+// A template mapping applies to the contents whose j:templateName holds sdm:templateName. The value * applies to every template.
+ - sdm:templateName (string, choicelist[sdmTemplates,dependentProperties='sdm:nodeType']) = '*' mandatory
  - sdm:og_title (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_determiner (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])

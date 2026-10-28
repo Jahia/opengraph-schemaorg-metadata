@@ -33,7 +33,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
 
   // The queries bypass the Apollo cache, so they never replace the jcr data of jContent.
   const { data, loading, error, refetch } = useQuery<ScreenData, ScreenVariables>(SCREEN_QUERY, {
-    variables: { path: sitePath, siteKey, language },
+    variables: { path: sitePath, language },
     fetchPolicy: "no-cache",
     client,
     skip: siteKey === "",
@@ -48,8 +48,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   });
 
   const mappings = data?.jcr?.nodeByPath?.openGraphMappings ?? [];
-  const contentTypes = data?.jcr?.nodeTypes?.nodes ?? [];
-  const displayNameOf = (nodeType: string) => contentTypes.find(type => type.name === nodeType)?.displayName ?? null;
 
   const refreshAfterSave = (_config: unknown, needRefresh: boolean) => {
     if (needRefresh) {
@@ -85,10 +83,10 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
     globalThis.CE_API?.edit({ uuid: mapping.uuid, isFullscreen: false, onClosedCallback: refreshAfterSave });
   };
 
-  const deleteAndRefresh = async (nodeType: string) => {
+  const deleteAndRefresh = async ({ nodeType, templateName }: TypeMapping) => {
     setActionError(null);
     try {
-      await deleteMapping({ variables: { path: sitePath, nodeType } });
+      await deleteMapping({ variables: { path: sitePath, nodeType, templateName } });
       await refetch();
     } catch (failure) {
       setActionError(errorMessage(failure));
@@ -115,7 +113,6 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   if (mappings.length > 0) {
     list = (
         <MappingTable mappings={mappings}
-                      displayNameOf={displayNameOf}
                       onEdit={openEditForm}
                       onDelete={deleteAndRefresh}
         />

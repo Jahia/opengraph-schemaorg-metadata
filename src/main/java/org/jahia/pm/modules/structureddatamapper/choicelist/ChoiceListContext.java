@@ -36,6 +36,13 @@ final class ChoiceListContext {
     }
 
     /**
+     * @return true in the form of an existing node, false in a creation form
+     */
+    static boolean isEditForm(Map<String, Object> context) {
+        return context.get(NODE) instanceof JCRNodeWrapper;
+    }
+
+    /**
      * @return the stored value of the property on the edited node, or null in a creation form
      */
     static String storedValue(Map<String, Object> context, String property) {

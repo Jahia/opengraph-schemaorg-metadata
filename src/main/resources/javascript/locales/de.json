@@ -6,7 +6,9 @@
     "empty": "Noch keine Zuordnung.",
     "addMapping": "Zuordnung hinzufügen",
     "list": {
-      "contentType": "Inhaltstyp",
+      "contentType": "Inhaltstyp oder Mixin",
+      "template": "Template",
+      "anyTemplate": "Alle Templates",
       "ogType": "og:type",
       "properties": "Open-Graph-Eigenschaften",
       "actions": "Aktionen",
