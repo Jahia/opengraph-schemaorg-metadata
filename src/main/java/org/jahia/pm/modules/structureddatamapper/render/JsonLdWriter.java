@@ -101,8 +101,8 @@ final class JsonLdWriter {
                 case '<':
                 case '>':
                 case '&':
-                case ' ':
-                case ' ':
+                case '\u2028':
+                case '\u2029':
                     appendUnicodeEscape(json, character);
                     break;
                 default:

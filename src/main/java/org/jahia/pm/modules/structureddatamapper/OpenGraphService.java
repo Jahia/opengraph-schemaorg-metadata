@@ -166,24 +166,28 @@ public class OpenGraphService {
                 }
                 List<TypeMapping> mappings = new ArrayList<>();
                 for (JCRNodeWrapper typeNode : JCRContentUtils.getChildrenOfType(session.getNode(settingsPath), TYPE_MAPPING_TYPE)) {
-                    String ogType = typeNode.getPropertyAsString(OG_TYPE_PROPERTY);
-                    List<PropertyMapping> properties = new ArrayList<>();
-                    for (OgProperty property : OgType.fromValue(ogType).map(OgType::getProperties).orElse(Collections.emptyList())) {
-                        String source = typeNode.getPropertyAsString(storageName(property.getName()));
-                        if (source != null && !source.isEmpty()) {
-                            properties.add(new PropertyMapping(property.getName(), source));
-                        }
-                    }
-                    SchemaType schemaType = SchemaType.fromValue(typeNode.getPropertyAsString(SCHEMA_TYPE_PROPERTY)).orElse(null);
-                    mappings.add(new TypeMapping(typeNode.getIdentifier(), typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
-                            templateName(typeNode), ogType, properties, schemaType == null ? null : schemaType.getValue(),
-                            schemaProperties(typeNode, schemaType)));
+                    mappings.add(readMapping(typeNode));
                 }
                 return Collections.unmodifiableList(mappings);
             });
         } catch (RepositoryException e) {
             throw new MappingReadException(e);
         }
+    }
+
+    private static TypeMapping readMapping(JCRNodeWrapper typeNode) throws RepositoryException {
+        String ogType = typeNode.getPropertyAsString(OG_TYPE_PROPERTY);
+        List<PropertyMapping> properties = new ArrayList<>();
+        for (OgProperty property : OgType.fromValue(ogType).map(OgType::getProperties).orElse(Collections.emptyList())) {
+            String source = typeNode.getPropertyAsString(storageName(property.getName()));
+            if (source != null && !source.isEmpty()) {
+                properties.add(new PropertyMapping(property.getName(), source));
+            }
+        }
+        SchemaType schemaType = SchemaType.fromValue(typeNode.getPropertyAsString(SCHEMA_TYPE_PROPERTY)).orElse(null);
+        return new TypeMapping(typeNode.getIdentifier(), typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
+                templateName(typeNode), ogType, properties, schemaType == null ? null : schemaType.getValue(),
+                schemaProperties(typeNode, schemaType));
     }
 
     /**
@@ -248,10 +252,7 @@ public class OpenGraphService {
             validate(property, og, nodeType, sources, mapped);
         }
         SchemaType schema = schemaType(schemaType, schemaProperties);
-        Set<String> schemaMapped = new HashSet<>();
-        for (PropertyMapping property : schemaProperties) {
-            validate(property, schema, nodeType, sources, schemaMapped);
-        }
+        validate(schemaProperties, schema, nodeType, sources);
 
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
@@ -264,18 +265,7 @@ public class OpenGraphService {
                     for (PropertyMapping property : properties) {
                         mapping.setProperty(storageName(property.getProperty()), property.getSourceProperty());
                     }
-                    removeSchemaProperties(mapping);
-                    setSchemaTypeMixin(mapping, schema);
-                    if (schema == null) {
-                        if (mapping.hasProperty(SCHEMA_TYPE_PROPERTY)) {
-                            mapping.getProperty(SCHEMA_TYPE_PROPERTY).remove();
-                        }
-                    } else {
-                        mapping.setProperty(SCHEMA_TYPE_PROPERTY, schema.getValue());
-                        for (PropertyMapping property : schemaProperties) {
-                            mapping.setProperty(schemaStorageName(property.getProperty()), property.getSourceProperty());
-                        }
-                    }
+                    setSchemaMapping(mapping, schema, schemaProperties);
                     session.save();
                     return null;
                 });
@@ -327,6 +317,27 @@ public class OpenGraphService {
         return SchemaType.fromValue(schemaType).orElseThrow(() -> new InvalidMappingException(
                 "Unknown schema.org type '" + schemaType + "'. Use one of "
                         + Arrays.stream(SchemaType.values()).map(SchemaType::getValue).collect(Collectors.joining(", ", "[", "]"))));
+    }
+
+    /**
+     * Replaces the schema.org type of a mapping node, its mixin and the source of each of its schema.org properties.
+     *
+     * @param schemaType the schema.org type, or null to remove the schema.org mapping
+     */
+    private static void setSchemaMapping(JCRNodeWrapper mapping, SchemaType schemaType, List<PropertyMapping> properties)
+            throws RepositoryException {
+        removeSchemaProperties(mapping);
+        setSchemaTypeMixin(mapping, schemaType);
+        if (schemaType == null) {
+            if (mapping.hasProperty(SCHEMA_TYPE_PROPERTY)) {
+                mapping.getProperty(SCHEMA_TYPE_PROPERTY).remove();
+            }
+            return;
+        }
+        mapping.setProperty(SCHEMA_TYPE_PROPERTY, schemaType.getValue());
+        for (PropertyMapping property : properties) {
+            mapping.setProperty(schemaStorageName(property.getProperty()), property.getSourceProperty());
+        }
     }
 
     /**
@@ -831,6 +842,14 @@ public class OpenGraphService {
         if (!canFill(compatibleKinds(source), source.isMultiple(), ogProperty)) {
             throw new InvalidMappingException("The property '" + property.getSourceProperty()
                     + "' holds several values and cannot fill '" + ogName + "', which takes one " + ogProperty.getKind() + " value");
+        }
+    }
+
+    private static void validate(List<PropertyMapping> properties, SchemaType schemaType, String nodeType,
+                                 Map<String, ExtendedPropertyDefinition> sources) throws InvalidMappingException {
+        Set<String> mapped = new HashSet<>();
+        for (PropertyMapping property : properties) {
+            validate(property, schemaType, nodeType, sources, mapped);
         }
     }
 

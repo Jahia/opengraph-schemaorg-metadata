@@ -142,19 +142,11 @@ final class SchemaOrgEntity {
         switch (value.getType()) {
             case PropertyType.STRING:
             case PropertyType.URI:
-                if (kind != OgKind.TEXT && kind != OgKind.URL) {
-                    return null;
-                }
-                String text = richText ? OgValues.plainText(value.getString()) : value.getString().trim();
-                return text.isEmpty() ? null : text;
+                return kind == OgKind.TEXT || kind == OgKind.URL ? text(value, richText) : null;
             case PropertyType.LONG:
-                return kind == OgKind.INTEGER || kind == OgKind.NUMBER ? value.getLong() : null;
             case PropertyType.DOUBLE:
-                // JSON has no NaN and no infinity.
-                double number = value.getDouble();
-                return kind == OgKind.NUMBER && Double.isFinite(number) ? number : null;
             case PropertyType.DECIMAL:
-                return kind == OgKind.NUMBER ? value.getDecimal() : null;
+                return number(value, kind);
             case PropertyType.DATE:
                 return kind == OgKind.DATE ? OgValues.isoDate(value.getDate()) : null;
             case PropertyType.REFERENCE:
@@ -163,6 +155,32 @@ final class SchemaOrgEntity {
             default:
                 return null;
         }
+    }
+
+    /**
+     * @return the text of the value, with the HTML of a rich text removed, or null when the text is empty
+     */
+    private static String text(JCRValueWrapper value, boolean richText) throws RepositoryException {
+        String text = richText ? OgValues.plainText(value.getString()) : value.getString().trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    /**
+     * @return the number of a LONG, a DOUBLE or a DECIMAL value, or null when the kind takes no such number
+     */
+    private static Number number(JCRValueWrapper value, OgKind kind) throws RepositoryException {
+        if (value.getType() == PropertyType.LONG) {
+            return kind == OgKind.INTEGER || kind == OgKind.NUMBER ? value.getLong() : null;
+        }
+        if (kind != OgKind.NUMBER) {
+            return null;
+        }
+        if (value.getType() == PropertyType.DECIMAL) {
+            return value.getDecimal();
+        }
+        // JSON has no NaN and no infinity.
+        double number = value.getDouble();
+        return Double.isFinite(number) ? number : null;
     }
 
     /**

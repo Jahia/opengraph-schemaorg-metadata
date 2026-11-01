@@ -88,41 +88,40 @@ public enum SchemaType {
     }
 
     /**
-     * Holds the property lists. An enum constructor cannot read a static field of its own enum.
+     * Holds the property lists. An enum constructor cannot read a static field of its own enum. The lists share one
+     * instance of a common property, such as {@code description}.
      */
     private static final class Lists {
+        private static final SchemaProperty NAME = text("name");
+        private static final SchemaProperty DESCRIPTION = text("description");
+        private static final SchemaProperty IMAGE = new SchemaProperty("image", OgKind.IMAGE, false);
+        private static final SchemaProperty DATE_PUBLISHED = date("datePublished");
+        private static final SchemaProperty DATE_MODIFIED = date("dateModified");
+        private static final SchemaProperty AUTHOR_NAME = new SchemaProperty("author.name", OgKind.TEXT, true);
+
         private static final List<SchemaProperty> ARTICLE = Arrays.asList(
-                text("headline"),
-                text("description"),
-                new SchemaProperty("image", OgKind.IMAGE, false),
-                date("datePublished"),
-                date("dateModified"),
-                new SchemaProperty("author.name", OgKind.TEXT, true));
+                text("headline"), DESCRIPTION, IMAGE, DATE_PUBLISHED, DATE_MODIFIED, AUTHOR_NAME);
         private static final List<SchemaProperty> WEB_PAGE = Arrays.asList(
-                text("name"),
-                text("description"),
-                new SchemaProperty("image", OgKind.IMAGE, false),
-                date("datePublished"),
-                date("dateModified"));
+                NAME, DESCRIPTION, IMAGE, DATE_PUBLISHED, DATE_MODIFIED);
         private static final List<SchemaProperty> PROFILE_PAGE = Arrays.asList(
                 text("mainEntity.name"),
                 text("mainEntity.alternateName"),
                 text("mainEntity.description"),
                 new SchemaProperty("mainEntity.image", OgKind.IMAGE, false),
                 date("dateCreated"),
-                date("dateModified"));
+                DATE_MODIFIED);
         private static final List<SchemaProperty> PRODUCT = Arrays.asList(
-                text("name"),
-                text("description"),
-                new SchemaProperty("image", OgKind.IMAGE, false),
+                NAME,
+                DESCRIPTION,
+                IMAGE,
                 text("sku"),
                 text("brand.name"),
                 new SchemaProperty("offers.price", OgKind.NUMBER, false),
                 text("offers.priceCurrency"));
         private static final List<SchemaProperty> EVENT = Arrays.asList(
-                text("name"),
-                text("description"),
-                new SchemaProperty("image", OgKind.IMAGE, false),
+                NAME,
+                DESCRIPTION,
+                IMAGE,
                 date("startDate"),
                 date("endDate"),
                 text("location.name"),
@@ -130,11 +129,11 @@ public enum SchemaType {
                 text("organizer.name"));
         // A duration, such as prepTime, is a text in ISO 8601, such as PT20M.
         private static final List<SchemaProperty> RECIPE = Arrays.asList(
-                text("name"),
-                text("description"),
-                new SchemaProperty("image", OgKind.IMAGE, false),
-                new SchemaProperty("author.name", OgKind.TEXT, true),
-                date("datePublished"),
+                NAME,
+                DESCRIPTION,
+                IMAGE,
+                AUTHOR_NAME,
+                DATE_PUBLISHED,
                 text("prepTime"),
                 text("cookTime"),
                 text("totalTime"),
@@ -144,13 +143,16 @@ public enum SchemaType {
                 new SchemaProperty("recipeIngredient", OgKind.TEXT, true),
                 new SchemaProperty("recipeInstructions", OgKind.TEXT, true));
         private static final List<SchemaProperty> VIDEO_OBJECT = Arrays.asList(
-                text("name"),
-                text("description"),
+                NAME,
+                DESCRIPTION,
                 new SchemaProperty("thumbnailUrl", OgKind.IMAGE, false),
                 date("uploadDate"),
                 text("duration"),
                 new SchemaProperty("contentUrl", OgKind.URL, false),
                 new SchemaProperty("embedUrl", OgKind.URL, false));
+
+        private Lists() {
+        }
 
         private static SchemaProperty text(String name) {
             return new SchemaProperty(name, OgKind.TEXT, false);
