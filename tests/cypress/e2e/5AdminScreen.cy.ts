@@ -104,6 +104,7 @@ describe('Open Graph mapping screen', () => {
             cy.get(OG_TYPE_FIELD).should('not.exist');
             cy.get(SCHEMA_TYPE_FIELD).should('not.exist');
             switchFieldSet(OPEN_GRAPH, true);
+            cy.get(OG_TYPE_FIELD).should('contain.text', 'website');
             choose(OG_TYPE_FIELD, 'article');
             cy.get(sourceFieldIn(OPEN_GRAPH, TITLE.ogProperty)).should('exist');
             cy.get(sourceFieldIn(OPEN_GRAPH, PUBLISHED.ogProperty)).should('exist');
@@ -290,14 +291,13 @@ describe('Open Graph mapping screen', () => {
     });
 
     describe('as the editor in chief', () => {
-        it('creates a mapping', () => {
+        it('creates a mapping with the default og:type website', () => {
             const mapping: TypeMapping = {nodeType: NEWS_TYPE, ogType: 'website', properties: [TITLE]};
             openScreen(EDITOR_IN_CHIEF);
             cy.get(ADD_MAPPING).click();
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
             switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
-            choose(OG_TYPE_FIELD, 'website');
             create();
             mappingRow(NEWS_TYPE)
                 .should('contain.text', 'website')

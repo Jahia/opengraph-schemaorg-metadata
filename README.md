@@ -8,7 +8,7 @@ One mapping applies to a content: a template mapping for the template of the con
 
 The form of a mapping has one switch for each vocabulary, and both are off for a new mapping:
 
-- **Open Graph**: the properties of every og:type, such as `og:title`, then the og:type, then the properties of that og:type, such as `article:published_time`. When the switch is off, the module writes no `og:*` tag and no `twitter:card` for the contents of the mapping, and it ignores the custom tags of an editor. The Content Editor then shows no Open Graph preview, and a social network shows no rich card.
+- **Open Graph**: the properties of every og:type, such as `og:title`, then the og:type, `website` by default, then the properties of that og:type, such as `article:published_time`. When the switch is off, the module writes no `og:*` tag and no `twitter:card` for the contents of the mapping, and it ignores the custom tags of an editor. The Content Editor then shows no Open Graph preview, and a social network shows no rich card.
 - **schema.org**: the schema.org type, then the properties of that type.
 
 A mapping with both switches off writes nothing, so a template mapping can stop the module on a template that writes its own tags. Several fields of a mapping can name the same source property, such as `jcr:title` for `og:title` and `headline`. The module never fills an empty field of one vocabulary from the other.

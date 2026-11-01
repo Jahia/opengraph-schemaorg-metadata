@@ -30,7 +30,7 @@
  - sdm:og_video_width (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_video_height (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_video_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
- - sdm:ogType (string, choicelist[sdmOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
+ - sdm:ogType (string, choicelist[sdmOgTypes]) = 'website' mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
 
 // The value of sdm:schemaType adds the mixin of its schema.org properties.
 [sdmmix:schemaOrg] mixin
