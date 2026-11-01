@@ -5,11 +5,12 @@ const FIXTURES = 'graphql/structuredDataMapper';
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
 export type SchemaPropertyMapping = {schemaProperty: string; sourceProperty: string};
 // A template mapping names its template. openGraphMappings does not read it, so a deep comparison ignores it. A mapping
-// without schemaType writes no JSON-LD, and the query of mappings.graphql does not read the schema.org fields.
+// with a null ogType writes no Open Graph tag, and a mapping without schemaType writes no JSON-LD. The query of
+// mappings.graphql does not read the schema.org fields.
 export type TypeMapping = {
     nodeType: string;
     templateName?: string;
-    ogType: string;
+    ogType: string | null;
     properties: PropertyMapping[];
     schemaType?: string;
     schemaProperties?: SchemaPropertyMapping[];
@@ -24,7 +25,7 @@ export type MappingTarget = {
     nodeType: string;
     nodeTypeDisplayName: string | null;
     templateName: string | null;
-    ogType: string;
+    ogType: string | null;
 };
 export type OgTag = {property: string; content: string | null; nodePath: string | null; sourceProperty: string | null};
 export type SourceProperty = {

@@ -17,15 +17,19 @@ import {
     LivePage,
     livePathsOf,
     metaContents,
-    publish
+    metaTags,
+    publish,
+    twitterCards
 } from '../support/livePage';
 import {
     choose,
     CONTENT_EDITOR,
     LOAD_TIMEOUT,
     save,
+    SCHEMA_ORG,
     SCHEMA_TYPE_FIELD,
-    schemaSourceField
+    schemaSourceField,
+    switchFieldSet
 } from '../support/mappingScreen';
 import {SERVER_NAME, SITE_ADMIN, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
 
@@ -218,6 +222,15 @@ describe('schema.org JSON-LD in the head of live pages', () => {
         newsMapping().then(mapping => expect(mapping.schemaType, 'the mapping is unchanged').to.equal('NewsArticle'));
     });
 
+    it('writes the JSON-LD block, and no Open Graph tag and no twitter:card, for a mapping without og:type', () => {
+        saveMapping({...ARTICLE_MAPPING, ogType: null, properties: []}).then(expectNoError);
+        getLivePage(NEWS_PATH).then(page => {
+            expect(metaTags(page, 'og:'), 'the Open Graph tags').to.be.empty;
+            expect(twitterCards(page), 'the twitter:card tags').to.be.empty;
+            expect(singleEntity(page)['@type']).to.equal('Article');
+        });
+    });
+
     it('drops the JSON-LD block and the schema.org mixin when the mapping loses its schema.org type', () => {
         saveMapping(NEWS_OG).then(expectNoError);
         getStoredMapping(NEWS_TYPE).then(stored => {
@@ -240,6 +253,7 @@ describe('schema.org JSON-LD in the head of live pages', () => {
             cy.window().its('CE_API').invoke('edit', {uuid: mapping.uuid, isFullscreen: false});
         });
         cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+        switchFieldSet(SCHEMA_ORG, true);
         choose(SCHEMA_TYPE_FIELD, 'BlogPosting');
         choose(schemaSourceField('headline'), 'jcr:title');
         choose(schemaSourceField('datePublished'), 'date');

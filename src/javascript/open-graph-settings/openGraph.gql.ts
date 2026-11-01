@@ -9,7 +9,7 @@ export type TypeMapping = {
   nodeType: string;
   nodeTypeDisplayName: string | null;
   templateName: string | null;
-  ogType: string;
+  ogType: string | null;
   properties: PropertyMapping[];
   schemaType: string | null;
   schemaProperties: SchemaPropertyMapping[];

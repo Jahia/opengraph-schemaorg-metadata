@@ -4,6 +4,15 @@ Structured Data Mapper is a Jahia module that maps content types to Open Graph t
 
 One mapping applies to a content: a template mapping for the template of the content first, then the mapping of a mixin of the content, then the mapping of its type or of its closest supertype.
 
+## Mapping form
+
+The form of a mapping has one switch for each vocabulary:
+
+- **Open Graph**, on for a new mapping: the properties of every og:type, such as `og:title`, then the og:type, then the properties of that og:type, such as `article:published_time`. When the switch is off, the module writes no `og:*` tag and no `twitter:card` for the contents of the mapping, and it ignores the custom tags of an editor. The Content Editor then shows no Open Graph preview, and a social network shows no rich card.
+- **schema.org**, off for a new mapping: the schema.org type, then the properties of that type.
+
+A mapping with both switches off writes nothing, so a template mapping can stop the module on a template that writes its own tags. Several fields of a mapping can name the same source property, such as `jcr:title` for `og:title` and `headline`. The module never fills an empty field of one vocabulary from the other.
+
 ## schema.org
 
 A mapping can name one schema.org type: `Article`, `NewsArticle`, `BlogPosting`, `WebPage`, `ProfilePage`, `Product`, `Event`, `Recipe` or `VideoObject`. The administrator then maps content properties to the properties of that type, such as `headline`, `datePublished` or `author.name`. A name with a dot fills a nested entity, such as the `Person` of `author`. The module writes `url` itself, and the first property of each type, such as `headline`, takes the title of the content when it has no source.

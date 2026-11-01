@@ -61,8 +61,7 @@ public class GqlTypeMapping {
 
     @GraphQLField
     @GraphQLName("ogType")
-    @GraphQLNonNull
-    @GraphQLDescription("The og:type, such as article")
+    @GraphQLDescription("The og:type, such as article, or null when the mapping writes no Open Graph tag")
     public String getOgType() {
         return mapping.getOgType();
     }

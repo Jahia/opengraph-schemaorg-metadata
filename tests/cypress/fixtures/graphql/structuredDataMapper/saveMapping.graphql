@@ -2,8 +2,8 @@ mutation saveOpenGraphMapping(
     $path: String!
     $nodeType: String!
     $templateName: String
-    $ogType: String!
-    $properties: [InputOpenGraphPropertyMapping]!
+    $ogType: String
+    $properties: [InputOpenGraphPropertyMapping]
     $schemaType: String
     $schemaProperties: [InputSchemaOrgPropertyMapping]
 ) {
