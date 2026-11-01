@@ -84,6 +84,17 @@ const expectSavedNews = (properties: NodeProperty[]) => {
     expect(properties.map(property => property.name).filter(name => name.startsWith('sdm:'))).to.be.empty;
 };
 
+const expectNoFlexColRule = (document: Document) => {
+    const sheets = Array.from(document.styleSheets).filter(sheet =>
+        sheet.href?.includes('/modules/structured-data-mapper/')
+    );
+    expect(sheets, 'stylesheets of the module').not.to.be.empty;
+    const selectors = sheets
+        .flatMap(sheet => Array.from(sheet.cssRules))
+        .map(rule => (rule as CSSStyleRule).selectorText ?? '');
+    expect(selectors.filter(selector => /\.flexCol\b/.test(selector))).to.be.empty;
+};
+
 describe('Open Graph values in the Content Editor', () => {
     before(() => {
         ['jnt:news', 'jnt:page'].forEach(nodeType => deleteMapping(nodeType));
@@ -142,6 +153,14 @@ describe('Open Graph values in the Content Editor', () => {
             previewValue('og:title').should('have.text', TITLE);
             // A CSS module class of jContent hides the inactive tab, and its name ends with a hash.
             cy.get('[class*="EditPanel__hideTab"]').should('have.css', 'display', 'none');
+        });
+
+        it('loads no stylesheet that defines the Moonstone class flexCol', () => {
+            uuidOf(NEWS_PATH).then(uuid => openContentEditor(SITE_KEY, uuid, TITLE_FIELD));
+            openSection();
+            previewValue('og:title').should('have.text', TITLE);
+            // The order of the stylesheets depends on load timing, so the test reads the rules of the module.
+            cy.document().then(expectNoFlexColRule);
         });
 
         it('hides the fieldsets on a page with no mapping, and shows them once jnt:page has a mapping', () => {
