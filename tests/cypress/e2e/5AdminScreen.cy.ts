@@ -96,12 +96,14 @@ describe('Open Graph mapping screen', () => {
             cy.get(EMPTY).should('contain.text', 'No mapping yet.');
         });
 
-        it('shows Open Graph on and schema.org off, with the og:type between the properties of every og:type and its own', () => {
+        it('shows both switches off, then the og:type between the properties of every og:type and its own', () => {
             cy.get(ADD_MAPPING).click();
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
-            fieldSetSwitch(OPEN_GRAPH).should('be.checked');
+            fieldSetSwitch(OPEN_GRAPH).should('not.be.checked');
             fieldSetSwitch(SCHEMA_ORG).should('not.be.checked');
+            cy.get(OG_TYPE_FIELD).should('not.exist');
             cy.get(SCHEMA_TYPE_FIELD).should('not.exist');
+            switchFieldSet(OPEN_GRAPH, true);
             choose(OG_TYPE_FIELD, 'article');
             cy.get(sourceFieldIn(OPEN_GRAPH, TITLE.ogProperty)).should('exist');
             cy.get(sourceFieldIn(OPEN_GRAPH, PUBLISHED.ogProperty)).should('exist');
@@ -125,6 +127,7 @@ describe('Open Graph mapping screen', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
             cy.get(sourceField(PUBLISHED.ogProperty)).should('not.exist');
             choose(OG_TYPE_FIELD, 'article');
@@ -260,6 +263,7 @@ describe('Open Graph mapping screen', () => {
             openDropdown(TEMPLATE_FIELD);
             cy.get(menuItem(ALL_TEMPLATES)).should('exist');
             cy.get(menuItem(TEMPLATE)).click();
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
             choose(OG_TYPE_FIELD, 'website');
             create();
@@ -291,6 +295,7 @@ describe('Open Graph mapping screen', () => {
             openScreen(EDITOR_IN_CHIEF);
             cy.get(ADD_MAPPING).click();
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
             choose(OG_TYPE_FIELD, 'website');
             create();

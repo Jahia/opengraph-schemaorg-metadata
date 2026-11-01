@@ -12,7 +12,6 @@
         {
           "name": "sdmmix:openGraph",
           "rank": 1.0,
-          "activatedOnCreate": true,
           "labelKey": "structured-data-mapper:fieldset.openGraph",
           "descriptionKey": "structured-data-mapper:fieldset.openGraph.description",
           "fields": [
