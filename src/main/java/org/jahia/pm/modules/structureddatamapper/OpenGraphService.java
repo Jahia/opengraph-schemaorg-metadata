@@ -5,6 +5,8 @@ import org.jahia.pm.modules.structureddatamapper.vocabulary.OgKind;
 import org.jahia.pm.modules.structureddatamapper.vocabulary.OgProperty;
 import org.jahia.pm.modules.structureddatamapper.vocabulary.OgType;
 import org.jahia.pm.modules.structureddatamapper.vocabulary.OgValues;
+import org.jahia.pm.modules.structureddatamapper.vocabulary.SchemaProperty;
+import org.jahia.pm.modules.structureddatamapper.vocabulary.SchemaType;
 import org.jahia.services.content.JCRContentUtils;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRPropertyWrapper;
@@ -47,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Stores the Open Graph mappings of a site, and resolves the Open Graph tags of a content node.
+ * Stores the Open Graph mappings of a site, and resolves the Open Graph tags and the schema.org entity of a content node.
  * <p>
  * The mappings live under {@code /sites/<siteKey>/structured-data-mapper} in the default workspace. The settings node
  * has the mixin {@code jmix:nolive}, so a publication never copies it to live, and a change applies at once.
@@ -69,6 +71,8 @@ public class OpenGraphService {
     private static final String TYPE_MAPPING_TYPE = "sdmnt:typeMapping";
     private static final String OG_TYPE_PROPERTY = "sdm:ogType";
     private static final String STORAGE_PREFIX = "sdm:";
+    private static final String SCHEMA_TYPE_PROPERTY = "sdm:schemaType";
+    private static final String SCHEMA_STORAGE_PREFIX = "sdm:schema_";
 
     /**
      * The mixin that holds the Open Graph properties of an og:type, beyond the properties of every og:type.
@@ -87,6 +91,24 @@ public class OpenGraphService {
         OG_TYPE_MIXINS.put(OgType.VIDEO_EPISODE, "sdmmix:videoEpisode");
         OG_TYPE_MIXINS.put(OgType.VIDEO_TV_SHOW, "sdmmix:videoTvShow");
         OG_TYPE_MIXINS.put(OgType.VIDEO_OTHER, "sdmmix:videoOther");
+    }
+
+    /**
+     * The mixin that holds the schema.org properties of a schema.org type. Each type has its own mixin, as each
+     * og:type does, even when two types have the same properties.
+     */
+    private static final Map<SchemaType, String> SCHEMA_TYPE_MIXINS = new EnumMap<>(SchemaType.class);
+
+    static {
+        SCHEMA_TYPE_MIXINS.put(SchemaType.ARTICLE, "sdmmix:schemaArticle");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.NEWS_ARTICLE, "sdmmix:schemaNewsArticle");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.BLOG_POSTING, "sdmmix:schemaBlogPosting");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.WEB_PAGE, "sdmmix:schemaWebPage");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.PROFILE_PAGE, "sdmmix:schemaProfilePage");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.PRODUCT, "sdmmix:schemaProduct");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.EVENT, "sdmmix:schemaEvent");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.RECIPE, "sdmmix:schemaRecipe");
+        SCHEMA_TYPE_MIXINS.put(SchemaType.VIDEO_OBJECT, "sdmmix:schemaVideoObject");
     }
 
     private static final String PAGE_TYPE = "jnt:page";
@@ -152,14 +174,33 @@ public class OpenGraphService {
                             properties.add(new PropertyMapping(property.getName(), source));
                         }
                     }
+                    SchemaType schemaType = SchemaType.fromValue(typeNode.getPropertyAsString(SCHEMA_TYPE_PROPERTY)).orElse(null);
                     mappings.add(new TypeMapping(typeNode.getIdentifier(), typeNode.getPropertyAsString(NODE_TYPE_PROPERTY),
-                            templateName(typeNode), ogType, properties));
+                            templateName(typeNode), ogType, properties, schemaType == null ? null : schemaType.getValue(),
+                            schemaProperties(typeNode, schemaType)));
                 }
                 return Collections.unmodifiableList(mappings);
             });
         } catch (RepositoryException e) {
             throw new MappingReadException(e);
         }
+    }
+
+    /**
+     * @return the schema.org properties of a mapping node that have a source property, in the order of the vocabulary
+     */
+    private static List<PropertyMapping> schemaProperties(JCRNodeWrapper typeNode, SchemaType schemaType) {
+        if (schemaType == null) {
+            return Collections.emptyList();
+        }
+        List<PropertyMapping> properties = new ArrayList<>();
+        for (SchemaProperty property : schemaType.getProperties()) {
+            String source = typeNode.getPropertyAsString(schemaStorageName(property.getName()));
+            if (source != null && !source.isEmpty()) {
+                properties.add(new PropertyMapping(property.getName(), source));
+            }
+        }
+        return properties;
     }
 
     /**
@@ -182,11 +223,16 @@ public class OpenGraphService {
      * Creates the mapping of a content type or of a mixin, or replaces all its values. A template creates or replaces
      * the template mapping of the content type for that template.
      *
-     * @param templateName the template, or null, empty or {@link #ALL_TEMPLATES} for a mapping of every template
-     * @throws InvalidMappingException when the site cannot use the content type, the template, the og:type or a property
+     * @param templateName     the template, or null, empty or {@link #ALL_TEMPLATES} for a mapping of every template
+     * @param schemaType       the schema.org type, or null or empty for a mapping that writes no JSON-LD
+     * @param schemaProperties the schema.org properties and their source property, empty without a schema.org type
+     * @throws InvalidMappingException when the site cannot use the content type, the template, the og:type, the
+     *                                 schema.org type or a property
      */
+    @SuppressWarnings("java:S107") // one value per argument of the GraphQL mutation
     public void saveMapping(JCRSiteNode site, String nodeType, String templateName, String ogType,
-                            List<PropertyMapping> properties) throws InvalidMappingException, RepositoryException {
+                            List<PropertyMapping> properties, String schemaType, List<PropertyMapping> schemaProperties)
+            throws InvalidMappingException, RepositoryException {
         ExtendedNodeType type = mappableType(site, nodeType);
         String template = templateOrNull(templateName);
         if (template != null && !getTemplates(site, nodeType, Locale.ENGLISH).containsKey(template)) {
@@ -201,6 +247,11 @@ public class OpenGraphService {
         for (PropertyMapping property : properties) {
             validate(property, og, nodeType, sources, mapped);
         }
+        SchemaType schema = schemaType(schemaType, schemaProperties);
+        Set<String> schemaMapped = new HashSet<>();
+        for (PropertyMapping property : schemaProperties) {
+            validate(property, schema, nodeType, sources, schemaMapped);
+        }
 
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
@@ -211,7 +262,19 @@ public class OpenGraphService {
                     mapping.setProperty(TEMPLATE_PROPERTY, template == null ? ALL_TEMPLATES : template);
                     mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
                     for (PropertyMapping property : properties) {
-                        mapping.setProperty(storageName(property.getOgProperty()), property.getSourceProperty());
+                        mapping.setProperty(storageName(property.getProperty()), property.getSourceProperty());
+                    }
+                    removeSchemaProperties(mapping);
+                    setSchemaTypeMixin(mapping, schema);
+                    if (schema == null) {
+                        if (mapping.hasProperty(SCHEMA_TYPE_PROPERTY)) {
+                            mapping.getProperty(SCHEMA_TYPE_PROPERTY).remove();
+                        }
+                    } else {
+                        mapping.setProperty(SCHEMA_TYPE_PROPERTY, schema.getValue());
+                        for (PropertyMapping property : schemaProperties) {
+                            mapping.setProperty(schemaStorageName(property.getProperty()), property.getSourceProperty());
+                        }
                     }
                     session.save();
                     return null;
@@ -244,6 +307,54 @@ public class OpenGraphService {
             }
         }
         String mixin = OG_TYPE_MIXINS.get(og);
+        if (mixin != null && !mapping.isNodeType(mixin)) {
+            mapping.addMixin(mixin);
+        }
+    }
+
+    /**
+     * @return the schema.org type, or null for a mapping without one
+     * @throws InvalidMappingException when the type is unknown, or when schema.org properties have no type
+     */
+    private static SchemaType schemaType(String schemaType, List<PropertyMapping> schemaProperties)
+            throws InvalidMappingException {
+        if (schemaType == null || schemaType.isEmpty()) {
+            if (!schemaProperties.isEmpty()) {
+                throw new InvalidMappingException("A schema.org property needs a schema.org type");
+            }
+            return null;
+        }
+        return SchemaType.fromValue(schemaType).orElseThrow(() -> new InvalidMappingException(
+                "Unknown schema.org type '" + schemaType + "'. Use one of "
+                        + Arrays.stream(SchemaType.values()).map(SchemaType::getValue).collect(Collectors.joining(", ", "[", "]"))));
+    }
+
+    /**
+     * Removes the source of every schema.org property from a mapping node.
+     */
+    private static void removeSchemaProperties(JCRNodeWrapper mapping) throws RepositoryException {
+        for (SchemaType anySchemaType : SchemaType.values()) {
+            for (SchemaProperty property : anySchemaType.getProperties()) {
+                String name = schemaStorageName(property.getName());
+                if (mapping.hasProperty(name)) {
+                    mapping.getProperty(name).remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Keeps on a mapping node the mixin of the schema.org properties of its schema.org type only.
+     *
+     * @param schemaType the schema.org type, or null to remove every schema.org mixin
+     */
+    private static void setSchemaTypeMixin(JCRNodeWrapper mapping, SchemaType schemaType) throws RepositoryException {
+        String mixin = schemaType == null ? null : SCHEMA_TYPE_MIXINS.get(schemaType);
+        for (String anyMixin : SCHEMA_TYPE_MIXINS.values()) {
+            if (!anyMixin.equals(mixin) && mapping.isNodeType(anyMixin)) {
+                mapping.removeMixin(anyMixin);
+            }
+        }
         if (mixin != null && !mapping.isNodeType(mixin)) {
             mapping.addMixin(mixin);
         }
@@ -411,6 +522,39 @@ public class OpenGraphService {
     }
 
     /**
+     * @return the property of a mapping node that holds the source of a schema.org property, such as
+     * {@code sdm:schema_author_name} for {@code author.name}
+     */
+    public static String schemaStorageName(String schemaProperty) {
+        return SCHEMA_STORAGE_PREFIX + schemaProperty.replace('.', '_');
+    }
+
+    /**
+     * Two schema.org types that share a property name, such as {@code Article} and {@code Recipe} for
+     * {@code author.name}, hold the same property, so the first match is the answer.
+     *
+     * @return the schema.org property that a property of a mapping node holds, such as {@code author.name} for
+     * {@code sdm:schema_author_name}
+     */
+    public static Optional<SchemaProperty> findSchemaProperty(String storageName) {
+        for (SchemaType type : SchemaType.values()) {
+            for (SchemaProperty property : type.getProperties()) {
+                if (schemaStorageName(property.getName()).equals(storageName)) {
+                    return Optional.of(property);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * @return the mixin that holds the schema.org properties of the schema.org type
+     */
+    public static String schemaTypeMixin(SchemaType schemaType) {
+        return SCHEMA_TYPE_MIXINS.get(schemaType);
+    }
+
+    /**
      * Lists the properties of a content type that a mapping can use: the properties of the type and of its
      * supertypes, and the properties of the mixins that extend them with {@code extends=}, such as
      * {@code jmix:seoHtmlHead}.
@@ -478,13 +622,35 @@ public class OpenGraphService {
     }
 
     /**
+     * Resolves the schema.org entity of a content node with the schema.org type of its mapping, which
+     * {@link #findMapping} selects as for the Open Graph tags. {@link SchemaOrgEntity#of} states the content of the
+     * entity, and the caller builds the absolute URL of each node in it.
+     *
+     * @return the entity, or an empty map when no mapping applies to the node or when its mapping has no schema.org type
+     */
+    public Map<String, Object> resolveSchemaOrg(JCRNodeWrapper node, Locale locale) throws RepositoryException {
+        JCRSiteNode site = node.getResolveSite();
+        if (site == null) {
+            return Collections.emptyMap();
+        }
+        JCRNodeWrapper localized = inLocale(node, locale);
+        TypeMapping mapping = findMapping(getMappings(site), localized);
+        SchemaType schemaType = mapping == null || mapping.getSchemaType() == null ? null
+                : SchemaType.fromValue(mapping.getSchemaType()).orElse(null);
+        if (schemaType == null) {
+            return Collections.emptyMap();
+        }
+        return SchemaOrgEntity.of(localized, schemaType, mapping.getSchemaProperties());
+    }
+
+    /**
      * @return the tags of each Open Graph property of the og:type, from the mapping and from {@code sdm:customTags}
      */
     private static Map<String, List<OgTag>> mappedTags(JCRNodeWrapper node, TypeMapping mapping, OgType ogType)
             throws RepositoryException {
         Map<String, List<OgTag>> mapped = new HashMap<>();
         for (PropertyMapping property : mapping.getProperties()) {
-            OgProperty ogProperty = ogType.findProperty(property.getOgProperty()).orElse(null);
+            OgProperty ogProperty = ogType.findProperty(property.getProperty()).orElse(null);
             if (ogProperty != null) {
                 mapped.put(ogProperty.getName(), values(node, ogProperty, property.getSourceProperty()));
             }
@@ -646,7 +812,7 @@ public class OpenGraphService {
     private static void validate(PropertyMapping property, OgType og, String nodeType,
                                  Map<String, ExtendedPropertyDefinition> sources, Set<String> mapped)
             throws InvalidMappingException {
-        String ogName = property.getOgProperty();
+        String ogName = property.getProperty();
         OgProperty ogProperty = og.findProperty(ogName).orElseThrow(() -> new InvalidMappingException(
                 "Unknown Open Graph property '" + ogName + "' for the og:type '" + og.getValue() + "'"));
         if (!mapped.add(ogName)) {
@@ -668,14 +834,49 @@ public class OpenGraphService {
         }
     }
 
+    private static void validate(PropertyMapping property, SchemaType schemaType, String nodeType,
+                                 Map<String, ExtendedPropertyDefinition> sources, Set<String> mapped)
+            throws InvalidMappingException {
+        String name = property.getProperty();
+        SchemaProperty schemaProperty = schemaType.findProperty(name).orElseThrow(() -> new InvalidMappingException(
+                "Unknown schema.org property '" + name + "' for the schema.org type '" + schemaType.getValue() + "'"));
+        if (!mapped.add(name)) {
+            throw new InvalidMappingException("The schema.org property '" + name + "' is mapped twice");
+        }
+        ExtendedPropertyDefinition source = sources.get(property.getSourceProperty());
+        if (source == null) {
+            throw new InvalidMappingException("The content type '" + nodeType + "' has no property '"
+                    + property.getSourceProperty() + "' that can fill a schema.org property");
+        }
+        if (!compatibleKinds(source).contains(schemaProperty.getKind())) {
+            throw new InvalidMappingException("The property '" + property.getSourceProperty() + "' ("
+                    + typeName(source) + ") cannot fill '" + name + "', which takes a " + schemaProperty.getKind() + " value");
+        }
+        if (!canFill(compatibleKinds(source), source.isMultiple(), schemaProperty)) {
+            throw new InvalidMappingException("The property '" + property.getSourceProperty()
+                    + "' holds several values and cannot fill '" + name + "', which takes one " + schemaProperty.getKind() + " value");
+        }
+    }
+
     /**
      * @return true when a source property of these kinds can fill the Open Graph property. A text or an integer Open
      * Graph property with one value takes a source property with one value only.
      */
     public static boolean canFill(Set<OgKind> kinds, boolean multipleSource, OgProperty ogProperty) {
-        OgKind kind = ogProperty.getKind();
-        return kinds.contains(kind)
-                && !((kind == OgKind.TEXT || kind == OgKind.INTEGER) && !ogProperty.isMultiple() && multipleSource);
+        return canFill(kinds, multipleSource, ogProperty.getKind(), ogProperty.isMultiple());
+    }
+
+    /**
+     * @return true when a source property of these kinds can fill the schema.org property. A text or a number with one
+     * value takes a source property with one value only.
+     */
+    public static boolean canFill(Set<OgKind> kinds, boolean multipleSource, SchemaProperty schemaProperty) {
+        return canFill(kinds, multipleSource, schemaProperty.getKind(), schemaProperty.isMultiple());
+    }
+
+    private static boolean canFill(Set<OgKind> kinds, boolean multipleSource, OgKind kind, boolean multipleTarget) {
+        boolean oneValue = kind == OgKind.TEXT || kind == OgKind.INTEGER || kind == OgKind.NUMBER;
+        return kinds.contains(kind) && !(oneValue && !multipleTarget && multipleSource);
     }
 
     /**
@@ -754,8 +955,9 @@ public class OpenGraphService {
     }
 
     /**
-     * @return the kinds of Open Graph property that the property can fill: a text comes from a STRING only, an integer
-     * from a LONG only, and a reference fills an image or a URL when it points to a file
+     * @return the kinds of Open Graph or schema.org property that the property can fill: a text comes from a STRING
+     * only, an integer from a LONG only, a number from a LONG, a DOUBLE or a DECIMAL, and a reference fills an image or
+     * a URL when it points to a file
      */
     private static Set<OgKind> compatibleKinds(ExtendedPropertyDefinition definition) {
         switch (definition.getRequiredType()) {
@@ -764,7 +966,10 @@ public class OpenGraphService {
             case PropertyType.URI:
                 return EnumSet.of(OgKind.URL);
             case PropertyType.LONG:
-                return EnumSet.of(OgKind.INTEGER);
+                return EnumSet.of(OgKind.INTEGER, OgKind.NUMBER);
+            case PropertyType.DOUBLE:
+            case PropertyType.DECIMAL:
+                return EnumSet.of(OgKind.NUMBER);
             case PropertyType.DATE:
                 return EnumSet.of(OgKind.DATE);
             case PropertyType.REFERENCE:

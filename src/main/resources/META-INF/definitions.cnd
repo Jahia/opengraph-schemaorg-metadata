@@ -27,6 +27,8 @@
  - sdm:og_video_height (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_video_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:ogType (string, choicelist[sdmOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
+// The value of sdm:schemaType adds the mixin of its schema.org properties. A mapping without it writes no JSON-LD.
+ - sdm:schemaType (string, choicelist[sdmSchemaTypes]) < 'Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'ProfilePage', 'Product', 'Event', 'Recipe', 'VideoObject'
 
 // The value of sdm:ogType adds the mixin of its own Open Graph properties.
 [sdmmix:article] > jmix:dynamicFieldset mixin
@@ -87,6 +89,100 @@
  - sdm:profile_last_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:profile_username (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:profile_gender (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+// Each sdm:schema_* property holds the name of the source property that fills one schema.org property, such as
+// sdm:schema_author_name for author.name, the name of the Person of the author.
+// Two mixins that share a schema.org property declare the same storage name, as the mixins of the og:types do.
+[sdmmix:schemaArticle] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_headline (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_datePublished (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateModified (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_author_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaNewsArticle] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_headline (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_datePublished (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateModified (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_author_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaBlogPosting] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_headline (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_datePublished (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateModified (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_author_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaWebPage] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_datePublished (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateModified (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaProfilePage] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_mainEntity_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_mainEntity_alternateName (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_mainEntity_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_mainEntity_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateCreated (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_dateModified (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaProduct] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_sku (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_brand_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_offers_price (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_offers_priceCurrency (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaEvent] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_startDate (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_endDate (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_location_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_location_address (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_organizer_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaRecipe] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_image (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_author_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_datePublished (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_prepTime (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_cookTime (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_totalTime (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_recipeYield (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_recipeCategory (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_recipeCuisine (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_recipeIngredient (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_recipeInstructions (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+
+[sdmmix:schemaVideoObject] > jmix:dynamicFieldset mixin
+ extends = sdmnt:typeMapping
+ - sdm:schema_name (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_thumbnailUrl (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_uploadDate (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_duration (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_contentUrl (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
+ - sdm:schema_embedUrl (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
 
 [sdmmix:videoEpisode] > jmix:dynamicFieldset mixin
  extends = sdmnt:typeMapping

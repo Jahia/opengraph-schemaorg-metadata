@@ -16,11 +16,15 @@ import { NAMESPACE } from "../i18n.ts";
 import type { TypeMapping } from "./openGraph.gql.ts";
 
 const OG_TYPE_WIDTH = "140px";
+const SCHEMA_TYPE_WIDTH = "140px";
 const TEMPLATE_WIDTH = "140px";
 const ACTIONS_WIDTH = "300px";
 
 const propertiesOf = (mapping: TypeMapping) =>
   mapping.properties.map(property => `${property.ogProperty} ← ${property.sourceProperty}`).join(", ");
+
+const schemaPropertiesOf = (mapping: TypeMapping) =>
+  mapping.schemaProperties.map(property => `${property.schemaProperty} ← ${property.sourceProperty}`).join(", ");
 
 type MappingTableProps = Readonly<{
   mappings: TypeMapping[];
@@ -103,6 +107,7 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
                       <TableHeadCell>{t("openGraph.list.contentType")}</TableHeadCell>
                       <TableHeadCell width={TEMPLATE_WIDTH}>{t("openGraph.list.template")}</TableHeadCell>
                       <TableHeadCell width={OG_TYPE_WIDTH}>{t("openGraph.list.ogType")}</TableHeadCell>
+                      <TableHeadCell width={SCHEMA_TYPE_WIDTH}>{t("openGraph.list.schemaType")}</TableHeadCell>
                       <TableHeadCell>{t("openGraph.list.properties")}</TableHeadCell>
                       <TableHeadCell width={ACTIONS_WIDTH}>{t("openGraph.list.actions")}</TableHeadCell>
                   </TableRow>
@@ -117,6 +122,12 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
                           <TableBodyCell>{contentTypeOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("openGraph.list.anyTemplate")}</TableBodyCell>
                           <TableBodyCell width={OG_TYPE_WIDTH}>{mapping.ogType}</TableBodyCell>
+                          <TableBodyCell width={SCHEMA_TYPE_WIDTH}
+                                         data-sel-role="sdm-schema-type"
+                                         title={schemaPropertiesOf(mapping)}
+                          >
+                              {mapping.schemaType ?? t("openGraph.list.noSchemaType")}
+                          </TableBodyCell>
                           <TableBodyCell title={propertiesOf(mapping)}>{propertiesOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={ACTIONS_WIDTH}>{actionsOf(mapping)}</TableBodyCell>
                       </TableRow>

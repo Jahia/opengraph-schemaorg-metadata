@@ -75,6 +75,21 @@ public class GqlTypeMapping {
         return mapping.getProperties().stream().map(GqlPropertyMapping::new).collect(Collectors.toList());
     }
 
+    @GraphQLField
+    @GraphQLName("schemaType")
+    @GraphQLDescription("The schema.org type, such as Article, or null when the mapping writes no JSON-LD")
+    public String getSchemaType() {
+        return mapping.getSchemaType();
+    }
+
+    @GraphQLField
+    @GraphQLName("schemaProperties")
+    @GraphQLNonNull
+    @GraphQLDescription("The schema.org properties and their source property")
+    public List<GqlSchemaPropertyMapping> getSchemaProperties() {
+        return mapping.getSchemaProperties().stream().map(GqlSchemaPropertyMapping::new).collect(Collectors.toList());
+    }
+
     @GraphQLName("OpenGraphPropertyMapping")
     @GraphQLDescription("The source property of one Open Graph property")
     public static class GqlPropertyMapping {
@@ -90,7 +105,34 @@ public class GqlTypeMapping {
         @GraphQLNonNull
         @GraphQLDescription("The Open Graph property, such as og:title")
         public String getOgProperty() {
-            return property.getOgProperty();
+            return property.getProperty();
+        }
+
+        @GraphQLField
+        @GraphQLName("sourceProperty")
+        @GraphQLNonNull
+        @GraphQLDescription("The property of the content type, such as jcr:title")
+        public String getSourceProperty() {
+            return property.getSourceProperty();
+        }
+    }
+
+    @GraphQLName("SchemaOrgPropertyMapping")
+    @GraphQLDescription("The source property of one schema.org property")
+    public static class GqlSchemaPropertyMapping {
+
+        private final PropertyMapping property;
+
+        GqlSchemaPropertyMapping(PropertyMapping property) {
+            this.property = property;
+        }
+
+        @GraphQLField
+        @GraphQLName("schemaProperty")
+        @GraphQLNonNull
+        @GraphQLDescription("The schema.org property, such as headline, or a property of a nested entity, such as author.name")
+        public String getSchemaProperty() {
+            return property.getProperty();
         }
 
         @GraphQLField

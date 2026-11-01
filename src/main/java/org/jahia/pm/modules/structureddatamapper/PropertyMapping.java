@@ -1,23 +1,24 @@
 package org.jahia.pm.modules.structureddatamapper;
 
 /**
- * Maps one Open Graph property to one property of a content type.
+ * Maps one Open Graph or schema.org property to one property of a content type.
  */
 public final class PropertyMapping {
 
-    private final String ogProperty;
+    private final String property;
     private final String sourceProperty;
 
-    public PropertyMapping(String ogProperty, String sourceProperty) {
-        this.ogProperty = ogProperty;
+    public PropertyMapping(String property, String sourceProperty) {
+        this.property = property;
         this.sourceProperty = sourceProperty;
     }
 
     /**
-     * @return the Open Graph property, such as {@code og:title}
+     * @return the Open Graph property, such as {@code og:title}, or the schema.org property, such as
+     * {@code author.name}
      */
-    public String getOgProperty() {
-        return ogProperty;
+    public String getProperty() {
+        return property;
     }
 
     /**

@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Maps a content type or a mixin of a site to an og:type, and some of its properties to Open Graph properties. A
- * template mapping also names a template, and applies only to the contents that use it.
+ * template mapping also names a template, and applies only to the contents that use it. A mapping can also name a
+ * schema.org type, and map some properties to its schema.org properties.
  */
 public final class TypeMapping {
 
@@ -14,13 +15,19 @@ public final class TypeMapping {
     private final String templateName;
     private final String ogType;
     private final List<PropertyMapping> properties;
+    private final String schemaType;
+    private final List<PropertyMapping> schemaProperties;
 
-    public TypeMapping(String uuid, String nodeType, String templateName, String ogType, List<PropertyMapping> properties) {
+    @SuppressWarnings("java:S107") // one value per field of the GraphQL type
+    public TypeMapping(String uuid, String nodeType, String templateName, String ogType, List<PropertyMapping> properties,
+                       String schemaType, List<PropertyMapping> schemaProperties) {
         this.uuid = uuid;
         this.nodeType = nodeType;
         this.templateName = templateName;
         this.ogType = ogType;
         this.properties = Collections.unmodifiableList(properties);
+        this.schemaType = schemaType;
+        this.schemaProperties = Collections.unmodifiableList(schemaProperties);
     }
 
     /**
@@ -51,7 +58,24 @@ public final class TypeMapping {
         return ogType;
     }
 
+    /**
+     * @return the Open Graph properties and their source property
+     */
     public List<PropertyMapping> getProperties() {
         return properties;
+    }
+
+    /**
+     * @return the schema.org type, such as {@code Article}, or null when the mapping writes no JSON-LD
+     */
+    public String getSchemaType() {
+        return schemaType;
+    }
+
+    /**
+     * @return the schema.org properties, such as {@code author.name}, and their source property
+     */
+    public List<PropertyMapping> getSchemaProperties() {
+        return schemaProperties;
     }
 }
