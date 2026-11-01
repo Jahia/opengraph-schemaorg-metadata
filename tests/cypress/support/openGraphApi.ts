@@ -3,8 +3,23 @@ import {SETTINGS_PATH, SITE_PATH, TestUser} from './structuredDataMapper';
 const FIXTURES = 'graphql/structuredDataMapper';
 
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
-// A template mapping names its template. openGraphMappings does not read it, so a deep comparison ignores it.
-export type TypeMapping = {nodeType: string; templateName?: string; ogType: string; properties: PropertyMapping[]};
+export type SchemaPropertyMapping = {schemaProperty: string; sourceProperty: string};
+// A template mapping names its template. openGraphMappings does not read it, so a deep comparison ignores it. A mapping
+// without schemaType writes no JSON-LD, and the query of mappings.graphql does not read the schema.org fields.
+export type TypeMapping = {
+    nodeType: string;
+    templateName?: string;
+    ogType: string;
+    properties: PropertyMapping[];
+    schemaType?: string;
+    schemaProperties?: SchemaPropertyMapping[];
+};
+export type SchemaMapping = {
+    uuid: string;
+    nodeType: string;
+    schemaType: string | null;
+    schemaProperties: SchemaPropertyMapping[];
+};
 export type MappingTarget = {
     nodeType: string;
     nodeTypeDisplayName: string | null;
@@ -66,6 +81,13 @@ export const getMappings = ({user, path = SITE_PATH}: Scope = {}) =>
         user
     );
 
+// The content type or the mixin of each mapping, with its schema.org type and properties.
+export const getSchemaMappings = ({user, path = SITE_PATH}: Scope = {}) =>
+    run<NodeData<{openGraphMappings: SchemaMapping[] | null}>>(
+        {queryFile: `${FIXTURES}/schemaMappings.graphql`, variables: {path}},
+        user
+    );
+
 // The target of each mapping: its content type or mixin, with its label, and its template.
 export const getMappingTargets = ({user, path = SITE_PATH}: Scope = {}) =>
     run<NodeData<{openGraphMappings: MappingTarget[] | null}>>(
@@ -86,13 +108,13 @@ export const getTags = (path: string, user?: TestUser) =>
     );
 
 export const saveMapping = (
-    {nodeType, templateName, ogType, properties}: TypeMapping,
+    {nodeType, templateName, ogType, properties, schemaType, schemaProperties}: TypeMapping,
     {user, path = SITE_PATH}: Scope = {}
 ) =>
     run<MutationData<{saveOpenGraphMapping: boolean | null}>>(
         {
             mutationFile: `${FIXTURES}/saveMapping.graphql`,
-            variables: {path, nodeType, templateName, ogType, properties}
+            variables: {path, nodeType, templateName, ogType, properties, schemaType, schemaProperties}
         },
         user
     );

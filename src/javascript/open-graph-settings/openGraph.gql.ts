@@ -2,6 +2,8 @@ import { gql } from "@apollo/client";
 
 export type PropertyMapping = { ogProperty: string; sourceProperty: string };
 
+export type SchemaPropertyMapping = { schemaProperty: string; sourceProperty: string };
+
 export type TypeMapping = {
   uuid: string;
   nodeType: string;
@@ -9,6 +11,8 @@ export type TypeMapping = {
   templateName: string | null;
   ogType: string;
   properties: PropertyMapping[];
+  schemaType: string | null;
+  schemaProperties: SchemaPropertyMapping[];
 };
 
 export type ScreenData = {
@@ -31,6 +35,11 @@ export const SCREEN_QUERY = gql`
           ogType
           properties {
             ogProperty
+            sourceProperty
+          }
+          schemaType
+          schemaProperties {
+            schemaProperty
             sourceProperty
           }
         }

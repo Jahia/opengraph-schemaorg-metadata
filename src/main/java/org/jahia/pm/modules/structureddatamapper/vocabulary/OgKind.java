@@ -18,5 +18,7 @@ public enum OgKind {
     /** The absolute URL of an image, built from a file node. */
     IMAGE,
     /** A whole number, such as {@code music:duration}. */
-    INTEGER
+    INTEGER,
+    /** A number with or without decimals, such as the price of a product. Only a schema.org property takes it. */
+    NUMBER
 }

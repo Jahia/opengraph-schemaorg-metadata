@@ -40,6 +40,15 @@
           "fields": [
             {"name": "sdm:ogType", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0}
           ]
+        },
+        {
+          "name": "sdmSchemaOrg",
+          "rank": 3.0,
+          "labelKey": "structured-data-mapper:fieldset.schemaOrg",
+          "descriptionKey": "structured-data-mapper:fieldset.schemaOrg.description",
+          "fields": [
+            {"name": "sdm:schemaType", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0}
+          ]
         }
       ]
     }

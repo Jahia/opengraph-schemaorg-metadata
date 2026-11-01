@@ -23,6 +23,7 @@ const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-fiel
 export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
 export const TEMPLATE_FIELD = field('sdmnt:typeMapping_sdm:templateName');
 export const OG_TYPE_FIELD = field('sdmTypeMetadata_sdm:ogType');
+export const SCHEMA_TYPE_FIELD = field('sdmSchemaOrg_sdm:schemaType');
 
 // The Content Editor names a field after its fieldset and its property, such as sdmBasicMetadata_sdm:og_title, and
 // the mapping stores article:tag in sdm:article_tag.
@@ -30,6 +31,10 @@ const sourceFieldSelector = (ogProperty: string) =>
     `[data-sel-content-editor-field$="_sdm:${ogProperty.replace(/:/g, '_')}"]`;
 
 export const sourceField = (ogProperty: string) => `${CONTENT_EDITOR} ${sourceFieldSelector(ogProperty)}`;
+
+// The mapping stores the source of author.name in sdm:schema_author_name.
+export const schemaSourceField = (schemaProperty: string) =>
+    sourceField(`schema_${schemaProperty.replace(/\./g, '_')}`);
 
 // A fieldset of the Content Editor is an article, and its title is a label for the name of the fieldset.
 export const sourceFieldIn = (fieldSetName: string, ogProperty: string) =>

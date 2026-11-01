@@ -4,6 +4,8 @@ mutation saveOpenGraphMapping(
     $templateName: String
     $ogType: String!
     $properties: [InputOpenGraphPropertyMapping]!
+    $schemaType: String
+    $schemaProperties: [InputSchemaOrgPropertyMapping]
 ) {
     jcr {
         mutateNode(pathOrId: $path) {
@@ -12,6 +14,8 @@ mutation saveOpenGraphMapping(
                 templateName: $templateName
                 ogType: $ogType
                 properties: $properties
+                schemaType: $schemaType
+                schemaProperties: $schemaProperties
             )
         }
     }

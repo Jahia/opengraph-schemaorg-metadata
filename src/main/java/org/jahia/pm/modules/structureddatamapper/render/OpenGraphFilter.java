@@ -21,10 +21,15 @@ import javax.jcr.RepositoryException;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
- * Writes the Open Graph tags of the main resource before the first {@code </head>} tag of a live page.
+ * Writes the Open Graph tags of the main resource before the first {@code </head>} tag of a live page, then its
+ * schema.org JSON-LD block when its mapping has a schema.org type.
  * <p>
  * The filter runs outside the cache filter, so a mapping change applies to a cached page at once. Its input is the
  * HTML of the template: the static assets filter adds the CSS and JavaScript links later. The filter applies only on
@@ -69,8 +74,12 @@ public class OpenGraphFilter extends AbstractFilter {
                     tags.append(HeadWriter.meta(tag.getProperty(), content));
                 }
             }
+            Map<String, Object> entity = openGraphService.resolveSchemaOrg(main, renderContext.getMainResourceLocale());
+            if (!entity.isEmpty()) {
+                tags.append(JsonLdWriter.script(withUrls(entity, renderContext)));
+            }
         } catch (RepositoryException e) {
-            logger.warn("Cannot write the Open Graph tags of {}: {}", main.getPath(), e.getMessage());
+            logger.warn("Cannot write the Open Graph tags and the JSON-LD of {}: {}", main.getPath(), e.getMessage());
             logger.debug("Open Graph failure details", e);
             return previousOut;
         }
@@ -78,6 +87,42 @@ public class OpenGraphFilter extends AbstractFilter {
             return previousOut;
         }
         return previousOut.substring(0, headEnd) + tags + previousOut.substring(headEnd);
+    }
+
+    /**
+     * @return a copy of the entity where the absolute URL of each node replaces the node. A node without a URL leaves
+     * its property, or its place in a list.
+     */
+    private Map<String, Object> withUrls(Map<String, ?> entity, RenderContext renderContext) throws RepositoryException {
+        Map<String, Object> copy = new LinkedHashMap<>();
+        for (Map.Entry<String, ?> property : entity.entrySet()) {
+            Object value = withUrl(property.getValue(), renderContext);
+            if (value != null) {
+                copy.put(property.getKey(), value);
+            }
+        }
+        return copy;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object withUrl(Object value, RenderContext renderContext) throws RepositoryException {
+        if (value instanceof JCRNodeWrapper) {
+            return absoluteUrl((JCRNodeWrapper) value, renderContext);
+        }
+        if (value instanceof Map) {
+            return withUrls((Map<String, ?>) value, renderContext);
+        }
+        if (value instanceof List) {
+            List<Object> values = new ArrayList<>();
+            for (Object item : (List<?>) value) {
+                Object withUrl = withUrl(item, renderContext);
+                if (withUrl != null) {
+                    values.add(withUrl);
+                }
+            }
+            return values.isEmpty() ? null : values;
+        }
+        return value;
     }
 
     /**

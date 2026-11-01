@@ -31,6 +31,13 @@ export const metaTags = (page: LivePage, prefix: string): {property: string; con
         content: meta.getAttribute('content')
     }));
 
+// Each JSON-LD script element of the page, wherever it is, in the order of the page.
+export const jsonLdScripts = (page: LivePage): HTMLScriptElement[] =>
+    Array.from(page.doc.querySelectorAll('script[type="application/ld+json"]'));
+
+// The parsed JSON of a JSON-LD script element.
+export const jsonLdOf = (script: HTMLScriptElement): Record<string, unknown> => JSON.parse(script.textContent);
+
 // The property of each Open Graph meta tag of the page, wherever it is.
 export const ogProperties = (page: LivePage): string[] =>
     Array.from(page.doc.querySelectorAll('meta[property]'))

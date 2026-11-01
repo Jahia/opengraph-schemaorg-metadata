@@ -10,6 +10,8 @@
       "template": "Template",
       "anyTemplate": "All templates",
       "ogType": "og:type",
+      "schemaType": "schema.org type",
+      "noSchemaType": "None",
       "properties": "Open Graph properties",
       "actions": "Actions",
       "edit": "Edit",

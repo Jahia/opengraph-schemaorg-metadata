@@ -32,6 +32,7 @@ export default defineConfig({
             'cypress/e2e/7EditorTags.cy.ts',
             'cypress/e2e/8MixinTemplate.cy.ts',
             'cypress/e2e/8ShareCard.cy.ts',
+            'cypress/e2e/9SchemaOrg.cy.ts',
             'cypress/e2e/ZTeardown.cy.ts'
         ],
         excludeSpecPattern: '*.ignore.ts',

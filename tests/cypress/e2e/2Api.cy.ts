@@ -203,7 +203,10 @@ describe('Open Graph mapping API', () => {
             expect(byName.openGraphImage.compatibleOgKinds).to.deep.equal(['URL', 'IMAGE']);
             expect(byName['jcr:primaryType'], 'a NAME property fills nothing').to.be.undefined;
             expect(byName['j:expiration']).to.include({requiredType: 'LONG', declaringType: 'jmix:cache'});
-            expect(byName['j:expiration'].compatibleOgKinds, 'a LONG fills an integer only').to.deep.equal(['INTEGER']);
+            expect(byName['j:expiration'].compatibleOgKinds, 'a LONG fills an integer or a number').to.deep.equal([
+                'INTEGER',
+                'NUMBER'
+            ]);
             properties
                 .filter(property => property.requiredType !== 'LONG')
                 .forEach(property => {
