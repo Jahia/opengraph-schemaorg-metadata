@@ -25,9 +25,20 @@
     "property": "Property",
     "value": "Value",
     "saveHint": "Save to see the updated Open Graph values",
-    "urlOf": "Live URL of {{path}}"
+    "urlOf": "Live URL of {{path}}",
+    "off": "Open Graph is off in the mapping of this content type, so the live page has no Open Graph tag."
   },
   "customTags": {
     "property": "Open Graph property"
+  },
+  "schemaPreview": {
+    "saveHint": "Save to see the updated schema.org values",
+    "off": "schema.org is off in the mapping of this content type, so the live page has no JSON-LD block."
+  },
+  "customSchemaValues": {
+    "property": "schema.org property"
+  },
+  "shareCard": {
+    "from": "From {{domain}}"
   }
 }

@@ -61,6 +61,13 @@
  extends = jmix:mainResource, jnt:page
  - sdm:customTags (string) i18n multiple
 
+// Each value is a JSON object that sets one schema.org property, such as {"property":"author.name","content":"Ada Lovelace"}.
+// An image holds the identifier of its file instead, such as {"property":"image","node":"<uuid>"}.
+// The selector type SdmSchemaValue edits a value: a forms file sets it, as for sdm:customTags.
+[sdmmix:customSchemaOrg] mixin
+ extends = jmix:mainResource, jnt:page
+ - sdm:customSchemaOrg (string) i18n multiple
+
 // Two mixins that share an Open Graph property declare the same storage name, such as sdm:music_song.
 // A mapping carries one of these mixins at a time, because the JCR refuses two declarations of one name on a node.
 [sdmmix:musicAlbum] > jmix:dynamicFieldset mixin

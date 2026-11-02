@@ -1,0 +1,21 @@
+{
+  "nodeType": "sdmmix:customSchemaOrg",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "seo",
+      "fieldSets": [
+        {
+          "name": "sdmmix:customSchemaOrg",
+          "rank": 12.0,
+          "fields": [
+            {
+              "name": "sdm:customSchemaOrg",
+              "selectorType": "SdmSchemaValue"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

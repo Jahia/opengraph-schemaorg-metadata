@@ -140,6 +140,25 @@ export const getCustomTags = (path: string) =>
 export const setCustomTags = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
 
+// The mixin types of a node, and the English values of sdm:customSchemaOrg.
+export const getCustomSchemaValues = (path: string) =>
+    run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customSchemaValues.graphql`, variables: {path}});
+
+// Adds the mixin sdmmix:customSchemaOrg to a node, and sets the English values of sdm:customSchemaOrg.
+export const setCustomSchemaValues = (path: string, values: string[]) =>
+    run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomSchemaValues.graphql`, variables: {path, values}});
+
+// The English JSON-LD of a node as the field schemaOrgJsonLd gives it, parsed, or null when the node has none.
+export const getJsonLd = (path: string, user?: TestUser): Cypress.Chainable<Record<string, unknown> | null> =>
+    run<NodeData<{schemaOrgJsonLd: string | null}>>(
+        {queryFile: `${FIXTURES}/schemaOrgJsonLd.graphql`, variables: {path, language: 'en'}},
+        user
+    ).then(result => {
+        expectNoError(result);
+        const jsonLd = result.data.jcr.nodeByPath.schemaOrgJsonLd;
+        return jsonLd === null ? null : (JSON.parse(jsonLd) as Record<string, unknown>);
+    });
+
 export const expectNoError = <T>(result: GqlResult<T>) => {
     expect(result.errors, `GraphQL errors: ${JSON.stringify(result.errors?.map(error => error.message))}`).to.be
         .undefined;

@@ -1,16 +1,22 @@
 import { Share } from "@jahia/moonstone/dist/icons";
 import { registry } from "@jahia/ui-extender";
 import { lazy, Suspense, type ComponentType } from "react";
+import type { SdmSchemaValueProps } from "./editor-tags/SdmSchemaValue.tsx";
 import type { SdmTagProps } from "./editor-tags/SdmTag.tsx";
 import { i18n, NAMESPACE } from "./i18n.ts";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
+import type { SchemaPreviewProps } from "./schema-org-preview/SchemaPreview.tsx";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
 // The preview needs the federated module of jContent. If it does not load, the Content Editor shows an empty field.
 const OgPreviewApp = lazy<ComponentType<OgPreviewProps>>(() =>
   import("./open-graph-preview/OgPreview.tsx").catch(() => ({ default: () => null }))
 );
+const SchemaPreviewApp = lazy<ComponentType<SchemaPreviewProps>>(() =>
+  import("./schema-org-preview/SchemaPreview.tsx").catch(() => ({ default: () => null }))
+);
 const SdmTagApp = lazy(() => import("./editor-tags/SdmTag.tsx"));
+const SdmSchemaValueApp = lazy(() => import("./editor-tags/SdmSchemaValue.tsx"));
 
 const OgPreviewSelector = (props: OgPreviewProps) => (
     <Suspense fallback={null}>
@@ -18,9 +24,21 @@ const OgPreviewSelector = (props: OgPreviewProps) => (
     </Suspense>
 );
 
+const SchemaPreviewSelector = (props: SchemaPreviewProps) => (
+    <Suspense fallback={null}>
+        <SchemaPreviewApp {...props}/>
+    </Suspense>
+);
+
 const SdmTagSelector = (props: SdmTagProps) => (
     <Suspense fallback={null}>
         <SdmTagApp {...props}/>
+    </Suspense>
+);
+
+const SdmSchemaValueSelector = (props: SdmSchemaValueProps) => (
+    <Suspense fallback={null}>
+        <SdmSchemaValueApp {...props}/>
     </Suspense>
 );
 
@@ -52,11 +70,14 @@ export default function registerStructuredDataMapper() {
         },
       });
 
-      // The read-only field sdm:ogPreview of the section "Open Graph" in the Content Editor.
+      // The read-only fields sdm:ogPreview and sdm:schemaPreview of the section SEO in the Content Editor.
       registry.add("selectorType", "SdmPreview", { cmp: OgPreviewSelector, supportMultiple: false });
+      registry.add("selectorType", "SdmSchemaPreview", { cmp: SchemaPreviewSelector, supportMultiple: false });
 
-      // One value of sdm:customTags, below sdm:ogPreview. The forms file of sdmmix:customTags sets this selector type.
+      // One value of sdm:customTags, above sdm:ogPreview, and one value of sdm:customSchemaOrg, above
+      // sdm:schemaPreview. The forms files of sdmmix:customTags and sdmmix:customSchemaOrg set these selector types.
       registry.add("selectorType", "SdmTag", { cmp: SdmTagSelector, supportMultiple: false });
+      registry.add("selectorType", "SdmSchemaValue", { cmp: SdmSchemaValueSelector, supportMultiple: false });
     },
   });
 }

@@ -6,13 +6,17 @@ import org.jahia.pm.modules.structureddatamapper.vocabulary.SchemaProperty;
 import org.jahia.pm.modules.structureddatamapper.vocabulary.SchemaType;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRPropertyWrapper;
+import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.JCRValueWrapper;
 import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 import org.jahia.services.content.nodetypes.SelectorType;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,14 +36,16 @@ final class SchemaOrgEntity {
 
     private static final String TITLE_PROPERTY = "jcr:title";
     private static final String FILE_TYPE = "jnt:file";
+    private static final String CUSTOM_VALUES_PROPERTY = "sdm:customSchemaOrg";
 
     private SchemaOrgEntity() {
     }
 
     /**
      * The entity starts with {@code @context}, {@code @type} and {@code url}, then holds the mapped properties in the
-     * order of the vocabulary. The property that names the content, such as {@code headline}, takes the
-     * {@code jcr:title} of the node when the mapping gives it no value.
+     * order of the vocabulary. A value that the editor sets in {@code sdm:customSchemaOrg} replaces the mapped values of
+     * its property, or adds a property that the mapping does not fill. The property that names the content, such as
+     * {@code headline}, takes the {@code jcr:title} of the node when the mapping and the editor give it no value.
      *
      * @param properties the schema.org properties of the mapping and their source property
      */
@@ -53,15 +59,80 @@ final class SchemaOrgEntity {
         entity.put("@context", CONTEXT);
         entity.put("@type", schemaType.getValue());
         entity.put("url", node);
+        Map<String, List<Object>> custom = customValues(node, schemaType);
         for (SchemaProperty property : schemaType.getProperties()) {
-            String source = sources.get(property.getName());
-            List<Object> values = source == null ? Collections.emptyList() : values(node, property, source);
+            List<Object> values = custom.get(property.getName());
+            if (values == null) {
+                String source = sources.get(property.getName());
+                values = source == null ? Collections.emptyList() : values(node, property, source);
+            }
             if (values.isEmpty() && property == schemaType.getTitleProperty()) {
                 values = title(node);
             }
             put(entity, property, values);
         }
         return entity;
+    }
+
+    /**
+     * Reads the values that the editor set in {@code sdm:customSchemaOrg}. The method ignores a value that is not valid
+     * JSON, whose property the schema.org type does not have, or that sets nothing. A property with one value keeps
+     * the first value of the editor that sets one.
+     *
+     * @return the values of the editor, by schema.org property, in the order of the field, for each property with at
+     * least one value that sets something
+     */
+    private static Map<String, List<Object>> customValues(JCRNodeWrapper node, SchemaType schemaType)
+            throws RepositoryException {
+        if (!node.hasProperty(CUSTOM_VALUES_PROPERTY)) {
+            return Collections.emptyMap();
+        }
+        JCRPropertyWrapper property = node.getProperty(CUSTOM_VALUES_PROPERTY);
+        JCRValueWrapper[] values = property.isMultiple() ? property.getValues() : new JCRValueWrapper[]{property.getValue()};
+        Map<String, List<Object>> custom = new HashMap<>();
+        for (JCRValueWrapper value : values) {
+            JSONObject json;
+            try {
+                json = new JSONObject(value.getString());
+            } catch (JSONException e) {
+                continue;
+            }
+            SchemaProperty schemaProperty = schemaType.findProperty(json.optString("property")).orElse(null);
+            Object schemaValue = schemaProperty == null ? null : customValue(node.getSession(), schemaProperty.getKind(), json);
+            if (schemaValue != null) {
+                List<Object> propertyValues = custom.computeIfAbsent(schemaProperty.getName(), name -> new ArrayList<>());
+                if (schemaProperty.isMultiple() || propertyValues.isEmpty()) {
+                    propertyValues.add(schemaValue);
+                }
+            }
+        }
+        return custom;
+    }
+
+    /**
+     * A value of the editor holds the identifier of a file in {@code node}, such as the file of {@code image}, or a
+     * text in {@code content}. A number property takes a decimal number, such as {@code 19.90}.
+     *
+     * @return the file, the number or the text of one value of the editor, or null when the value sets nothing
+     */
+    private static Object customValue(JCRSessionWrapper session, OgKind kind, JSONObject json) throws RepositoryException {
+        String fileId = json.optString("node");
+        if (!fileId.isEmpty()) {
+            return kind == OgKind.IMAGE || kind == OgKind.URL ? file(session, fileId) : null;
+        }
+        String content = json.optString("content").trim();
+        if (content.isEmpty()) {
+            return null;
+        }
+        return kind == OgKind.NUMBER ? decimal(content) : content;
+    }
+
+    private static BigDecimal decimal(String text) {
+        try {
+            return new BigDecimal(text);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private static List<Object> title(JCRNodeWrapper node) {
@@ -195,5 +266,18 @@ final class SchemaOrgEntity {
             return null;
         }
         return target != null && target.isNodeType(FILE_TYPE) ? target : null;
+    }
+
+    /**
+     * @return the file of the identifier, or null when the identifier names no file of the workspace
+     */
+    private static JCRNodeWrapper file(JCRSessionWrapper session, String identifier) throws RepositoryException {
+        JCRNodeWrapper target;
+        try {
+            target = session.getNodeByIdentifier(identifier);
+        } catch (ItemNotFoundException | IllegalArgumentException e) {
+            return null;
+        }
+        return target.isNodeType(FILE_TYPE) ? target : null;
     }
 }

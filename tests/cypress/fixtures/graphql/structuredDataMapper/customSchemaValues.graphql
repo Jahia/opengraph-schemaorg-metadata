@@ -1,0 +1,13 @@
+query structuredDataMapperCustomSchemaValues($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            uuid
+            mixinTypes {
+                name
+            }
+            property(name: "sdm:customSchemaOrg", language: "en") {
+                values
+            }
+        }
+    }
+}

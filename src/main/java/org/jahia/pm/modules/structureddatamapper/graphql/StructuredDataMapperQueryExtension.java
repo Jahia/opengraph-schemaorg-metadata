@@ -13,7 +13,7 @@ public class StructuredDataMapperQueryExtension {
     @GraphQLField
     @GraphQLName("openGraphVocabulary")
     @GraphQLNonNull
-    @GraphQLDescription("The og:type values and the Open Graph properties that a mapping can use")
+    @GraphQLDescription("The og:type values and the schema.org types that a mapping can use, and their properties")
     public static GqlOgVocabulary openGraphVocabulary() {
         return new GqlOgVocabulary();
     }

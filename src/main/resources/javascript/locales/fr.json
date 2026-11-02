@@ -25,9 +25,20 @@
     "property": "Propriété",
     "value": "Valeur",
     "saveHint": "Enregistrez pour voir les valeurs Open Graph mises à jour",
-    "urlOf": "URL en ligne de {{path}}"
+    "urlOf": "URL en ligne de {{path}}",
+    "off": "Open Graph est désactivé dans la correspondance de ce type de contenu, donc la page en ligne n'a pas de balise Open Graph."
   },
   "customTags": {
     "property": "Propriété Open Graph"
+  },
+  "schemaPreview": {
+    "saveHint": "Enregistrez pour voir les valeurs schema.org mises à jour",
+    "off": "schema.org est désactivé dans la correspondance de ce type de contenu, donc la page en ligne n'a pas de bloc JSON-LD."
+  },
+  "customSchemaValues": {
+    "property": "Propriété schema.org"
+  },
+  "shareCard": {
+    "from": "De {{domain}}"
   }
 }

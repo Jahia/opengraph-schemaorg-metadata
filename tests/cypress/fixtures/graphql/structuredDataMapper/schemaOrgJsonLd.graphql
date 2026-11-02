@@ -1,0 +1,7 @@
+query structuredDataMapperSchemaOrgJsonLd($path: String!, $language: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            schemaOrgJsonLd(language: $language)
+        }
+    }
+}

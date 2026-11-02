@@ -7,7 +7,7 @@
       "fieldSets": [
         {
           "name": "sdmOpenGraphValues",
-          "rank": 10.0,
+          "rank": 11.0,
           "labelKey": "structured-data-mapper:fieldset.openGraphValues",
           "descriptionKey": "structured-data-mapper:fieldset.openGraphValues.description",
           "fields": [
@@ -16,6 +16,20 @@
               "selectorType": "SdmPreview",
               "readOnly": true,
               "labelKey": "structured-data-mapper:field.ogPreview"
+            }
+          ]
+        },
+        {
+          "name": "sdmSchemaOrgValues",
+          "rank": 13.0,
+          "labelKey": "structured-data-mapper:fieldset.schemaOrgValues",
+          "descriptionKey": "structured-data-mapper:fieldset.schemaOrgValues.description",
+          "fields": [
+            {
+              "name": "sdm:schemaPreview",
+              "selectorType": "SdmSchemaPreview",
+              "readOnly": true,
+              "labelKey": "structured-data-mapper:field.schemaPreview"
             }
           ]
         }
