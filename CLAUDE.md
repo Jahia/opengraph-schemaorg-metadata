@@ -44,4 +44,4 @@ The provisioning manifests install `news` 3.4.0, because the specs use its conte
 - Keep the package name `structureddatamapper` in `package.json`. A hyphen in the package name blocks the rendering of the UI.
 - Pin `vite`, `@jahia/vite-federation-plugin` and the `@module-federation/vite` resolution together.
 - Put a library that app-shell 4 provides as a singleton in `peerDependencies`, and a copy at the version of app-shell 4.0.0 in `devDependencies`. The build of `@jahia/vite-federation-plugin` fails on a library in the wrong section.
-- Keep the runtime plugin `src/javascript/appShellRemotes.ts` in `vite.config.ts`. Without it, the federation runtime of the module initializes the containers of `appShell.remotes` a second time, and the UI of the module does not load (very-open-graph#40).
+- Keep the runtime plugin `src/javascript/appShellRemotes.ts` in `vite.config.ts`. Without it, the federation runtime of the module initializes the containers of `appShell.remotes` a second time, and the UI of the module does not load (structured-data-mapper#40).
