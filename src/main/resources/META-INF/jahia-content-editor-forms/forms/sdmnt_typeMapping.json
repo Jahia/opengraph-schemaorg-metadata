@@ -10,44 +10,36 @@
           "rank": 0.0
         },
         {
-          "name": "sdmBasicMetadata",
+          "name": "sdmmix:openGraph",
           "rank": 1.0,
-          "labelKey": "structured-data-mapper:fieldset.basicMetadata",
-          "descriptionKey": "structured-data-mapper:fieldset.basicMetadata.description",
+          "labelKey": "structured-data-mapper:fieldset.openGraph",
+          "descriptionKey": "structured-data-mapper:fieldset.openGraph.description",
           "fields": [
-            {"name": "sdm:og_title", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0},
-            {"name": "sdm:og_description", "declaringNodeType": "sdmnt:typeMapping", "rank": 2.0},
-            {"name": "sdm:og_determiner", "declaringNodeType": "sdmnt:typeMapping", "rank": 3.0},
-            {"name": "sdm:og_image", "declaringNodeType": "sdmnt:typeMapping", "rank": 4.0},
-            {"name": "sdm:og_image_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 5.0},
-            {"name": "sdm:og_image_alt", "declaringNodeType": "sdmnt:typeMapping", "rank": 6.0},
-            {"name": "sdm:og_audio", "declaringNodeType": "sdmnt:typeMapping", "rank": 7.0},
-            {"name": "sdm:og_audio_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 8.0},
-            {"name": "sdm:og_audio_type", "declaringNodeType": "sdmnt:typeMapping", "rank": 9.0},
-            {"name": "sdm:og_video", "declaringNodeType": "sdmnt:typeMapping", "rank": 10.0},
-            {"name": "sdm:og_video_secure_url", "declaringNodeType": "sdmnt:typeMapping", "rank": 11.0},
-            {"name": "sdm:og_video_type", "declaringNodeType": "sdmnt:typeMapping", "rank": 12.0},
-            {"name": "sdm:og_video_width", "declaringNodeType": "sdmnt:typeMapping", "rank": 13.0},
-            {"name": "sdm:og_video_height", "declaringNodeType": "sdmnt:typeMapping", "rank": 14.0},
-            {"name": "sdm:og_video_alt", "declaringNodeType": "sdmnt:typeMapping", "rank": 15.0}
+            {"name": "sdm:og_title", "declaringNodeType": "sdmmix:openGraph", "rank": 1.0},
+            {"name": "sdm:og_description", "declaringNodeType": "sdmmix:openGraph", "rank": 2.0},
+            {"name": "sdm:og_determiner", "declaringNodeType": "sdmmix:openGraph", "rank": 3.0},
+            {"name": "sdm:og_image", "declaringNodeType": "sdmmix:openGraph", "rank": 4.0},
+            {"name": "sdm:og_image_secure_url", "declaringNodeType": "sdmmix:openGraph", "rank": 5.0},
+            {"name": "sdm:og_image_alt", "declaringNodeType": "sdmmix:openGraph", "rank": 6.0},
+            {"name": "sdm:og_audio", "declaringNodeType": "sdmmix:openGraph", "rank": 7.0},
+            {"name": "sdm:og_audio_secure_url", "declaringNodeType": "sdmmix:openGraph", "rank": 8.0},
+            {"name": "sdm:og_audio_type", "declaringNodeType": "sdmmix:openGraph", "rank": 9.0},
+            {"name": "sdm:og_video", "declaringNodeType": "sdmmix:openGraph", "rank": 10.0},
+            {"name": "sdm:og_video_secure_url", "declaringNodeType": "sdmmix:openGraph", "rank": 11.0},
+            {"name": "sdm:og_video_type", "declaringNodeType": "sdmmix:openGraph", "rank": 12.0},
+            {"name": "sdm:og_video_width", "declaringNodeType": "sdmmix:openGraph", "rank": 13.0},
+            {"name": "sdm:og_video_height", "declaringNodeType": "sdmmix:openGraph", "rank": 14.0},
+            {"name": "sdm:og_video_alt", "declaringNodeType": "sdmmix:openGraph", "rank": 15.0},
+            {"name": "sdm:ogType", "declaringNodeType": "sdmmix:openGraph", "rank": 16.0}
           ]
         },
         {
-          "name": "sdmTypeMetadata",
+          "name": "sdmmix:schemaOrg",
           "rank": 2.0,
-          "labelKey": "structured-data-mapper:fieldset.typeMetadata",
-          "descriptionKey": "structured-data-mapper:fieldset.typeMetadata.description",
-          "fields": [
-            {"name": "sdm:ogType", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0}
-          ]
-        },
-        {
-          "name": "sdmSchemaOrg",
-          "rank": 3.0,
           "labelKey": "structured-data-mapper:fieldset.schemaOrg",
           "descriptionKey": "structured-data-mapper:fieldset.schemaOrg.description",
           "fields": [
-            {"name": "sdm:schemaType", "declaringNodeType": "sdmnt:typeMapping", "rank": 1.0}
+            {"name": "sdm:schemaType", "declaringNodeType": "sdmmix:schemaOrg", "rank": 1.0}
           ]
         }
       ]

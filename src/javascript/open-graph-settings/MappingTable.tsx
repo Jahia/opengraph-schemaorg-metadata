@@ -121,7 +121,9 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
                       >
                           <TableBodyCell>{contentTypeOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("openGraph.list.anyTemplate")}</TableBodyCell>
-                          <TableBodyCell width={OG_TYPE_WIDTH}>{mapping.ogType}</TableBodyCell>
+                          <TableBodyCell width={OG_TYPE_WIDTH} data-sel-role="sdm-og-type">
+                              {mapping.ogType ?? t("openGraph.list.noOgType")}
+                          </TableBodyCell>
                           <TableBodyCell width={SCHEMA_TYPE_WIDTH}
                                          data-sel-role="sdm-schema-type"
                                          title={schemaPropertiesOf(mapping)}

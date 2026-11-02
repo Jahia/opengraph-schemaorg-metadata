@@ -6,11 +6,15 @@
 [sdmnt:settings] > nt:base, jmix:nolive
  + * (sdmnt:typeMapping)
 
-// Each sdm:og_* property holds the name of the source property that fills one Open Graph property.
+// A mapping without sdmmix:openGraph writes no Open Graph tag, and a mapping without sdmmix:schemaOrg writes no JSON-LD.
 [sdmnt:typeMapping] > nt:base
  - sdm:nodeType (string, choicelist[sdmContentTypes]) mandatory
 // A template mapping applies to the contents whose j:templateName holds sdm:templateName. The value * applies to every template.
  - sdm:templateName (string, choicelist[sdmTemplates,dependentProperties='sdm:nodeType']) = '*' mandatory
+
+// Each sdm:og_* property holds the name of the source property that fills one Open Graph property of every og:type.
+[sdmmix:openGraph] mixin
+ extends = sdmnt:typeMapping
  - sdm:og_title (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_description (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_determiner (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
@@ -26,9 +30,12 @@
  - sdm:og_video_width (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_video_height (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
  - sdm:og_video_alt (string, choicelist[sdmSourceProperties,dependentProperties='sdm:nodeType'])
- - sdm:ogType (string, choicelist[sdmOgTypes]) mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
-// The value of sdm:schemaType adds the mixin of its schema.org properties. A mapping without it writes no JSON-LD.
- - sdm:schemaType (string, choicelist[sdmSchemaTypes]) < 'Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'ProfilePage', 'Product', 'Event', 'Recipe', 'VideoObject'
+ - sdm:ogType (string, choicelist[sdmOgTypes]) = 'website' mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
+
+// The value of sdm:schemaType adds the mixin of its schema.org properties.
+[sdmmix:schemaOrg] mixin
+ extends = sdmnt:typeMapping
+ - sdm:schemaType (string, choicelist[sdmSchemaTypes]) mandatory < 'Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'ProfilePage', 'Product', 'Event', 'Recipe', 'VideoObject'
 
 // The value of sdm:ogType adds the mixin of its own Open Graph properties.
 [sdmmix:article] > jmix:dynamicFieldset mixin

@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Maps a content type or a mixin of a site to an og:type, and some of its properties to Open Graph properties. A
- * template mapping also names a template, and applies only to the contents that use it. A mapping can also name a
- * schema.org type, and map some properties to its schema.org properties.
+ * Maps a content type or a mixin of a site to an og:type and some of its properties to Open Graph properties, to a
+ * schema.org type and some of its properties to schema.org properties, or to both. A template mapping also names a
+ * template, and applies only to the contents that use it.
  */
 public final class TypeMapping {
 
@@ -52,7 +52,7 @@ public final class TypeMapping {
     }
 
     /**
-     * @return the og:type, such as {@code article}
+     * @return the og:type, such as {@code article}, or null when the mapping writes no Open Graph tag
      */
     public String getOgType() {
         return ogType;

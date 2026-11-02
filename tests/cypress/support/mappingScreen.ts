@@ -22,10 +22,14 @@ const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-fiel
 
 export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
 export const TEMPLATE_FIELD = field('sdmnt:typeMapping_sdm:templateName');
-export const OG_TYPE_FIELD = field('sdmTypeMetadata_sdm:ogType');
-export const SCHEMA_TYPE_FIELD = field('sdmSchemaOrg_sdm:schemaType');
+// The mixin of each switch of the form, which is also the name of its fieldset.
+export const OPEN_GRAPH = 'sdmmix:openGraph';
+export const SCHEMA_ORG = 'sdmmix:schemaOrg';
 
-// The Content Editor names a field after its fieldset and its property, such as sdmBasicMetadata_sdm:og_title, and
+export const OG_TYPE_FIELD = field(`${OPEN_GRAPH}_sdm:ogType`);
+export const SCHEMA_TYPE_FIELD = field(`${SCHEMA_ORG}_sdm:schemaType`);
+
+// The Content Editor names a field after its fieldset and its property, such as sdmmix:openGraph_sdm:og_title, and
 // the mapping stores article:tag in sdm:article_tag.
 const sourceFieldSelector = (ogProperty: string) =>
     `[data-sel-content-editor-field$="_sdm:${ogProperty.replace(/:/g, '_')}"]`;
@@ -39,6 +43,23 @@ export const schemaSourceField = (schemaProperty: string) =>
 // A fieldset of the Content Editor is an article, and its title is a label for the name of the fieldset.
 export const sourceFieldIn = (fieldSetName: string, ogProperty: string) =>
     `${CONTENT_EDITOR} article:has(label[for="${fieldSetName}"]) ${sourceFieldSelector(ogProperty)}`;
+
+// The names of the fields of a fieldset, in the order of the form.
+export const fieldNamesIn = (fieldSetName: string) =>
+    cy
+        .get(`${CONTENT_EDITOR} article:has(label[for="${fieldSetName}"]) [data-sel-content-editor-field]`)
+        .then(fields => Cypress._.map(fields, item => item.getAttribute('data-sel-content-editor-field')));
+
+export const fieldSetSwitch = (fieldSetName: string) =>
+    cy
+        .get(`${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${fieldSetName}"]`, {timeout: LOAD_TIMEOUT})
+        .find('input[type="checkbox"]');
+
+// The switch of a fieldset adds its mixin on save, and shows its fields.
+export const switchFieldSet = (fieldSetName: string, on: boolean) => {
+    fieldSetSwitch(fieldSetName).click({force: true});
+    fieldSetSwitch(fieldSetName).should(on ? 'be.checked' : 'not.be.checked');
+};
 
 // The "Add a mapping" button is enabled once the screen has loaded its data.
 export const openScreen = (user: TestUser) => {

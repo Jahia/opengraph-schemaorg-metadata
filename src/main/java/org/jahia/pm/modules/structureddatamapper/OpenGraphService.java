@@ -69,8 +69,10 @@ public class OpenGraphService {
 
     private static final String SETTINGS_TYPE = "sdmnt:settings";
     private static final String TYPE_MAPPING_TYPE = "sdmnt:typeMapping";
+    private static final String OPEN_GRAPH_MIXIN = "sdmmix:openGraph";
     private static final String OG_TYPE_PROPERTY = "sdm:ogType";
     private static final String STORAGE_PREFIX = "sdm:";
+    private static final String SCHEMA_ORG_MIXIN = "sdmmix:schemaOrg";
     private static final String SCHEMA_TYPE_PROPERTY = "sdm:schemaType";
     private static final String SCHEMA_STORAGE_PREFIX = "sdm:schema_";
 
@@ -228,6 +230,8 @@ public class OpenGraphService {
      * the template mapping of the content type for that template.
      *
      * @param templateName     the template, or null, empty or {@link #ALL_TEMPLATES} for a mapping of every template
+     * @param ogType           the og:type, or null or empty for a mapping that writes no Open Graph tag
+     * @param properties       the Open Graph properties and their source property, empty without an og:type
      * @param schemaType       the schema.org type, or null or empty for a mapping that writes no JSON-LD
      * @param schemaProperties the schema.org properties and their source property, empty without a schema.org type
      * @throws InvalidMappingException when the site cannot use the content type, the template, the og:type, the
@@ -243,9 +247,7 @@ public class OpenGraphService {
             throw new InvalidMappingException("The site '" + site.getSiteKey() + "' has no template '" + template
                     + "' for the content type '" + nodeType + "'");
         }
-        OgType og = OgType.fromValue(ogType).orElseThrow(() -> new InvalidMappingException(
-                "Unknown og:type '" + ogType + "'. Use one of "
-                        + Arrays.stream(OgType.values()).map(OgType::getValue).collect(Collectors.joining(", ", "[", "]"))));
+        OgType og = ogType(ogType, properties);
         Map<String, ExtendedPropertyDefinition> sources = sourceDefinitions(site, type);
         Set<String> mapped = new HashSet<>();
         for (PropertyMapping property : properties) {
@@ -257,19 +259,57 @@ public class OpenGraphService {
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(JCRSessionFactory.getInstance().getCurrentUser(),
                 Constants.EDIT_WORKSPACE, null, session -> {
                     JCRNodeWrapper mapping = typeNode(session, site.getPath(), nodeType, template);
-                    removeOgProperties(mapping);
-                    setOgTypeMixin(mapping, og);
                     mapping.setProperty(NODE_TYPE_PROPERTY, nodeType);
                     mapping.setProperty(TEMPLATE_PROPERTY, template == null ? ALL_TEMPLATES : template);
-                    mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
-                    for (PropertyMapping property : properties) {
-                        mapping.setProperty(storageName(property.getProperty()), property.getSourceProperty());
-                    }
+                    setOgMapping(mapping, og, properties);
                     setSchemaMapping(mapping, schema, schemaProperties);
                     session.save();
                     return null;
                 });
         clearMappings(site.getPath());
+    }
+
+    /**
+     * @return the og:type, or null for a mapping without one
+     * @throws InvalidMappingException when the og:type is unknown, or when Open Graph properties have no og:type
+     */
+    private static OgType ogType(String ogType, List<PropertyMapping> properties) throws InvalidMappingException {
+        if (ogType == null || ogType.isEmpty()) {
+            if (!properties.isEmpty()) {
+                throw new InvalidMappingException("An Open Graph property needs an og:type");
+            }
+            return null;
+        }
+        return OgType.fromValue(ogType).orElseThrow(() -> new InvalidMappingException(
+                "Unknown og:type '" + ogType + "'. Use one of "
+                        + Arrays.stream(OgType.values()).map(OgType::getValue).collect(Collectors.joining(", ", "[", "]"))));
+    }
+
+    /**
+     * Replaces the og:type of a mapping node, its mixins and the source of each of its Open Graph properties.
+     *
+     * @param og the og:type, or null to remove the Open Graph mapping
+     */
+    private static void setOgMapping(JCRNodeWrapper mapping, OgType og, List<PropertyMapping> properties)
+            throws RepositoryException {
+        removeOgProperties(mapping);
+        setOgTypeMixin(mapping, og);
+        if (og == null) {
+            if (mapping.hasProperty(OG_TYPE_PROPERTY)) {
+                mapping.getProperty(OG_TYPE_PROPERTY).remove();
+            }
+            if (mapping.isNodeType(OPEN_GRAPH_MIXIN)) {
+                mapping.removeMixin(OPEN_GRAPH_MIXIN);
+            }
+            return;
+        }
+        if (!mapping.isNodeType(OPEN_GRAPH_MIXIN)) {
+            mapping.addMixin(OPEN_GRAPH_MIXIN);
+        }
+        mapping.setProperty(OG_TYPE_PROPERTY, og.getValue());
+        for (PropertyMapping property : properties) {
+            mapping.setProperty(storageName(property.getProperty()), property.getSourceProperty());
+        }
     }
 
     /**
@@ -289,6 +329,8 @@ public class OpenGraphService {
 
     /**
      * Keeps on a mapping node the mixin of the own Open Graph properties of its og:type only.
+     *
+     * @param og the og:type, or null to remove every og:type mixin
      */
     private static void setOgTypeMixin(JCRNodeWrapper mapping, OgType og) throws RepositoryException {
         for (Map.Entry<OgType, String> mixin : OG_TYPE_MIXINS.entrySet()) {
@@ -332,7 +374,13 @@ public class OpenGraphService {
             if (mapping.hasProperty(SCHEMA_TYPE_PROPERTY)) {
                 mapping.getProperty(SCHEMA_TYPE_PROPERTY).remove();
             }
+            if (mapping.isNodeType(SCHEMA_ORG_MIXIN)) {
+                mapping.removeMixin(SCHEMA_ORG_MIXIN);
+            }
             return;
+        }
+        if (!mapping.isNodeType(SCHEMA_ORG_MIXIN)) {
+            mapping.addMixin(SCHEMA_ORG_MIXIN);
         }
         mapping.setProperty(SCHEMA_TYPE_PROPERTY, schemaType.getValue());
         for (PropertyMapping property : properties) {

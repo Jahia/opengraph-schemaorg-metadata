@@ -310,7 +310,10 @@ describe('Open Graph mapping API', () => {
         saveMapping({nodeType: NEWS_TYPE, ogType: 'music.song', properties}).then(expectNoError);
         expectMappings([{nodeType: NEWS_TYPE, ogType: 'music.song', properties}]);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins).to.include('sdmmix:musicSong').and.not.include('sdmmix:videoMovie');
+            expect(stored.mixins)
+                .to.include('sdmmix:musicSong')
+                .and.include('sdmmix:openGraph')
+                .and.not.include('sdmmix:videoMovie');
             expect(stored.properties.filter(name => name.startsWith('sdm:video_'))).to.be.empty;
         });
         getTags(NEWS_PATH).then(result => {
@@ -318,6 +321,20 @@ describe('Open Graph mapping API', () => {
             const tags = result.data.jcr.nodeByPath.openGraphTags;
             expect(contentsOf(tags, 'og:type')).to.deep.equal(['music.song']);
             expect(tags.map(tag => tag.property).filter(property => property.startsWith('video:'))).to.be.empty;
+        });
+    });
+
+    it('drops the Open Graph properties and mixins without an og:type, and the news item then has no tag', () => {
+        saveMapping({nodeType: NEWS_TYPE, ogType: null, properties: []}).then(expectNoError);
+        expectMappings([{nodeType: NEWS_TYPE, ogType: null, properties: []}]);
+        getStoredMapping(NEWS_TYPE).then(stored => {
+            expect(stored.mixins).not.to.include('sdmmix:openGraph').and.not.include('sdmmix:musicSong');
+            expect(stored.properties.filter(name => name.startsWith('sdm:og') || name.startsWith('sdm:music_'))).to.be
+                .empty;
+        });
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(result.data.jcr.nodeByPath.openGraphTags).to.be.empty;
         });
     });
 
@@ -412,6 +429,13 @@ describe('Open Graph mapping API', () => {
                 ogType: 'restaurant.menu',
                 properties: title,
                 message: "Unknown og:type 'restaurant.menu'"
+            },
+            {
+                reason: 'an Open Graph property without an og:type',
+                nodeType: NEWS_TYPE,
+                ogType: null,
+                properties: title,
+                message: 'An Open Graph property needs an og:type'
             },
             {
                 reason: 'an Open Graph property that the module computes',

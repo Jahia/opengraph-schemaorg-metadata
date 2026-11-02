@@ -47,8 +47,9 @@ public class StructuredDataMapperMutationExtension {
             + "or replaces all its values. Requires the permission 'structuredDataMapperManage' on the site")
     public boolean saveOpenGraphMapping(
             @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type or the mixin, such as jnt:news") String nodeType,
-            @GraphQLName("ogType") @GraphQLNonNull @GraphQLDescription("The og:type, such as article") String ogType,
-            @GraphQLName("properties") @GraphQLNonNull @GraphQLDescription("The Open Graph properties and their source property")
+            @GraphQLName("ogType") @GraphQLDescription("The og:type, such as article. Without it, the mapping writes no "
+                    + "Open Graph tag") String ogType,
+            @GraphQLName("properties") @GraphQLDescription("The Open Graph properties and their source property")
                     List<GqlPropertyMappingInput> properties,
             @GraphQLName("templateName") @GraphQLDescription("The template of a template mapping, such as home. A template "
                     + "mapping applies only to the contents of the type that use the template") String templateName,
@@ -57,7 +58,7 @@ public class StructuredDataMapperMutationExtension {
             @GraphQLName("schemaProperties") @GraphQLDescription("The schema.org properties and their source property")
                     List<GqlSchemaPropertyMappingInput> schemaProperties) {
         JCRSiteNode site = Resolvers.managedSite(mutation.jcrNode);
-        List<PropertyMapping> mappings = properties.stream()
+        List<PropertyMapping> mappings = properties == null ? Collections.emptyList() : properties.stream()
                 .map(property -> new PropertyMapping(property.getOgProperty(), property.getSourceProperty()))
                 .collect(Collectors.toList());
         List<PropertyMapping> schemaMappings = schemaProperties == null ? Collections.emptyList() : schemaProperties.stream()

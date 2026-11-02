@@ -12,24 +12,31 @@ import {
     cancelAndDiscard,
     choose,
     chooseSources,
+    close,
     CONFIRM_DELETE,
     CONTENT_EDITOR,
     create,
     DELETE,
     EDIT,
     EMPTY,
+    fieldNamesIn,
+    fieldSetSwitch,
     LOAD_TIMEOUT,
     mappingRow,
     menuItem,
     NODE_TYPE_FIELD,
     OG_TYPE_FIELD,
+    OPEN_GRAPH,
     openDropdown,
     openScreen,
     propertiesText,
     save,
+    SCHEMA_ORG,
+    SCHEMA_TYPE_FIELD,
     shouldOfferOnly,
     sourceField,
     sourceFieldIn,
+    switchFieldSet,
     TEMPLATE_FIELD
 } from '../support/mappingScreen';
 import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/structuredDataMapper';
@@ -43,11 +50,27 @@ const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:tit
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
 const VIDEO_TAG: PropertyMapping = {ogProperty: 'video:tag', sourceProperty: 'j:tagList'};
-const BASIC_METADATA = 'sdmBasicMetadata';
-const TYPE_METADATA = 'sdmTypeMetadata';
+// The Open Graph fields of an article mapping, in the order of the form: the properties of every og:type, the
+// og:type, then the properties of article, which the Content Editor moves after the og:type.
+const ARTICLE_FIELD_ORDER = [
+    `${OPEN_GRAPH}_sdm:og_title`,
+    `${OPEN_GRAPH}_sdm:og_video_alt`,
+    `${OPEN_GRAPH}_sdm:ogType`,
+    'sdmmix:article_sdm:article_published_time'
+];
 
 // The properties of a mapping node that hold the source of a video property, such as sdm:video_tag.
 const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('sdm:video_'));
+
+// The properties of a mapping node that hold the og:type or the source of an Open Graph property of music.song.
+const songProperties = (stored: StoredMapping) =>
+    stored.properties.filter(name => name.startsWith('sdm:og') || name.startsWith('sdm:music_'));
+
+const expectArticleFieldOrder = (names: string[]) => {
+    const positions = ARTICLE_FIELD_ORDER.map(name => names.indexOf(name));
+    expect(positions, 'every field is in the Open Graph fieldset').not.to.include(-1);
+    expect(positions, 'the order of the fields').to.deep.equal([...positions].sort((a, b) => a - b));
+};
 
 describe('Open Graph mapping screen', () => {
     before(() => {
@@ -73,13 +96,19 @@ describe('Open Graph mapping screen', () => {
             cy.get(EMPTY).should('contain.text', 'No mapping yet.');
         });
 
-        it('groups the fields in the basic and the type metadata, with the source properties of each kind', () => {
+        it('shows both switches off, then the og:type between the properties of every og:type and its own', () => {
             cy.get(ADD_MAPPING).click();
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            fieldSetSwitch(OPEN_GRAPH).should('not.be.checked');
+            fieldSetSwitch(SCHEMA_ORG).should('not.be.checked');
+            cy.get(OG_TYPE_FIELD).should('not.exist');
+            cy.get(SCHEMA_TYPE_FIELD).should('not.exist');
+            switchFieldSet(OPEN_GRAPH, true);
+            cy.get(OG_TYPE_FIELD).should('contain.text', 'website');
             choose(OG_TYPE_FIELD, 'article');
-            cy.get(sourceFieldIn(BASIC_METADATA, TITLE.ogProperty)).should('exist');
-            cy.get(OG_TYPE_FIELD).closest('article').find(`label[for="${TYPE_METADATA}"]`).should('exist');
-            cy.get(sourceFieldIn(TYPE_METADATA, PUBLISHED.ogProperty)).should('exist');
+            cy.get(sourceFieldIn(OPEN_GRAPH, TITLE.ogProperty)).should('exist');
+            cy.get(sourceFieldIn(OPEN_GRAPH, PUBLISHED.ogProperty)).should('exist');
+            fieldNamesIn(OPEN_GRAPH).then(expectArticleFieldOrder);
 
             openDropdown(sourceField(TITLE.ogProperty));
             cy.get(menuItem('jcr:title')).should('exist');
@@ -99,6 +128,7 @@ describe('Open Graph mapping screen', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
             cy.get(sourceField(PUBLISHED.ogProperty)).should('not.exist');
             choose(OG_TYPE_FIELD, 'article');
@@ -173,6 +203,37 @@ describe('Open Graph mapping screen', () => {
             });
         });
 
+        it('switches Open Graph off and schema.org on, for a mapping that writes JSON-LD only', () => {
+            mappingRow(NEWS_TYPE).find(EDIT).click();
+            fieldSetSwitch(OPEN_GRAPH).should('be.checked');
+            switchFieldSet(OPEN_GRAPH, false);
+            cy.get(OG_TYPE_FIELD).should('not.exist');
+            cy.get(sourceField(TITLE.ogProperty)).should('not.exist');
+            switchFieldSet(SCHEMA_ORG, true);
+            choose(SCHEMA_TYPE_FIELD, 'NewsArticle');
+            save();
+            mappingRow(NEWS_TYPE).find('[data-sel-role="sdm-og-type"]').should('have.text', 'None');
+            mappingRow(NEWS_TYPE).find('[data-sel-role="sdm-schema-type"]').should('have.text', 'NewsArticle');
+            getStoredMapping(NEWS_TYPE).then(stored => {
+                expect(stored.mixins).to.include('sdmmix:schemaOrg').and.include('sdmmix:schemaNewsArticle');
+                expect(stored.mixins).not.to.include(OPEN_GRAPH).and.not.include('sdmmix:musicSong');
+                expect(songProperties(stored)).to.be.empty;
+            });
+            getMappings({user: SITE_ADMIN}).then(result => {
+                expectNoError(result);
+                expect(result.data.jcr.nodeByPath.openGraphMappings).to.deep.equal([
+                    {nodeType: NEWS_TYPE, ogType: null, properties: []}
+                ]);
+            });
+
+            mappingRow(NEWS_TYPE).find(EDIT).click();
+            fieldSetSwitch(OPEN_GRAPH).should('not.be.checked');
+            fieldSetSwitch(SCHEMA_ORG).should('be.checked');
+            cy.get(OG_TYPE_FIELD).should('not.exist');
+            cy.get(sourceField(TITLE.ogProperty)).should('not.exist');
+            close();
+        });
+
         it('leaves a mapped content type out of a new mapping', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
@@ -203,6 +264,7 @@ describe('Open Graph mapping screen', () => {
             openDropdown(TEMPLATE_FIELD);
             cy.get(menuItem(ALL_TEMPLATES)).should('exist');
             cy.get(menuItem(TEMPLATE)).click();
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
             choose(OG_TYPE_FIELD, 'website');
             create();
@@ -229,13 +291,13 @@ describe('Open Graph mapping screen', () => {
     });
 
     describe('as the editor in chief', () => {
-        it('creates a mapping', () => {
+        it('creates a mapping with the default og:type website', () => {
             const mapping: TypeMapping = {nodeType: NEWS_TYPE, ogType: 'website', properties: [TITLE]};
             openScreen(EDITOR_IN_CHIEF);
             cy.get(ADD_MAPPING).click();
             choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            switchFieldSet(OPEN_GRAPH, true);
             chooseSources([TITLE]);
-            choose(OG_TYPE_FIELD, 'website');
             create();
             mappingRow(NEWS_TYPE)
                 .should('contain.text', 'website')
