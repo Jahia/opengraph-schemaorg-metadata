@@ -66,18 +66,24 @@ const expectSection = (sections: FormSection[]) => {
     expect(section, `section ${SECTION}`).to.exist;
     const fields = section.fieldSets
         .flatMap(fieldSet => fieldSet.fields)
-        .map(({name, selectorType, readOnly}) => ({name, selectorType, readOnly}));
-    expect(fields).to.deep.include({name: 'sdm:ogPreview', selectorType: 'SdmPreview', readOnly: true});
-    expect(fields).to.deep.include({name: 'sdm:schemaPreview', selectorType: 'SdmSchemaPreview', readOnly: true});
-    // The custom values of each vocabulary, then its values.
+        .map(({name, selectorType, readOnly, i18n}) => ({name, selectorType, readOnly, i18n}));
+    // The values of each field depend on the language, so the Content Editor does not say that all languages share it.
+    expect(fields).to.deep.include({name: 'sdm:ogPreview', selectorType: 'SdmPreview', readOnly: true, i18n: true});
+    expect(fields).to.deep.include({
+        name: 'sdm:schemaPreview',
+        selectorType: 'SdmSchemaPreview',
+        readOnly: true,
+        i18n: true
+    });
+    // The values of each vocabulary, then the switch that overrides them.
     const fieldSets = section.fieldSets
         .filter(fieldSet => MODULE_FIELD_SETS.includes(fieldSet.name))
         .map(({name, displayName}) => ({name, displayName}));
     expect(fieldSets).to.deep.equal([
-        {name: 'sdmmix:customTags', displayName: 'Custom values for Open Graph'},
-        {name: 'sdmOpenGraphValues', displayName: 'Open Graph values'},
-        {name: 'sdmmix:customSchemaOrg', displayName: 'Custom values for schema.org'},
-        {name: 'sdmSchemaOrgValues', displayName: 'schema.org values'}
+        {name: 'sdmOpenGraphValues', displayName: 'Open Graph'},
+        {name: 'sdmmix:customTags', displayName: 'Override Open Graph tags'},
+        {name: 'sdmSchemaOrgValues', displayName: 'schema.org'},
+        {name: 'sdmmix:customSchemaOrg', displayName: 'Override schema.org properties'}
     ]);
 };
 
@@ -165,8 +171,8 @@ describe('Open Graph values in the Content Editor', () => {
                 'schema.org is off in the mapping of this content type, so the live page has no JSON-LD block.'
             );
             moduleFieldSetsOnPage().should('deep.equal', [
-                'sdmmix:customTags',
                 'sdmOpenGraphValues',
+                'sdmmix:customTags',
                 'sdmSchemaOrgValues'
             ]);
         });

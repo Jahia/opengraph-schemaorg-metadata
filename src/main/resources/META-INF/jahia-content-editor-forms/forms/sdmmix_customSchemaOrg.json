@@ -7,7 +7,7 @@
       "fieldSets": [
         {
           "name": "sdmmix:customSchemaOrg",
-          "rank": 12.0,
+          "rank": 13.0,
           "fields": [
             {
               "name": "sdm:customSchemaOrg",

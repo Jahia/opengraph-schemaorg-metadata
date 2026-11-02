@@ -1,5 +1,10 @@
 /* A share card in a feed is about 500px wide. Each rule names two classes or more, so the rules of the Moonstone paper
    and typography, which name one class, do not override it. The colors and the fonts are those of each network. */
+/* The tabs of the networks follow the table of the tags. */
+.tabs.tabs {
+  margin-top: 24px;
+}
+
 .card.card {
   max-width: 500px;
   margin: 12px 0 16px;

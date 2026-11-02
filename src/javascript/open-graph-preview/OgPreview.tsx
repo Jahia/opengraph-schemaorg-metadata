@@ -113,7 +113,6 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
               {t("preview.saveHint")}
           </Typography>
           )}
-          <ShareCard tags={rows} domain={domain}/>
           <Table id={id} data-sel-role="sdm-preview">
               <TableHead>
                   <TableRow>
@@ -132,6 +131,7 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
                   ))}
               </TableBody>
           </Table>
+          <ShareCard tags={rows} domain={domain}/>
       </>
   );
 };

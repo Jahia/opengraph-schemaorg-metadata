@@ -74,7 +74,7 @@ export default function registerStructuredDataMapper() {
       registry.add("selectorType", "SdmPreview", { cmp: OgPreviewSelector, supportMultiple: false });
       registry.add("selectorType", "SdmSchemaPreview", { cmp: SchemaPreviewSelector, supportMultiple: false });
 
-      // One value of sdm:customTags, above sdm:ogPreview, and one value of sdm:customSchemaOrg, above
+      // One value of sdm:customTags, below sdm:ogPreview, and one value of sdm:customSchemaOrg, below
       // sdm:schemaPreview. The forms files of sdmmix:customTags and sdmmix:customSchemaOrg set these selector types.
       registry.add("selectorType", "SdmTag", { cmp: SdmTagSelector, supportMultiple: false });
       registry.add("selectorType", "SdmSchemaValue", { cmp: SdmSchemaValueSelector, supportMultiple: false });

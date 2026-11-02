@@ -102,7 +102,7 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
 
   return (
       <>
-          <Tab data-sel-role="sdm-share-tabs">
+          <Tab data-sel-role="sdm-share-tabs" className={styles.tabs}>
               {NETWORKS.map(item => (
                   <TabItem
                     key={item.name}
