@@ -10,15 +10,16 @@ const SCHEMA_PREVIEW_FIELD = 'sdmSchemaOrgValues_sdm:schemaPreview';
 const CUSTOM_TAGS_FIELD_SET = 'sdmmix:customTags';
 const CUSTOM_SCHEMA_FIELD_SET = 'sdmmix:customSchemaOrg';
 
-// The fieldsets of the module in the section seo, in the order of the form.
+// The fieldsets of the module in the section seo, in the order of the form: the values of each vocabulary, then its
+// custom values.
 export const MODULE_FIELD_SETS = [
-    CUSTOM_TAGS_FIELD_SET,
     'sdmOpenGraphValues',
-    CUSTOM_SCHEMA_FIELD_SET,
-    'sdmSchemaOrgValues'
+    CUSTOM_TAGS_FIELD_SET,
+    'sdmSchemaOrgValues',
+    CUSTOM_SCHEMA_FIELD_SET
 ];
 
-export type FormField = {name: string; selectorType: string; readOnly: boolean};
+export type FormField = {name: string; selectorType: string; readOnly: boolean; i18n: boolean};
 export type NodeProperty = {name: string; value: string};
 export type FormSection = {name: string; fieldSets?: {name: string; displayName: string; fields: FormField[]}[]};
 
@@ -29,6 +30,7 @@ const PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${
 const SCHEMA_PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${SCHEMA_PREVIEW_FIELD}"]`;
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
+export const PREVIEW_TABLE = `${PREVIEW_SELECTOR} ${role('sdm-preview')}`;
 export const PREVIEW_ROW = role('sdm-preview-row');
 export const SAVE_HINT = role('sdm-preview-save-hint');
 export const OPEN_GRAPH_OFF = `${PREVIEW_SELECTOR} ${role('sdm-preview-off')}`;

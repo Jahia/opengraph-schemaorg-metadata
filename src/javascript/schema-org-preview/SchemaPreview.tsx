@@ -34,7 +34,7 @@ const formatted = (jsonLd: string, urlOf: (path: string) => string) =>
     INDENT
   );
 
-// The read-only field sdm:schemaPreview: the JSON-LD block that the live page gets from the saved node.
+// The read-only field sdm:schemaPreview: the JSON-LD block of the saved node in the edit workspace.
 const SchemaPreview = ({ id, editorContext }: SchemaPreviewProps) => {
   const { t } = useTranslation(NAMESPACE);
   const formik: FormikContextType<unknown> | undefined = useFormikContext();

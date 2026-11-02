@@ -10,6 +10,7 @@ query editForm($uuidOrPath: String!) {
                         name
                         selectorType
                         readOnly
+                        i18n
                     }
                 }
             }

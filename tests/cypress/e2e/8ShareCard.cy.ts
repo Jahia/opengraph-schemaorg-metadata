@@ -5,6 +5,7 @@ import {
     fieldNamed,
     openContentEditor,
     openSection,
+    PREVIEW_TABLE,
     SHARE_CARD,
     selectShareTab,
     shareCardPart,
@@ -111,6 +112,12 @@ describe('Share card of a content in the Content Editor', () => {
     it('shows the image, the title and the domain of the tags in the layout of each network', () => {
         openNews(IMAGE_NEWS_PATH);
         cy.get(SHARE_CARD).should('have.attr', 'data-sel-network', 'facebook');
+        cy.get(PREVIEW_TABLE).then($table => {
+            cy.get(SHARE_CARD).should($card => {
+                const follows = $table[0].compareDocumentPosition($card[0]) & Node.DOCUMENT_POSITION_FOLLOWING;
+                expect(follows, 'the card follows the table of the tags').to.be.greaterThan(0);
+            });
+        });
         NETWORKS.forEach(network => {
             selectShareTab(network.name);
             shareCardRoles().should('deep.equal', network.roles);

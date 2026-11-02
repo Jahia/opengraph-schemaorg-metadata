@@ -34,10 +34,10 @@ export const PREVIEW_QUERY = gql`
   }
 `;
 
-// The values of the saved node, for the read-only fields of both vocabularies. Each field knows whether the other
-// vocabulary has values, so it can tell a vocabulary that is off from a type with no mapping. The values come from the
-// saved node, so a field never calls onChange and the save sends nothing for it. The form turns clean again when it
-// saves, and the field then reads the saved node again.
+// The values of the saved node in the edit workspace, the default of the field jcr, for the read-only fields of both
+// vocabularies. Each field knows whether the other vocabulary has values, so it can tell a vocabulary that is off from
+// a type with no mapping. The values come from the saved node, so a field never calls onChange and the save sends
+// nothing for it. The form turns clean again when it saves, and the field then reads the saved node again.
 export const usePreview = (uuid: string, language: string, isDirty: boolean) => {
   const result = useQuery<PreviewData, PreviewVariables>(PREVIEW_QUERY, {
     variables: { uuid, language },
