@@ -6,6 +6,8 @@ import {
     fieldNamed,
     fieldSetsShouldNotExist,
     FormSection,
+    MODULE_FIELD_SETS,
+    moduleFieldSetsOnPage,
     nodeProperties,
     NodeProperty,
     openContentEditor,
@@ -14,6 +16,7 @@ import {
     previewValue,
     save,
     SAVE_HINT,
+    SCHEMA_ORG_OFF,
     SECTION,
     SYSTEM_NAME_FIELD,
     sectionNames,
@@ -65,6 +68,17 @@ const expectSection = (sections: FormSection[]) => {
         .flatMap(fieldSet => fieldSet.fields)
         .map(({name, selectorType, readOnly}) => ({name, selectorType, readOnly}));
     expect(fields).to.deep.include({name: 'sdm:ogPreview', selectorType: 'SdmPreview', readOnly: true});
+    expect(fields).to.deep.include({name: 'sdm:schemaPreview', selectorType: 'SdmSchemaPreview', readOnly: true});
+    // The custom values of each vocabulary, then its values.
+    const fieldSets = section.fieldSets
+        .filter(fieldSet => MODULE_FIELD_SETS.includes(fieldSet.name))
+        .map(({name, displayName}) => ({name, displayName}));
+    expect(fieldSets).to.deep.equal([
+        {name: 'sdmmix:customTags', displayName: 'Custom values for Open Graph'},
+        {name: 'sdmOpenGraphValues', displayName: 'Open Graph values'},
+        {name: 'sdmmix:customSchemaOrg', displayName: 'Custom values for schema.org'},
+        {name: 'sdmSchemaOrgValues', displayName: 'schema.org values'}
+    ]);
 };
 
 // The save request carries the new title, and no request carries the field sdm:ogPreview.
@@ -114,7 +128,7 @@ describe('Open Graph values in the Content Editor', () => {
     });
 
     describe('the forms', () => {
-        it('give the section seo of the edit form the read-only field sdm:ogPreview', () => {
+        it('give the section seo the four fieldsets of the module, with the read-only fields of both vocabularies', () => {
             editFormSections(NEWS_PATH).then(expectSection);
         });
 
@@ -145,6 +159,16 @@ describe('Open Graph values in the Content Editor', () => {
             previewValue('og:locale').should('have.text', 'en');
             previewValue('twitter:card').should('have.text', 'summary');
             cy.get(SAVE_HINT).should('not.exist');
+            // The mapping has no schema.org type, so the custom values for schema.org would do nothing.
+            cy.get(SCHEMA_ORG_OFF).should(
+                'have.text',
+                'schema.org is off in the mapping of this content type, so the live page has no JSON-LD block.'
+            );
+            moduleFieldSetsOnPage().should('deep.equal', [
+                'sdmmix:customTags',
+                'sdmOpenGraphValues',
+                'sdmSchemaOrgValues'
+            ]);
         });
 
         it('keeps the inactive tab of the full-screen editor hidden once the Open Graph values are shown', () => {

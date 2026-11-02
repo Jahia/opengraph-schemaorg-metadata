@@ -31,19 +31,37 @@ const NEWS_MAPPING: TypeMapping = {
     ]
 };
 
-// The ratio of the image and the order of the card of each network, as the issue Jahia/very-open-graph#24 lists them.
+const IMAGE = 'sdm-share-card-image';
+const THUMBNAIL = 'sdm-share-card-thumbnail';
+const DOMAIN = 'sdm-share-card-domain';
+const TITLE_ROLE = 'sdm-share-card-title';
+const DESCRIPTION_ROLE = 'sdm-share-card-description';
+
+// The ratio of the image, the order of the card with an image and without one, and the domain line of each network,
+// as the issue Jahia/very-open-graph#24 lists them. X writes its summary card, with a square beside the text, for a
+// content with no image, and shows the domain below a large image card.
 const NETWORKS = [
     {
         name: 'facebook',
         ratio: 1200 / 630,
-        roles: ['sdm-share-card-image', 'sdm-share-card-domain', 'sdm-share-card-title', 'sdm-share-card-description']
+        roles: [IMAGE, DOMAIN, TITLE_ROLE, DESCRIPTION_ROLE],
+        textRoles: [DOMAIN, TITLE_ROLE, DESCRIPTION_ROLE],
+        domain: SERVER_NAME
     },
     {
         name: 'linkedin',
         ratio: 1200 / 627,
-        roles: ['sdm-share-card-image', 'sdm-share-card-title', 'sdm-share-card-domain']
+        roles: [IMAGE, TITLE_ROLE, DOMAIN],
+        textRoles: [TITLE_ROLE, DOMAIN],
+        domain: SERVER_NAME
     },
-    {name: 'x', ratio: 1200 / 600, roles: ['sdm-share-card-image', 'sdm-share-card-title', 'sdm-share-card-domain']}
+    {
+        name: 'x',
+        ratio: 1200 / 600,
+        roles: [IMAGE, TITLE_ROLE, DOMAIN],
+        textRoles: [THUMBNAIL, DOMAIN, TITLE_ROLE, DESCRIPTION_ROLE],
+        domain: `From ${SERVER_NAME}`
+    }
 ];
 
 const addNews = (path: string, imageUuid?: string) =>
@@ -97,7 +115,7 @@ describe('Share card of a content in the Content Editor', () => {
             selectShareTab(network.name);
             shareCardRoles().should('deep.equal', network.roles);
             shareCardPart('title').should('have.text', TITLE);
-            shareCardPart('domain').should('have.text', SERVER_NAME);
+            shareCardPart('domain').should('have.text', network.domain);
             shareCardPart('image').should($image => {
                 const image = $image[0] as HTMLImageElement;
                 expect(new URL(image.src).pathname, 'the file of og:image').to.equal(`/files/default${IMAGE_PATH}`);
@@ -115,11 +133,9 @@ describe('Share card of a content in the Content Editor', () => {
         openNews(TEXT_NEWS_PATH);
         NETWORKS.forEach(network => {
             selectShareTab(network.name);
-            shareCardRoles().should(
-                'deep.equal',
-                network.roles.filter(cardRole => cardRole !== 'sdm-share-card-image')
-            );
+            shareCardRoles().should('deep.equal', network.textRoles);
             shareCardPart('title').should('have.text', TITLE);
+            shareCardPart('domain').should('have.text', SERVER_NAME);
         });
     });
 

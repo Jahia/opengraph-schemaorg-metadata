@@ -7,7 +7,7 @@
       "fieldSets": [
         {
           "name": "sdmmix:customTags",
-          "rank": 11.0,
+          "rank": 10.0,
           "fields": [
             {
               "name": "sdm:customTags",

@@ -1,4 +1,3 @@
-import { useQuery } from "@apollo/client";
 import {
   useContentEditorSectionContext,
   type ContentEditorField,
@@ -15,23 +14,15 @@ import {
   Typography,
 } from "@jahia/moonstone";
 import { useFormikContext, type FormikContextType } from "formik";
-import { useEffect, useRef } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
-import { i18n, NAMESPACE } from "../i18n.ts";
-import { PREVIEW_QUERY, type OgTag, type PreviewData, type PreviewVariables } from "./ogPreview.gql.ts";
+import { CUSTOM_TAGS, fieldSetsToHide, OPEN_GRAPH_VALUES, useHiddenFieldSets } from "../fieldSets.ts";
+import { i18n, NAMESPACE, RAW } from "../i18n.ts";
+import { usePreview, type OgTag } from "./ogPreview.gql.ts";
 import { plainText } from "./plainText.ts";
 import ShareCard from "./ShareCard.tsx";
 
-const SECTION = "seo";
-// The fieldsets of the module in the section seo: this field, and the field sdm:customTags of structured-data-mapper#12.
-const FIELD_SETS = new Set(["sdmOpenGraphValues", "sdmmix:customTags"]);
-
-// The types of jContent give a fieldset its fields only.
-type FieldSet = { name: string; visible?: boolean };
 const RICH_TEXT = "RichText";
 const PROPERTY_WIDTH = "240px";
-// The paths are plain text, and React escapes them.
-const RAW = { interpolation: { escapeValue: false } };
 
 type FormValues = Record<string, unknown>;
 
@@ -67,53 +58,32 @@ const changedFields = (values: FormValues, initialValues: FormValues) =>
 
 const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
   const { t } = useTranslation(NAMESPACE);
-  const { sections = [], onSectionsUpdate } = useContentEditorSectionContext() ?? {};
+  const { sections = [] } = useContentEditorSectionContext() ?? {};
   const formik = useFormikContext<FormValues>() as FormikContextType<FormValues> | undefined;
   const values = formik?.values ?? {};
-  const isDirty = formik?.dirty ?? false;
-  const wasDirty = useRef(isDirty);
   const uuid = editorContext?.nodeData?.uuid ?? "";
   const language = editorContext?.lang ?? "en";
 
-  // The tags come from the saved node, so the field never calls onChange and the save sends nothing for it.
-  const { data, loading, error, refetch } = useQuery<PreviewData, PreviewVariables>(PREVIEW_QUERY, {
-    variables: { uuid, language },
-    fetchPolicy: "no-cache",
-    client: globalThis.jahia?.apolloClient,
-    skip: uuid === "",
-  });
-  const tags = data?.jcr?.nodeById?.openGraphTags ?? [];
   // The live URL of og:url has the server name of the site as its host.
-  const domain = data?.jcr?.nodeById?.site?.serverName ?? "";
-  // A type with no mapping on the site has no tag. The fieldsets of the module then hide, and a failed request or a
-  // create form hides them too. The section seo keeps its other fieldsets, and hides when none is left.
-  const isHidden = uuid === "" || (!loading && (error !== undefined || tags.length === 0));
-
-  useEffect(() => {
-    const fieldSets = ((sections.find(candidate => candidate.name === SECTION)?.fieldSets ?? []) as FieldSet[]).filter(
-      fieldSet => FIELD_SETS.has(fieldSet.name) && fieldSet.visible !== false
-    );
-    if (isHidden && fieldSets.length > 0) {
-      fieldSets.forEach(fieldSet => {
-        fieldSet.visible = false;
-      });
-      onSectionsUpdate?.();
-    }
-  }, [isHidden, sections, onSectionsUpdate]);
-
-  useEffect(() => {
-    if (wasDirty.current && !isDirty && uuid !== "") {
-      refetch();
-    }
-    wasDirty.current = isDirty;
-  }, [isDirty, refetch, uuid]);
+  const { loading, tags, domain, hasNoValue } = usePreview(uuid, language, formik?.dirty ?? false);
+  // With Open Graph off in the mapping, this field says so.
+  const isOff = !loading && !hasNoValue && tags.length === 0;
+  useHiddenFieldSets(fieldSetsToHide(hasNoValue, isOff, OPEN_GRAPH_VALUES, CUSTOM_TAGS));
 
   if (loading) {
     return <Loader size="small"/>;
   }
 
-  if (isHidden) {
+  if (hasNoValue) {
     return null;
+  }
+
+  if (isOff) {
+    return (
+        <Typography id={id} data-sel-role="sdm-preview-off">
+            {t("preview.off")}
+        </Typography>
+    );
   }
 
   // A tag with a source property shows the text of its field as the editor types.

@@ -1,0 +1,10 @@
+mutation structuredDataMapperSetCustomSchemaValues($path: String!, $values: [String]!) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            addMixins(mixins: ["sdmmix:customSchemaOrg"])
+            mutateProperty(name: "sdm:customSchemaOrg") {
+                setValues(values: $values, language: "en")
+            }
+        }
+    }
+}

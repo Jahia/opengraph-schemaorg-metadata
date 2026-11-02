@@ -5,6 +5,7 @@ query editForm($uuidOrPath: String!) {
                 name
                 fieldSets {
                     name
+                    displayName
                     fields {
                         name
                         selectorType

@@ -10,12 +10,17 @@ import org.jahia.modules.graphql.provider.dxm.node.GqlJcrNode;
 import org.jahia.modules.graphql.provider.dxm.node.GqlJcrWrongInputException;
 import org.jahia.modules.graphql.provider.dxm.node.NodeHelper;
 import org.jahia.pm.modules.structureddatamapper.InvalidMappingException;
+import org.jahia.pm.modules.structureddatamapper.render.JsonLdWriter;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.utils.LanguageCodeConverters;
 
 import javax.jcr.RepositoryException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @GraphQLTypeExtension(GqlJcrNode.class)
@@ -70,5 +75,43 @@ public class StructuredDataMapperNodeExtension {
         } catch (RepositoryException e) {
             throw new DataFetchingException(e);
         }
+    }
+
+    @GraphQLField
+    @GraphQLName("schemaOrgJsonLd")
+    @GraphQLDescription("The schema.org entity of this content node as JSON text, as the JSON-LD block of the live page "
+            + "holds it, with the values that an editor set. A content or a file, such as the value of url or image, is "
+            + "an object with the single key nodePath in place of its live URL. Null when no mapping applies, or when "
+            + "schema.org is off in the mapping")
+    public String getSchemaOrgJsonLd(
+            @GraphQLName("language") @GraphQLNonNull @GraphQLDescription("The language of the values") String language) {
+        try {
+            JCRNodeWrapper localized = NodeHelper.getNodeInLanguage(node.getNode(), language);
+            Map<String, Object> entity = Resolvers.service().resolveSchemaOrg(localized,
+                    LanguageCodeConverters.languageCodeToLocale(language));
+            return entity.isEmpty() ? null : JsonLdWriter.json(withNodePaths(entity));
+        } catch (RepositoryException e) {
+            throw new DataFetchingException(e);
+        }
+    }
+
+    /**
+     * @return a copy of a value of the entity where {"nodePath": path} replaces each node
+     */
+    private static Object withNodePaths(Object value) {
+        if (value instanceof JCRNodeWrapper) {
+            return Collections.singletonMap("nodePath", ((JCRNodeWrapper) value).getPath());
+        }
+        if (value instanceof Map) {
+            Map<Object, Object> copy = new LinkedHashMap<>();
+            ((Map<?, ?>) value).forEach((key, item) -> copy.put(key, withNodePaths(item)));
+            return copy;
+        }
+        if (value instanceof List) {
+            List<Object> copy = new ArrayList<>();
+            ((List<?>) value).forEach(item -> copy.add(withNodePaths(item)));
+            return copy;
+        }
+        return value;
     }
 }

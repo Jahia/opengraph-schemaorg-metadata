@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Writes a schema.org entity as a JSON-LD script element.
  */
-final class JsonLdWriter {
+public final class JsonLdWriter {
 
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
@@ -30,7 +30,7 @@ final class JsonLdWriter {
      *
      * @return the JSON text of the value, on one line
      */
-    static String json(Object value) {
+    public static String json(Object value) {
         StringBuilder json = new StringBuilder();
         write(json, value);
         return json.toString();

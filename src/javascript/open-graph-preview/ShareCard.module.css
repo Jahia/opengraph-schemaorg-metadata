@@ -1,32 +1,215 @@
-/* A share card in a feed is about 500px wide. */
-.card {
+/* A share card in a feed is about 500px wide. Each rule names two classes or more, so the rules of the Moonstone paper
+   and typography, which name one class, do not override it. The colors and the fonts are those of each network. */
+.card.card {
   max-width: 500px;
-  margin: 8px 0 16px;
-  padding-bottom: 8px;
+  margin: 12px 0 16px;
   overflow: hidden;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.card .body,
+.card .frame,
+.card .thumbnail,
+.card .summaryText {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Each network crops the image to its own ratio from the center, as in its feed. */
-.image {
+.card .image {
   display: block;
   width: 100%;
   height: auto;
   object-fit: cover;
 }
 
-.facebook {
-  aspect-ratio: 1200 / 630;
+/* A text of the card keeps to the lines that the network shows, and ends with an ellipsis. */
+.card .text {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
 }
 
-.linkedin {
+/* Facebook */
+.facebook.facebook {
+  border: 1px solid #dadde1;
+  background-color: #ffffff;
+}
+
+.facebook .image {
+  aspect-ratio: 1200 / 630;
+  border-bottom: 1px solid #dadde1;
+}
+
+.facebook .body {
+  padding: 10px 12px 12px;
+  background-color: #f0f2f5;
+}
+
+.facebook .text {
+  font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.facebook .domain {
+  color: #65676b;
+  font-size: 13px;
+  line-height: 16px;
+  text-transform: uppercase;
+  -webkit-line-clamp: 1;
+}
+
+.facebook .title {
+  margin-top: 4px;
+  color: #080809;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 21px;
+  -webkit-line-clamp: 2;
+}
+
+.facebook .description {
+  margin-top: 2px;
+  color: #65676b;
+  font-size: 15px;
+  line-height: 20px;
+  -webkit-line-clamp: 1;
+}
+
+/* LinkedIn */
+.linkedin.linkedin {
+  border: 1px solid #e0dfdc;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.linkedin .image {
   aspect-ratio: 1200 / 627;
 }
 
-.x {
+.linkedin .body {
+  padding: 8px 12px 12px;
+  background-color: #edf3f8;
+}
+
+.linkedin .text {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+}
+
+.linkedin .title {
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  -webkit-line-clamp: 2;
+}
+
+.linkedin .domain {
+  margin-top: 4px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+  line-height: 16px;
+  -webkit-line-clamp: 1;
+}
+
+/* X: the card is the frame, and the domain line below it is outside the frame. */
+.x.x {
+  overflow: visible;
+  background-color: transparent;
+}
+
+.x .frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #cfd9de;
+  border-radius: 16px;
+  background-color: #ffffff;
+}
+
+.x .image {
   aspect-ratio: 1200 / 600;
 }
 
-.line {
-  display: block;
-  padding: 4px 12px 0;
+.x .text {
+  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.x .overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  max-width: calc(100% - 24px);
+  padding: 0 4px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.77);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 20px;
+  -webkit-line-clamp: 1;
+}
+
+.x .from {
+  margin-top: 4px;
+  color: #536471;
+  font-size: 13px;
+  line-height: 16px;
+  -webkit-line-clamp: 1;
+}
+
+.x .summary {
+  display: flex;
+  align-items: stretch;
+}
+
+.x .summary .thumbnail {
+  display: flex;
+  flex: 0 0 130px;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+  border-right: 1px solid #cfd9de;
+  background-color: #f7f9f9;
+  color: #536471;
+}
+
+.x .summary .thumbnail .image {
+  height: 100%;
+  aspect-ratio: 1;
+}
+
+.x .summary .summaryText {
+  display: flex;
+  margin: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 12px;
+  background-color: transparent;
+}
+
+.x .summary .domain,
+.x .summary .description {
+  color: #536471;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.x .summary .domain {
+  -webkit-line-clamp: 1;
+}
+
+.x .summary .title {
+  color: #0f1419;
+  font-size: 15px;
+  line-height: 20px;
+  -webkit-line-clamp: 1;
+}
+
+.x .summary .description {
+  -webkit-line-clamp: 2;
 }

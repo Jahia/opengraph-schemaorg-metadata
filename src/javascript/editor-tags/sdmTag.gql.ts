@@ -1,12 +1,12 @@
 import { gql } from "@apollo/client";
 
-export type OgKind = "TEXT" | "DATE" | "URL" | "IMAGE" | "INTEGER";
+export type OgKind = "TEXT" | "DATE" | "URL" | "IMAGE" | "INTEGER" | "NUMBER";
 
-export type OgProperty = { name: string; kind: OgKind };
+export type VocabularyProperty = { name: string; kind: OgKind };
 
 export type TagPropertiesData = {
   jcr: { nodeById: { openGraphTags: { property: string; content: string | null }[] | null } | null } | null;
-  openGraphVocabulary: { ogTypes: { name: string; properties: OgProperty[] }[] };
+  openGraphVocabulary: { ogTypes: { name: string; properties: VocabularyProperty[] }[] };
 };
 
 export type TagPropertiesVariables = { uuid: string; language: string };
@@ -24,6 +24,32 @@ export const TAG_PROPERTIES_QUERY = gql`
     }
     openGraphVocabulary {
       ogTypes {
+        name
+        properties {
+          name
+          kind
+        }
+      }
+    }
+  }
+`;
+
+export type SchemaPropertiesData = {
+  jcr: { nodeById: { schemaOrgJsonLd: string | null } | null } | null;
+  openGraphVocabulary: { schemaTypes: { name: string; properties: VocabularyProperty[] }[] };
+};
+
+// The @type of the JSON-LD of the node names the schema.org type of its mapping, and the vocabulary lists the
+// properties of each schema.org type.
+export const SCHEMA_PROPERTIES_QUERY = gql`
+  query structuredDataMapperSchemaProperties($uuid: String!, $language: String!) {
+    jcr {
+      nodeById(uuid: $uuid) {
+        schemaOrgJsonLd(language: $language)
+      }
+    }
+    openGraphVocabulary {
+      schemaTypes {
         name
         properties {
           name

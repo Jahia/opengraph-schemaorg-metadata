@@ -1,0 +1,16 @@
+/* The JSON-LD in a read-only code block. Two classes, so the rules of the Moonstone typography do not override them. */
+.json.json {
+  max-height: 480px;
+  margin: 8px 0 0;
+  padding: 12px 16px;
+  overflow: auto;
+  border: 1px solid var(--moon-color-gray_light);
+  border-radius: var(--moon-radius);
+  background-color: var(--moon-color-gray_light_plain20);
+  color: var(--moon-color-gray_dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

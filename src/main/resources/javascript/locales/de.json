@@ -25,9 +25,20 @@
     "property": "Eigenschaft",
     "value": "Wert",
     "saveHint": "Speichern Sie, um die aktualisierten Open-Graph-Werte zu sehen",
-    "urlOf": "Live-URL von {{path}}"
+    "urlOf": "Live-URL von {{path}}",
+    "off": "Open Graph ist in der Zuordnung dieses Inhaltstyps deaktiviert, daher hat die Live-Seite keinen Open-Graph-Tag."
   },
   "customTags": {
     "property": "Open-Graph-Eigenschaft"
+  },
+  "schemaPreview": {
+    "saveHint": "Speichern Sie, um die aktualisierten schema.org-Werte zu sehen",
+    "off": "schema.org ist in der Zuordnung dieses Inhaltstyps deaktiviert, daher hat die Live-Seite keinen JSON-LD-Block."
+  },
+  "customSchemaValues": {
+    "property": "schema.org-Eigenschaft"
+  },
+  "shareCard": {
+    "from": "Von {{domain}}"
   }
 }

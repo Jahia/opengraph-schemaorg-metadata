@@ -6,20 +6,35 @@ const FIXTURES = 'graphql/structuredDataMapper';
 export const SECTION = 'seo';
 // The Content Editor names a field after its fieldset and its property.
 const PREVIEW_FIELD = 'sdmOpenGraphValues_sdm:ogPreview';
+const SCHEMA_PREVIEW_FIELD = 'sdmSchemaOrgValues_sdm:schemaPreview';
 const CUSTOM_TAGS_FIELD_SET = 'sdmmix:customTags';
+const CUSTOM_SCHEMA_FIELD_SET = 'sdmmix:customSchemaOrg';
+
+// The fieldsets of the module in the section seo, in the order of the form.
+export const MODULE_FIELD_SETS = [
+    CUSTOM_TAGS_FIELD_SET,
+    'sdmOpenGraphValues',
+    CUSTOM_SCHEMA_FIELD_SET,
+    'sdmSchemaOrgValues'
+];
 
 export type FormField = {name: string; selectorType: string; readOnly: boolean};
 export type NodeProperty = {name: string; value: string};
-export type FormSection = {name: string; fieldSets?: {name: string; fields: FormField[]}[]};
+export type FormSection = {name: string; fieldSets?: {name: string; displayName: string; fields: FormField[]}[]};
 
 const CONTENT_EDITOR = '[aria-labelledby="dialog-content-editor"]';
 const sectionSelector = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-fields-group="${name}"]`;
 const SECTION_SELECTOR = sectionSelector(SECTION);
 const PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${PREVIEW_FIELD}"]`;
+const SCHEMA_PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${SCHEMA_PREVIEW_FIELD}"]`;
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
 export const PREVIEW_ROW = role('sdm-preview-row');
 export const SAVE_HINT = role('sdm-preview-save-hint');
+export const OPEN_GRAPH_OFF = `${PREVIEW_SELECTOR} ${role('sdm-preview-off')}`;
+export const SCHEMA_PREVIEW = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-preview')}`;
+export const SCHEMA_SAVE_HINT = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-save-hint')}`;
+export const SCHEMA_ORG_OFF = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-off')}`;
 
 // The sections of the edit form of a node, as the jContent GraphQL API gives them to the Content Editor.
 export const editFormSections = (uuidOrPath: string): Cypress.Chainable<FormSection[]> =>
@@ -68,12 +83,38 @@ export const expandSection = (name: string) => {
     cy.get(button).should('have.attr', 'aria-expanded', 'true');
 };
 
+export const customFieldSet = (mixin: string) => `${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${mixin}"]`;
+
 // Expands the section seo, then checks that it holds no fieldset of the module. The fieldsets show until the
 // preview knows that the type has no mapping, so the check waits for them to go.
 export const fieldSetsShouldNotExist = () => {
     expandSection(SECTION);
     cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${PREVIEW_FIELD}"]`).should('not.exist');
-    cy.get(`${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${CUSTOM_TAGS_FIELD_SET}"]`).should('not.exist');
+    cy.get(`${CONTENT_EDITOR} [data-sel-content-editor-field="${SCHEMA_PREVIEW_FIELD}"]`).should('not.exist');
+    cy.get(customFieldSet(CUSTOM_TAGS_FIELD_SET)).should('not.exist');
+    cy.get(customFieldSet(CUSTOM_SCHEMA_FIELD_SET)).should('not.exist');
+};
+
+// The names of the fieldsets of the module that the section seo shows, in the order of the page.
+export const moduleFieldSetsOnPage = (): Cypress.Chainable<string[]> =>
+    cy
+        .get(
+            `${SECTION_SELECTOR} [data-sel-role-dynamic-fieldset], ${SECTION_SELECTOR} [data-sel-content-editor-field]`
+        )
+        .then($elements =>
+            Array.from($elements)
+                .map(element => element.dataset.selRoleDynamicFieldset ?? element.dataset.selContentEditorField)
+                .map(name => name.split('_')[0])
+                .filter((name, index, names) => MODULE_FIELD_SETS.includes(name) && names.indexOf(name) === index)
+        );
+
+// Expands the section seo, and waits for the JSON-LD of the node.
+export const openSchemaPreview = (): Cypress.Chainable<Record<string, unknown>> => {
+    expandSection(SECTION);
+    return cy
+        .get(SCHEMA_PREVIEW, {timeout: LOAD_TIMEOUT})
+        .invoke('text')
+        .then(text => JSON.parse(text) as Record<string, unknown>);
 };
 
 // Expands the section seo, and waits for the Open Graph values.
@@ -101,9 +142,11 @@ export const selectShareTab = (network: string) => {
     cy.get(SHARE_CARD).should('have.attr', 'data-sel-network', network);
 };
 
-// The roles of the image and the text lines of the share card, in the order of the card.
+// The roles of the image, the thumbnail and the text lines of the share card, in the order of the card.
 export const shareCardRoles = (): Cypress.Chainable<string[]> =>
-    cy.get(`${SHARE_CARD} > [data-sel-role]`).then($items => Array.from($items).map(item => item.dataset.selRole));
+    cy
+        .get(`${SHARE_CARD} [data-sel-role^="sdm-share-card-"]`)
+        .then($items => Array.from($items).map(item => item.dataset.selRole));
 
 export const shareCardPart = (part: string) => cy.get(`${SHARE_CARD} ${role(`sdm-share-card-${part}`)}`);
 
