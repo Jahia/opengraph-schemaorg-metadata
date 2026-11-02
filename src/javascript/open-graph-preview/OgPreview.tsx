@@ -15,7 +15,7 @@ import {
 } from "@jahia/moonstone";
 import { useFormikContext, type FormikContextType } from "formik";
 import { I18nextProvider, useTranslation } from "react-i18next";
-import { CUSTOM_TAGS, OPEN_GRAPH_VALUES, useHiddenFieldSets } from "../fieldSets.ts";
+import { CUSTOM_TAGS, fieldSetsToHide, OPEN_GRAPH_VALUES, useHiddenFieldSets } from "../fieldSets.ts";
 import { i18n, NAMESPACE, RAW } from "../i18n.ts";
 import { usePreview, type OgTag } from "./ogPreview.gql.ts";
 import { plainText } from "./plainText.ts";
@@ -66,9 +66,9 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
 
   // The live URL of og:url has the server name of the site as its host.
   const { loading, tags, domain, hasNoValue } = usePreview(uuid, language, formik?.dirty ?? false);
-  // With Open Graph off in the mapping, this field says so, and the custom values for Open Graph would do nothing.
+  // With Open Graph off in the mapping, this field says so.
   const isOff = !loading && !hasNoValue && tags.length === 0;
-  useHiddenFieldSets(hasNoValue ? [OPEN_GRAPH_VALUES, CUSTOM_TAGS] : isOff ? [CUSTOM_TAGS] : []);
+  useHiddenFieldSets(fieldSetsToHide(hasNoValue, isOff, OPEN_GRAPH_VALUES, CUSTOM_TAGS));
 
   if (loading) {
     return <Loader size="small"/>;

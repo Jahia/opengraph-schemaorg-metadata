@@ -1,7 +1,7 @@
 import { Loader, Typography } from "@jahia/moonstone";
 import { useFormikContext, type FormikContextType } from "formik";
 import { I18nextProvider, useTranslation } from "react-i18next";
-import { CUSTOM_SCHEMA_VALUES, SCHEMA_ORG_VALUES, useHiddenFieldSets } from "../fieldSets.ts";
+import { CUSTOM_SCHEMA_VALUES, fieldSetsToHide, SCHEMA_ORG_VALUES, useHiddenFieldSets } from "../fieldSets.ts";
 import { i18n, NAMESPACE, RAW } from "../i18n.ts";
 import { usePreview } from "../open-graph-preview/ogPreview.gql.ts";
 import styles from "./SchemaPreview.module.css";
@@ -37,13 +37,13 @@ const formatted = (jsonLd: string, urlOf: (path: string) => string) =>
 // The read-only field sdm:schemaPreview: the JSON-LD block that the live page gets from the saved node.
 const SchemaPreview = ({ id, editorContext }: SchemaPreviewProps) => {
   const { t } = useTranslation(NAMESPACE);
-  const formik = useFormikContext() as FormikContextType<unknown> | undefined;
+  const formik: FormikContextType<unknown> | undefined = useFormikContext();
   const isDirty = formik?.dirty ?? false;
   const uuid = editorContext?.nodeData?.uuid ?? "";
   const { loading, jsonLd, hasNoValue } = usePreview(uuid, editorContext?.lang ?? "en", isDirty);
-  // With schema.org off in the mapping, this field says so, and the custom values for schema.org would do nothing.
+  // With schema.org off in the mapping, this field says so.
   const isOff = !loading && !hasNoValue && jsonLd === null;
-  useHiddenFieldSets(hasNoValue ? [SCHEMA_ORG_VALUES, CUSTOM_SCHEMA_VALUES] : isOff ? [CUSTOM_SCHEMA_VALUES] : []);
+  useHiddenFieldSets(fieldSetsToHide(hasNoValue, isOff, SCHEMA_ORG_VALUES, CUSTOM_SCHEMA_VALUES));
 
   if (loading) {
     return <Loader size="small"/>;

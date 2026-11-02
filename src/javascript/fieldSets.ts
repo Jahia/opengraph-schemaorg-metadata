@@ -12,6 +12,15 @@ const SECTION = "seo";
 // The types of jContent give a fieldset its fields only.
 type FieldSet = { name: string; visible?: boolean };
 
+// The fieldsets of a vocabulary to hide: both when the content has no value in either vocabulary, and the custom values
+// alone when the vocabulary is off in the mapping, because they would do nothing.
+export const fieldSetsToHide = (hasNoValue: boolean, isOff: boolean, values: string, custom: string): string[] => {
+  if (hasNoValue) {
+    return [values, custom];
+  }
+  return isOff ? [custom] : [];
+};
+
 // Hides fieldsets of the module. The section seo keeps its other fieldsets, and hides when none is left.
 export const useHiddenFieldSets = (names: readonly string[]) => {
   const { sections = [], onSectionsUpdate } = useContentEditorSectionContext() ?? {};

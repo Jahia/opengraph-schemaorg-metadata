@@ -5,7 +5,7 @@ import PropertyValue, { type CustomValueProps } from "./PropertyValue.tsx";
 import {
   SCHEMA_PROPERTIES_QUERY,
   type SchemaPropertiesData,
-  type SchemaPropertiesVariables,
+  type TagPropertiesVariables,
 } from "./sdmTag.gql.ts";
 
 export type SdmSchemaValueProps = CustomValueProps;
@@ -26,7 +26,7 @@ const SdmSchemaValue = (props: SdmSchemaValueProps) => {
   const uuid = editorContext.nodeData?.uuid ?? "";
 
   // The query bypasses the Apollo cache, so it never replaces the jcr data of the Content Editor.
-  const { data, loading } = useQuery<SchemaPropertiesData, SchemaPropertiesVariables>(SCHEMA_PROPERTIES_QUERY, {
+  const { data, loading } = useQuery<SchemaPropertiesData, TagPropertiesVariables>(SCHEMA_PROPERTIES_QUERY, {
     variables: { uuid, language: editorContext.lang },
     fetchPolicy: "no-cache",
     client: globalThis.jahia?.apolloClient,

@@ -39,8 +39,6 @@ export type SchemaPropertiesData = {
   openGraphVocabulary: { schemaTypes: { name: string; properties: VocabularyProperty[] }[] };
 };
 
-export type SchemaPropertiesVariables = TagPropertiesVariables;
-
 // The @type of the JSON-LD of the node names the schema.org type of its mapping, and the vocabulary lists the
 // properties of each schema.org type.
 export const SCHEMA_PROPERTIES_QUERY = gql`
