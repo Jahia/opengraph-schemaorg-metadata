@@ -1,8 +1,8 @@
 {
   "label": "Structured Data Mapper",
-  "openGraph": {
-    "nav": "Open Graph",
-    "title": "Open Graph",
+  "mappings": {
+    "nav": "Données structurées",
+    "title": "Données structurées",
     "empty": "Aucune correspondance pour l'instant.",
     "addMapping": "Ajouter une correspondance",
     "list": {

@@ -1,4 +1,4 @@
-import { Share } from "@jahia/moonstone/dist/icons";
+import { Code } from "@jahia/moonstone/dist/icons";
 import { registry } from "@jahia/ui-extender";
 import { lazy, Suspense, type ComponentType } from "react";
 import type { SdmSchemaValueProps } from "./editor-tags/SdmSchemaValue.tsx";
@@ -55,8 +55,8 @@ export default function registerStructuredDataMapper() {
 
       registry.add("adminRoute", "structuredDataMapper", {
         targets: ["jcontent-siteSettingsSeo:90"],
-        icon: <Share/>,
-        label: "structured-data-mapper:openGraph.nav",
+        icon: <Code/>,
+        label: "structured-data-mapper:mappings.nav",
         isSelectable: true,
         requiredPermission: "structuredDataMapperManage",
         requireModuleInstalledOnSite: "structured-data-mapper",
