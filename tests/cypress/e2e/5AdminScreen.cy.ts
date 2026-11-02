@@ -72,7 +72,7 @@ const expectArticleFieldOrder = (names: string[]) => {
     expect(positions, 'the order of the fields').to.deep.equal([...positions].sort((a, b) => a - b));
 };
 
-describe('Open Graph mapping screen', () => {
+describe('Structured data mapping screen', () => {
     before(() => {
         deleteMapping(NEWS_TYPE);
         deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});

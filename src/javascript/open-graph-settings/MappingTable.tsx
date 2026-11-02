@@ -65,14 +65,14 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
           <>
               <Button data-sel-role="sdm-confirm-delete"
                       color="danger"
-                      label={t("openGraph.list.confirmDelete")}
+                      label={t("mappings.list.confirmDelete")}
                       isDisabled={isDeleting}
                       onClick={() => confirmDeletion(mapping)}
               />
               {" "}
               <Button data-sel-role="sdm-cancel-delete"
                       variant="ghost"
-                      label={t("openGraph.list.cancel")}
+                      label={t("mappings.list.cancel")}
                       isDisabled={isDeleting}
                       onClick={() => setConfirming(null)}
               />
@@ -85,14 +85,14 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
             <Button data-sel-role="sdm-edit"
                     variant="ghost"
                     icon={<Edit/>}
-                    label={t("openGraph.list.edit")}
+                    label={t("mappings.list.edit")}
                     onClick={() => onEdit(mapping)}
             />
             {" "}
             <Button data-sel-role="sdm-delete"
                     variant="ghost"
                     icon={<Delete/>}
-                    label={t("openGraph.list.delete")}
+                    label={t("mappings.list.delete")}
                     onClick={() => setConfirming(mapping.uuid)}
             />
         </>
@@ -104,12 +104,12 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
           <Table>
               <TableHead>
                   <TableRow>
-                      <TableHeadCell>{t("openGraph.list.contentType")}</TableHeadCell>
-                      <TableHeadCell width={TEMPLATE_WIDTH}>{t("openGraph.list.template")}</TableHeadCell>
-                      <TableHeadCell width={OG_TYPE_WIDTH}>{t("openGraph.list.ogType")}</TableHeadCell>
-                      <TableHeadCell width={SCHEMA_TYPE_WIDTH}>{t("openGraph.list.schemaType")}</TableHeadCell>
-                      <TableHeadCell>{t("openGraph.list.properties")}</TableHeadCell>
-                      <TableHeadCell width={ACTIONS_WIDTH}>{t("openGraph.list.actions")}</TableHeadCell>
+                      <TableHeadCell>{t("mappings.list.contentType")}</TableHeadCell>
+                      <TableHeadCell width={TEMPLATE_WIDTH}>{t("mappings.list.template")}</TableHeadCell>
+                      <TableHeadCell width={OG_TYPE_WIDTH}>{t("mappings.list.ogType")}</TableHeadCell>
+                      <TableHeadCell width={SCHEMA_TYPE_WIDTH}>{t("mappings.list.schemaType")}</TableHeadCell>
+                      <TableHeadCell>{t("mappings.list.properties")}</TableHeadCell>
+                      <TableHeadCell width={ACTIONS_WIDTH}>{t("mappings.list.actions")}</TableHeadCell>
                   </TableRow>
               </TableHead>
               <TableBody>
@@ -120,15 +120,15 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
                                 data-sel-template={mapping.templateName ?? ""}
                       >
                           <TableBodyCell>{contentTypeOf(mapping)}</TableBodyCell>
-                          <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("openGraph.list.anyTemplate")}</TableBodyCell>
+                          <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("mappings.list.anyTemplate")}</TableBodyCell>
                           <TableBodyCell width={OG_TYPE_WIDTH} data-sel-role="sdm-og-type">
-                              {mapping.ogType ?? t("openGraph.list.noOgType")}
+                              {mapping.ogType ?? t("mappings.list.noOgType")}
                           </TableBodyCell>
                           <TableBodyCell width={SCHEMA_TYPE_WIDTH}
                                          data-sel-role="sdm-schema-type"
                                          title={schemaPropertiesOf(mapping)}
                           >
-                              {mapping.schemaType ?? t("openGraph.list.noSchemaType")}
+                              {mapping.schemaType ?? t("mappings.list.noSchemaType")}
                           </TableBodyCell>
                           <TableBodyCell title={propertiesOf(mapping)}>{propertiesOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={ACTIONS_WIDTH}>{actionsOf(mapping)}</TableBodyCell>

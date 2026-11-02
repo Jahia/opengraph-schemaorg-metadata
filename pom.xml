@@ -14,7 +14,7 @@
     <artifactId>structured-data-mapper</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>Structured Data Mapper</name>
-    <description>Map content types to Open Graph tags and write them in the page head.</description>
+    <description>Map content types to Open Graph tags and to a schema.org JSON-LD block, and write them in the page head.</description>
     <packaging>bundle</packaging>
 
     <licenses>

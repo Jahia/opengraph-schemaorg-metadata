@@ -97,7 +97,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       <Button data-sel-role="sdm-add-mapping"
               color="accent"
               icon={<Add/>}
-              label={t("openGraph.addMapping")}
+              label={t("mappings.addMapping")}
               isDisabled={isOpening || data === undefined}
               onClick={openCreateForm}
       />
@@ -120,7 +120,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   } else if (data) {
     list = (
         <Paper hasPadding>
-            <Typography data-sel-role="structured-data-mapper-empty">{t("openGraph.empty")}</Typography>
+            <Typography data-sel-role="structured-data-mapper-empty">{t("mappings.empty")}</Typography>
         </Paper>
     );
   }
@@ -129,7 +129,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
       <LayoutContent hasPadding
                      data-sel-role="structured-data-mapper"
                      isLoading={loading && data === undefined}
-                     header={<Header title={t("openGraph.title")} mainActions={addButton}/>}
+                     header={<Header title={t("mappings.title")} mainActions={addButton}/>}
       >
           {errorText}
           {list}

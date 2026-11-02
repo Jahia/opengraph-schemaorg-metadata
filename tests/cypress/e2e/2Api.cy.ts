@@ -111,7 +111,7 @@ const expectMappings = (expected: unknown[]) => {
     });
 };
 
-describe('Open Graph mapping API', () => {
+describe('Structured data mapping API', () => {
     before(() => {
         deleteNode(NEWS_PATH);
         deleteSite(SITE_WITHOUT_NEWS);

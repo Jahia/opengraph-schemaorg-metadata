@@ -39,7 +39,7 @@ const TITLE_ROLE = 'sdm-share-card-title';
 const DESCRIPTION_ROLE = 'sdm-share-card-description';
 
 // The ratio of the image, the order of the card with an image and without one, and the domain line of each network,
-// as the issue Jahia/very-open-graph#24 lists them. X writes its summary card, with a square beside the text, for a
+// as the issue Jahia/structured-data-mapper#24 lists them. X writes its summary card, with a square beside the text, for a
 // content with no image, and shows the domain below a large image card.
 const NETWORKS = [
     {

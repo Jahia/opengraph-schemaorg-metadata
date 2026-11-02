@@ -19,7 +19,7 @@ const SEO_ITEMS = '[role="treeitem"][data-registry-target^="jcontent-siteSetting
 const SCREEN = '[data-sel-role="structured-data-mapper"]';
 const LOAD_TIMEOUT = 30000;
 
-describe('Open Graph entry in jContent', () => {
+describe('Structured data entry in jContent', () => {
     afterEach(() => {
         cy.logout();
     });
@@ -41,17 +41,17 @@ describe('Open Graph entry in jContent', () => {
     });
 
     [SITE_ADMIN, EDITOR_IN_CHIEF].forEach(user => {
-        it(`shows the Open Graph entry and screen to the ${user.role}`, () => {
+        it(`shows the Structured data entry and screen to the ${user.role}`, () => {
             cy.login(user.username, user.password);
             cy.visit(ROUTE_URL);
             cy.get(APPS_ACCORDION, {timeout: LOAD_TIMEOUT}).should('be.visible');
-            cy.get(ENTRY, {timeout: LOAD_TIMEOUT}).should('be.visible').and('contain.text', 'Open Graph');
-            cy.contains(SCREEN, 'Open Graph', {timeout: LOAD_TIMEOUT}).should('be.visible');
+            cy.get(ENTRY, {timeout: LOAD_TIMEOUT}).should('be.visible').and('contain.text', 'Structured data');
+            cy.contains(SCREEN, 'Structured data', {timeout: LOAD_TIMEOUT}).should('be.visible');
             cy.contains(SCREEN, 'No mapping yet.').should('be.visible');
         });
     });
 
-    it('lists the Open Graph entry last in the SEO group, and a click on it opens the screen', () => {
+    it('lists the Structured data entry last in the SEO group, and a click on it opens the screen', () => {
         cy.login(SITE_ADMIN.username, SITE_ADMIN.password);
         cy.visit(VANITY_URLS_URL);
         cy.get(SEO_GROUP, {timeout: LOAD_TIMEOUT}).should('have.attr', 'aria-expanded', 'true');
@@ -59,14 +59,14 @@ describe('Open Graph entry in jContent', () => {
             .should('have.length.at.least', 2)
             .last()
             .should('have.attr', 'data-sel-role', 'structuredDataMapper')
-            .and('contain.text', 'Open Graph');
+            .and('contain.text', 'Structured data');
         cy.get(SCREEN).should('not.exist');
         cy.get(ENTRY).click();
         cy.location('pathname').should('eq', ROUTE_URL);
         cy.contains(SCREEN, 'No mapping yet.', {timeout: LOAD_TIMEOUT}).should('be.visible');
     });
 
-    it('hides the Open Graph entry from the editor', () => {
+    it('hides the Structured data entry from the editor', () => {
         cy.login(EDITOR.username, EDITOR.password);
         cy.visit(ROUTE_URL);
         cy.get(ACCORDION_HEADERS, {timeout: LOAD_TIMEOUT}).should('have.length.at.least', 1);

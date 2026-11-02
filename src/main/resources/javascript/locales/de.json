@@ -1,8 +1,8 @@
 {
   "label": "Structured Data Mapper",
-  "openGraph": {
-    "nav": "Open Graph",
-    "title": "Open Graph",
+  "mappings": {
+    "nav": "Strukturierte Daten",
+    "title": "Strukturierte Daten",
     "empty": "Noch keine Zuordnung.",
     "addMapping": "Zuordnung hinzufügen",
     "list": {

@@ -34,7 +34,7 @@ The values are those of the edit workspace in the language of the editor, not th
 
 The module has three parts:
 
-- **Mapping screen**: a screen in the Additional accordion of jContent that maps a content type to an Open Graph type.
+- **Mapping screen**: the screen **Structured data**, in the SEO group of the Additional accordion of jContent, that maps a content type to an Open Graph type and to a schema.org type.
 - **Render filter**: a filter that writes the `og:*` meta tags of the mapping in the head of each page. When the mapping names a schema.org type, the filter also writes one `<script type="application/ld+json">` block of that type.
 - **Content Editor fieldsets**: the read-only values and the overrides of each vocabulary, in the SEO section of the Content Editor.
 
