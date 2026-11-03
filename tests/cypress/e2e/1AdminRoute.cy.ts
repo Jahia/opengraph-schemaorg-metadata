@@ -18,11 +18,11 @@ const SEO_ITEMS = '[role="treeitem"][data-registry-target^="jcontent-siteSetting
 const SCREEN = '[data-sel-role="opengraph-schemaorg-metadata"]';
 const LOAD_TIMEOUT = 30000;
 
-// The ids of the items of the accordion of jContent, once jContent has loaded. The Accordion page object of
-// @jahia/cypress holds the selectors of the accordion.
-const accordionItems = () => {
+// The header of each item of the accordion of jContent names the content of the item in aria-controls. The Accordion
+// page object of @jahia/cypress holds the selector of the accordion, which shows once jContent has loaded.
+const accordionHeaders = () => {
     cy.get(Accordion.defaultSelector, {timeout: LOAD_TIMEOUT}).should('exist');
-    return getComponent(Accordion).listItems();
+    return getComponent(Accordion).get().find('[aria-controls]');
 };
 
 describe('Open Graph & schema.org entry in jContent', () => {
@@ -50,8 +50,8 @@ describe('Open Graph & schema.org entry in jContent', () => {
         it(`shows the Open Graph & schema.org entry and screen to the ${user.role}`, () => {
             cy.login(user.username, user.password);
             cy.visit(ROUTE_URL);
+            accordionHeaders().filter('[aria-controls="apps"]').should('be.visible');
             cy.get(ENTRY, {timeout: LOAD_TIMEOUT}).should('be.visible').and('contain.text', 'Open Graph & schema.org');
-            accordionItems().should('include', 'apps');
             cy.contains(SCREEN, 'Open Graph & schema.org', {timeout: LOAD_TIMEOUT}).should('be.visible');
             cy.contains(SCREEN, 'No mapping yet.').should('be.visible');
         });
@@ -75,7 +75,7 @@ describe('Open Graph & schema.org entry in jContent', () => {
     it('hides the Open Graph & schema.org entry from the editor', () => {
         cy.login(EDITOR.username, EDITOR.password);
         cy.visit(ROUTE_URL);
-        accordionItems().should('not.be.empty');
+        accordionHeaders().should('have.length.at.least', 1);
         cy.get(ENTRY).should('not.exist');
         cy.get(SCREEN).should('not.exist');
     });
