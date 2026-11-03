@@ -1,3 +1,4 @@
+import {Collapsible, getComponentBySelector} from '@jahia/cypress';
 import {LOAD_TIMEOUT} from './mappingScreen';
 
 const FIXTURES = 'graphql/openGraphSchemaOrgMetadata';
@@ -74,15 +75,13 @@ export const openCreateForm = (siteKey: string, parentPath: string, nodeType: st
     );
 };
 
-// The section re-renders when it opens, so the button is found again for each step.
+// A section of the Content Editor is a Moonstone Collapsible. The section re-renders when it opens, and the page
+// object queries it again for each step.
 export const expandSection = (name: string) => {
-    const button = `${sectionSelector(name)} .moonstone-collapsible_button`;
-    cy.get(button, {timeout: LOAD_TIMEOUT}).then($button => {
-        if ($button.attr('aria-expanded') !== 'true') {
-            cy.get(button).click();
-        }
-    });
-    cy.get(button).should('have.attr', 'aria-expanded', 'true');
+    cy.get(sectionSelector(name), {timeout: LOAD_TIMEOUT}).should('exist');
+    const section = getComponentBySelector(Collapsible, sectionSelector(name));
+    section.expand();
+    section.shouldBeExpanded();
 };
 
 export const customFieldSet = (mixin: string) => `${CONTENT_EDITOR} [data-sel-role-dynamic-fieldset="${mixin}"]`;

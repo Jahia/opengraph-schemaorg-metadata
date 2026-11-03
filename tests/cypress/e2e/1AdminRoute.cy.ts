@@ -1,3 +1,4 @@
+import {Accordion, getComponent} from '@jahia/cypress';
 import {
     EDITOR,
     EDITOR_IN_CHIEF,
@@ -10,14 +11,19 @@ import {
 
 const ROUTE_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/openGraphSchemaOrgMetadata`;
 const VANITY_URLS_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/siteSettingsSeo/VanityUrls`;
-const ACCORDION_HEADERS = '.moonstone-accordion section.moonstone-accordionItem header';
-const APPS_ACCORDION = `${ACCORDION_HEADERS}[aria-controls="apps"]`;
 const ENTRY = '[role="treeitem"][data-sel-role="openGraphSchemaOrgMetadata"]';
 const SEO_GROUP = '[role="treeitem"][data-sel-role="siteSettingsSeo"]';
 // The attribute data-registry-target of each item of the Additional tree of jContent is "<target>:<priority>".
 const SEO_ITEMS = '[role="treeitem"][data-registry-target^="jcontent-siteSettingsSeo:"]';
 const SCREEN = '[data-sel-role="opengraph-schemaorg-metadata"]';
 const LOAD_TIMEOUT = 30000;
+
+// The ids of the items of the accordion of jContent, once jContent has loaded. The Accordion page object of
+// @jahia/cypress holds the selectors of the accordion.
+const accordionItems = () => {
+    cy.get(Accordion.defaultSelector, {timeout: LOAD_TIMEOUT}).should('exist');
+    return getComponent(Accordion).listItems();
+};
 
 describe('Open Graph & schema.org entry in jContent', () => {
     afterEach(() => {
@@ -44,8 +50,8 @@ describe('Open Graph & schema.org entry in jContent', () => {
         it(`shows the Open Graph & schema.org entry and screen to the ${user.role}`, () => {
             cy.login(user.username, user.password);
             cy.visit(ROUTE_URL);
-            cy.get(APPS_ACCORDION, {timeout: LOAD_TIMEOUT}).should('be.visible');
             cy.get(ENTRY, {timeout: LOAD_TIMEOUT}).should('be.visible').and('contain.text', 'Open Graph & schema.org');
+            accordionItems().should('include', 'apps');
             cy.contains(SCREEN, 'Open Graph & schema.org', {timeout: LOAD_TIMEOUT}).should('be.visible');
             cy.contains(SCREEN, 'No mapping yet.').should('be.visible');
         });
@@ -69,7 +75,7 @@ describe('Open Graph & schema.org entry in jContent', () => {
     it('hides the Open Graph & schema.org entry from the editor', () => {
         cy.login(EDITOR.username, EDITOR.password);
         cy.visit(ROUTE_URL);
-        cy.get(ACCORDION_HEADERS, {timeout: LOAD_TIMEOUT}).should('have.length.at.least', 1);
+        accordionItems().should('not.be.empty');
         cy.get(ENTRY).should('not.exist');
         cy.get(SCREEN).should('not.exist');
     });

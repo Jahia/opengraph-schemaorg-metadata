@@ -1,3 +1,4 @@
+import {Menu} from '@jahia/cypress';
 import {PropertyMapping} from './openGraphApi';
 import {SITE_KEY, TestUser} from './openGraphSchemaOrgMetadata';
 
@@ -81,9 +82,13 @@ export const propertiesText = (properties: PropertyMapping[]) =>
 const dropdownOf = (fieldSelector: string) =>
     cy.get(`${fieldSelector} [data-sel-content-editor-select-readonly="false"]`, {timeout: LOAD_TIMEOUT});
 
-export const OPEN_MENU = '.moonstone-menu:not(.moonstone-hidden)';
+// The Menu page object of @jahia/cypress holds the selector of the open menu. The choicelist of the Content Editor and
+// the property dropdown of the module set data-value on each item.
+export const OPEN_MENU = Menu.defaultSelector;
 
-export const menuItem = (value: string) => `${OPEN_MENU} .moonstone-menuItem[data-value="${value}"]`;
+export const MENU_ITEMS = `${OPEN_MENU} [data-value]`;
+
+export const menuItem = (value: string) => `${OPEN_MENU} [data-value="${value}"]`;
 
 export const openDropdown = (fieldSelector: string) => dropdownOf(fieldSelector).click();
 
@@ -96,7 +101,7 @@ export const choose = (fieldSelector: string, value: string) => {
 // Opens the choicelist, checks that it offers the selected value only, then selects it again to close the menu.
 export const shouldOfferOnly = (fieldSelector: string, value: string) => {
     openDropdown(fieldSelector);
-    cy.get(`${OPEN_MENU} .moonstone-menuItem`).should('have.length', 1);
+    cy.get(MENU_ITEMS).should('have.length', 1);
     cy.get(menuItem(value)).click();
     cy.get(OPEN_MENU).should('not.exist');
 };
