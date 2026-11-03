@@ -171,11 +171,31 @@ export const expectError =
         expect(result.errors[0].message).to.contain(message);
     };
 
-type MappingNode = {nodeType: {value: string} | null; mixinTypes: {name: string}[]; properties: {name: string}[]};
-export type StoredMapping = {mixins: string[]; properties: string[]};
+type MappingNode = {
+    path: string;
+    nodeType: {value: string} | null;
+    mixinTypes: {name: string}[];
+    properties: {name: string}[];
+};
+export type StoredMapping = {path: string; mixins: string[]; properties: string[]};
 
-// The mixins and the property names of the mapping node of a content type, as root reads them in the repository.
-// openGraphMappings reads the properties of the og:type of the mapping only, so it does not show a property that stays.
+// Sets one property of a node through the generic node mutation of GraphQL, the way the Content Editor saves a field.
+export const setNodeProperty = (path: string, name: string, value: string, user?: TestUser) =>
+    run<MutationData<unknown>>(
+        {mutationFile: `${FIXTURES}/setNodeProperty.graphql`, variables: {path, name, value}},
+        user
+    );
+
+// Adds a mapping node of a content type under the settings node through the generic node mutation of GraphQL.
+export const addMappingNode = (name: string, nodeType: string, user?: TestUser) =>
+    run<MutationData<unknown>>(
+        {mutationFile: `${FIXTURES}/addMappingNode.graphql`, variables: {path: SETTINGS_PATH, name, nodeType}},
+        user
+    );
+
+// The path, the mixins and the property names of the mapping node of a content type, as root reads them in the
+// repository. openGraphMappings reads the properties of the og:type of the mapping only, so it does not show a property
+// that stays.
 export const getStoredMapping = (nodeType: string): Cypress.Chainable<StoredMapping> =>
     run<NodeData<{children: {nodes: MappingNode[]}}>>({
         queryFile: `${FIXTURES}/mappingNodes.graphql`,
@@ -187,6 +207,7 @@ export const getStoredMapping = (nodeType: string): Cypress.Chainable<StoredMapp
         );
         expect(node, `the mapping node of ${nodeType}`).to.exist;
         return {
+            path: node.path,
             mixins: node.mixinTypes.map(mixin => mixin.name),
             properties: node.properties.map(property => property.name)
         };

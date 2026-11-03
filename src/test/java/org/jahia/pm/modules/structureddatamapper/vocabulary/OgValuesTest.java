@@ -2,14 +2,18 @@ package org.jahia.pm.modules.structureddatamapper.vocabulary;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 class OgValuesTest {
 
@@ -44,6 +48,45 @@ class OgValuesTest {
     @Test
     void plainTextKeepsAnUnknownNamedReference() {
         assertEquals("a &unknown; b", OgValues.plainText("a &unknown; b"));
+    }
+
+    @Test
+    void withoutElementsMatchesTheExpressionsItReplaces() {
+        // The four expressions that plainText used until the scan replaced them.
+        Pattern invisibleElement = Pattern.compile("<(script|style)\\b[^>]*>.*?</\\1\\s*>",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Pattern comment = Pattern.compile("<!--.*?-->", Pattern.DOTALL);
+        Pattern blockTag = Pattern.compile(
+                "</?(p|div|br|hr|li|ul|ol|h[1-6]|tr|td|th|table|blockquote|pre|section|article|header|footer)\\b[^>]*>",
+                Pattern.CASE_INSENSITIVE);
+        Pattern tag = Pattern.compile("<[^>]*>");
+        // Whole openers and closers as well as single characters, so that the samples reach each branch: a closer with
+        // each kind of white space, a name that a letter or a combining mark extends, and a dotless i.
+        String[] pieces = {"<", ">", "/", "!", "-", "<!--", "-->", "</", "<script>", "<SCRIPT a=\">\">", "</script>",
+                "</Script \t>", "</script\u000b>", "</script x>", "<scripts>", "<style>", "</STYLE\n>", "</style >",
+                "script", "style", "<p>", "</p>", "<p", "<pre>", "<h1 >", "<h7>", "<br/>", "</ p>", "<p_>",
+                "<pé>", "<div́>", "<lı>", "a", "x", "1", " ", "\t", "\n", "\u000b", " ", "&amp;"};
+        Random random = new Random(42);
+        for (int sample = 0; sample < 50_000; sample++) {
+            StringBuilder html = new StringBuilder();
+            for (int piece = random.nextInt(30); piece > 0; piece--) {
+                html.append(pieces[random.nextInt(pieces.length)]);
+            }
+            String expected = invisibleElement.matcher(html).replaceAll(" ");
+            expected = comment.matcher(expected).replaceAll(" ");
+            expected = blockTag.matcher(expected).replaceAll(" ");
+            expected = tag.matcher(expected).replaceAll("");
+            assertEquals(expected, OgValues.withoutElements(html.toString()), html.toString());
+        }
+    }
+
+    @Test
+    void plainTextReadsOpenersWithoutACloserInLinearTime() {
+        // The expressions took about 27 s for 256 KB of <!--, and 3 s for 64 KB of <.
+        for (String opener : new String[]{"<", "<!--", "<style>", "<SCRIPT>", "<p", "</div"}) {
+            String html = opener.repeat(256 * 1024 / opener.length());
+            assertTimeoutPreemptively(Duration.ofSeconds(1), () -> OgValues.plainText(html), opener);
+        }
     }
 
     @Test

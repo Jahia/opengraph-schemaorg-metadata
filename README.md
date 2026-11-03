@@ -46,6 +46,8 @@ Skeleton, no feature yet. The Open Graph screen shows a placeholder, and the mod
 
 The module adds the permission `structuredDataMapperManage` under the `site-admin` permission group. The `site-administrator` role holds `site-admin`, and the module grants `structuredDataMapperManage` to the `editor-in-chief` role.
 
+The permission binds the mapping nodes themselves, and not only the screen and the GraphQL fields of the module. A user without it cannot create a mapping or change its values through any API, such as the generic node mutations of GraphQL that the Content Editor uses. Jahia offers no check on the removal or the move of a node, so a user who can write the site can still remove a mapping.
+
 ## Build
 
 The Maven settings file reads the Nexus credentials from the variables `NEXUS_USERNAME` and `NEXUS_PASSWORD`. Run this command at the repository root:

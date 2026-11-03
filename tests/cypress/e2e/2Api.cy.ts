@@ -1,5 +1,6 @@
 import {addNode, createSite, deleteNode, deleteSite} from '@jahia/cypress';
 import {
+    addMappingNode,
     deleteMapping,
     expectError,
     expectNoError,
@@ -11,6 +12,7 @@ import {
     OgTag,
     PropertyMapping,
     saveMapping,
+    setNodeProperty,
     SourceProperty,
     TypeMapping
 } from '../support/openGraphApi';
@@ -108,6 +110,13 @@ const expectMappings = (expected: unknown[]) => {
     getMappings().then(result => {
         expectNoError(result);
         expect(result.data.jcr.nodeByPath.openGraphMappings).to.deep.equal(expected);
+    });
+};
+
+const expectDescription = (expected: string) => {
+    getTags(NEWS_PATH).then(result => {
+        expectNoError(result);
+        expect(contentsOf(result.data.jcr.nodeByPath.openGraphTags, 'og:description')).to.deep.equal([expected]);
     });
 };
 
@@ -527,6 +536,24 @@ describe('Structured data mapping API', () => {
                 deleteMapping(NEWS_TYPE, {user}).then(expectNoError);
                 expectMappings([]);
             });
+        });
+
+        it('refuses the editor a change of a mapping node through the generic node mutations', () => {
+            saveMapping(ARTICLE_MAPPING).then(expectNoError);
+            getStoredMapping(NEWS_TYPE).its('path').as('mappingPath');
+            cy.get<string>('@mappingPath').then(path =>
+                setNodeProperty(path, 'sdm:og_description', 'jcr:createdBy', EDITOR).then(expectError(PERMISSION))
+            );
+            addMappingNode('jnt_page', 'jnt:page', EDITOR).then(expectError(PERMISSION));
+            expectMappings([ARTICLE_MAPPING]);
+            expectDescription('First paragraph & more');
+
+            // The same write passes for a role that holds the permission, as a save of the Content Editor does.
+            cy.get<string>('@mappingPath').then(path =>
+                setNodeProperty(path, 'sdm:og_description', 'jcr:title', EDITOR_IN_CHIEF).then(expectNoError)
+            );
+            expectDescription('Open Graph news');
+            deleteMapping(NEWS_TYPE).then(expectNoError);
         });
 
         it('lets the editor read the Open Graph tags of a content node', () => {
