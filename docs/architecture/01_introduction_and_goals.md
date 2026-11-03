@@ -2,8 +2,13 @@
 
 Open Graph & Schema.org Metadata is a Jahia module. It writes Open Graph meta tags and a schema.org JSON-LD block in
 the head of a live page. A site administrator maps a content type to an og:type and to a schema.org type. The mapping
-also names the property of the content type that fills each property of a vocabulary. An editor sees the resulting values in the Content
-Editor, and can replace them for one content.
+also names the property of the content type that fills each property of a vocabulary. An editor sees the resulting
+values in the Content Editor, and can replace them for one content.
+
+The module is not meant for a site whose templates already write Open Graph tags or schema.org values. The render
+filter adds its tags before the first `</head>`, and it does not read the tags that the template wrote. A page of such
+a template then holds both. A template mapping with both vocabularies off stops the module on a template that writes
+its own values.
 
 ## Requirements Overview
 

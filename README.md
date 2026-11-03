@@ -2,6 +2,8 @@
 
 Open Graph & Schema.org Metadata is a Jahia module that maps content types to Open Graph types and properties, and to schema.org types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page`, for the types that inherit `jmix:mainResource`, and for the mixins that extend one of them with `extends=`. A template mapping applies only to the contents of its type that use its template, such as the pages with the template `event`.
 
+The module is not meant for a site whose templates already write the Open Graph tags or the schema.org values. The render filter adds its tags before `</head>` and does not read the tags that a template wrote. A page of such a template would hold both. When only a few templates write their own values, a template mapping with both switches off stops the module on each of them.
+
 One mapping applies to a content: a template mapping for the template of the content first, then the mapping of a mixin of the content, then the mapping of its type or of its closest supertype.
 
 ## Mapping form

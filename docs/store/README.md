@@ -5,6 +5,12 @@ pages. The values come from the content that your editors already write, so you 
 
 ## Overview
 
+The module is not meant for a site whose templates already write the Open Graph tags or the schema.org values. The
+module adds its tags to the head of the page, and does not read the tags that a template wrote. A page of such a
+template would then hold both sets of tags. When only a few templates write their own values, give each of them a
+template mapping with both switches off. The section
+[the mapping that applies to a content](#the-mapping-that-applies-to-a-content) states how.
+
 You map a content type to an Open Graph type and to a schema.org type once, in jContent. The module then writes the
 tags of every content of that type:
 
