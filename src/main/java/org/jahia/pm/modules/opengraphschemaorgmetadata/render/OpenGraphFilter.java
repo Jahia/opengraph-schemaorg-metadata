@@ -1,5 +1,6 @@
 package org.jahia.pm.modules.opengraphschemaorgmetadata.render;
 
+import org.apache.jackrabbit.util.Text;
 import org.jahia.api.Constants;
 import org.jahia.bin.Render;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.OgTag;
@@ -151,15 +152,10 @@ public class OpenGraphFilter extends AbstractFilter {
     /**
      * @return the URL of a file in the live workspace, with the context path, whatever the workspace of its session
      */
-    private static String liveFileUrl(JCRNodeWrapper node) throws RepositoryException {
-        // Holds the HTTP path of the provider, then the workspace of the session.
-        String url = node.getUrl();
-        String httpPath = node.getProvider().getHttpPath();
-        String workspacePath = httpPath + "/" + node.getSession().getWorkspace().getName() + "/";
-        if (url == null || !url.startsWith(workspacePath)) {
-            return url;
-        }
-        return httpPath + "/" + Constants.LIVE_WORKSPACE + "/" + url.substring(workspacePath.length());
+    private static String liveFileUrl(JCRNodeWrapper node) {
+        // The form of JCRNodeWrapperImpl.getUrl() for a file, with the live workspace in place of the session one.
+        return node.getProvider().getHttpPath() + "/" + Constants.LIVE_WORKSPACE
+                + Text.escapePath(node.getCanonicalPath());
     }
 
     private String rewrite(String url, RenderContext renderContext) {
