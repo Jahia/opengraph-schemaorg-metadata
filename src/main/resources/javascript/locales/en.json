@@ -29,7 +29,9 @@
     "off": "Open Graph is off in the mapping of this content type, so the live page has no Open Graph tag."
   },
   "customTags": {
-    "property": "Open Graph property"
+    "property": "Open Graph property",
+    "invalidDate": "{{property}}: \"{{value}}\" is not a valid date.",
+    "invalidUrl": "{{property}}: \"{{value}}\" is not an absolute URL, such as https://www.example.com/page."
   },
   "schemaPreview": {
     "saveHint": "Save to see the updated schema.org values",

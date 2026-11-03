@@ -2,9 +2,12 @@ import { useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import { NAMESPACE } from "../i18n.ts";
 import PropertyValue, { type CustomValueProps } from "./PropertyValue.tsx";
-import { TAG_PROPERTIES_QUERY, type TagPropertiesData, type TagPropertiesVariables } from "./osmTag.gql.ts";
+import { TAG_PROPERTIES_QUERY, type TagPropertiesData, type TagPropertiesVariables, type VocabularyProperty } from "./osmTag.gql.ts";
+import { useTagCheck } from "./tagCheck.ts";
 
 export type OsmTagProps = CustomValueProps;
+
+const NO_PROPERTIES: VocabularyProperty[] = [];
 
 // One value of osm:customTags: an Open Graph property of the og:type of the mapping, then its value.
 const OsmTag = (props: OsmTagProps) => {
@@ -21,7 +24,9 @@ const OsmTag = (props: OsmTagProps) => {
   });
 
   const ogType = data?.jcr?.nodeById?.openGraphTags?.find(ogTag => ogTag.property === "og:type")?.content;
-  const properties = data?.openGraphVocabulary.ogTypes.find(type => type.name === ogType)?.properties ?? [];
+  const properties = data?.openGraphVocabulary.ogTypes.find(type => type.name === ogType)?.properties ?? NO_PROPERTIES;
+  // A date or a URL that the module would not write stops the save.
+  useTagCheck(props, properties);
 
   return <PropertyValue {...props} properties={properties} isLoading={loading} placeholder={t("customTags.property")}/>;
 };

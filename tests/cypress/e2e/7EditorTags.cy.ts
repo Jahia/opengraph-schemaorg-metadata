@@ -12,9 +12,10 @@ import {
     tagContent,
     tagDate,
     tagImage,
-    tagProperty
+    tagProperty,
+    tagsError
 } from '../support/editorTags';
-import {previewValue, save} from '../support/editorField';
+import {previewValue, save, saveRefused} from '../support/editorField';
 import {deleteEverywhere, getLivePage, LivePage, metaContents, metaTags, publish} from '../support/livePage';
 import {cancelAndDiscard, close, menuItem, OPEN_MENU} from '../support/mappingScreen';
 import {
@@ -85,6 +86,10 @@ const EDITOR_TITLE = 'Summer in Mykonos';
 const EDITOR_DATE_TEXT = '10/10/2026 09:30';
 // The date picker reads the local time of the browser, and the tag holds it in UTC, to the second.
 const EDITOR_DATE = new Date(2026, 9, 10, 9, 30).toISOString().replace(/\.\d{3}Z$/, 'Z');
+// No month 31 exists, so the date picker reads no date in the format MM/DD/YYYY or DD/MM/YYYY.
+const INVALID_DATE_TEXT = '31/31/2026 09:30';
+// The date of the news, as the mapping writes it.
+const MAPPED_DATE = '2026-10-19T09:30:00Z';
 
 const tag = (property: string, content: string) => JSON.stringify({property, content});
 const fileTag = (property: string, node: string) => JSON.stringify({property, node});
@@ -391,6 +396,58 @@ describe('Open Graph tags that an editor sets on one content', () => {
                 {property: 'og:video', content: video},
                 {property: 'og:video:width', content: '640'}
             ]);
+        });
+    });
+
+    it('refuses to save a date or a URL of the editor that the module would not write', () => {
+        saveMapping(NEWS_MAPPING).then(expectNoError);
+        setCustomTags(NEWS_PATH, [tag('og:title', EDITOR_TITLE)]).then(expectNoError);
+        cy.login(EDITOR.username, EDITOR.password);
+        openEditForm(uuid);
+        addDate(1, 'article:published_time', INVALID_DATE_TEXT);
+        addTag(2, 'og:video', 'videos/mykonos.mp4');
+        cy.get(tagContent(2)).blur();
+        cy.get(tagsError)
+            .should('contain', `article:published_time: "${INVALID_DATE_TEXT}" is not a valid date.`)
+            .and('contain', 'og:video: "videos/mykonos.mp4" is not an absolute URL');
+        saveRefused();
+        cancelAndDiscard();
+
+        getCustomTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            expect(result.data.jcr.nodeByPath.property.values).to.deep.equal([tag('og:title', EDITOR_TITLE)]);
+        });
+    });
+
+    it('writes no tag for a date or a URL of the editor that is not valid, also when GraphQL wrote it', () => {
+        const audio = 'https://www.example.com/audio/mykonos.mp3';
+        const modified = '2026-10-20T08:00:00+02:00';
+        saveMapping(NEWS_MAPPING).then(expectNoError);
+        // A date of the editor that is not valid leaves the mapped date in place, as an empty value does.
+        setCustomTags(NEWS_PATH, [
+            tag('article:published_time', 'next week'),
+            tag('article:modified_time', modified),
+            tag('og:video', 'videos/mykonos.mp4'),
+            tag('og:audio', audio),
+            tag('og:image', `/files/live${IMAGE_PATH}`)
+        ]).then(expectNoError);
+
+        getTags(NEWS_PATH).then(result => {
+            expectNoError(result);
+            const tags = result.data.jcr.nodeByPath.openGraphTags;
+            expect(contentsOf(tags, 'article:published_time')).to.deep.equal([MAPPED_DATE]);
+            expect(contentsOf(tags, 'article:modified_time')).to.deep.equal([modified]);
+            expect(contentsOf(tags, 'og:video')).to.be.empty;
+            expect(contentsOf(tags, 'og:audio')).to.deep.equal([audio]);
+            expect(contentsOf(tags, 'og:image'), 'a relative URL').to.be.empty;
+        });
+        publish(NEWS_PATH);
+        getLivePage(NEWS_PATH).then(page => {
+            expect(metaContents(page, 'article:published_time')).to.deep.equal([MAPPED_DATE]);
+            expect(metaContents(page, 'article:modified_time')).to.deep.equal([modified]);
+            expect(metaContents(page, 'og:video')).to.be.empty;
+            expect(metaContents(page, 'og:audio')).to.deep.equal([audio]);
+            expect(metaContents(page, 'og:image')).to.be.empty;
         });
     });
 });

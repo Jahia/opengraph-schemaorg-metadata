@@ -12,8 +12,10 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OgValuesTest {
 
@@ -148,6 +150,66 @@ class OgValuesTest {
         assertNull(OgValues.positiveInteger("\u0663"));
         assertNull(OgValues.positiveInteger("2147483648"));
         assertNull(OgValues.positiveInteger("9223372036854775808"));
+    }
+
+    @Test
+    void isIsoDateReadsADateOrADateAndATime() {
+        assertTrue(OgValues.isIsoDate("2026-10-19"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30:00"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30:00Z"));
+        assertTrue(OgValues.isIsoDate("2026-10-19t09:30:00z"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30:00.250+02:00"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30-05:00"));
+        assertTrue(OgValues.isIsoDate("2026-10-19T09:30+18:00"));
+        assertTrue(OgValues.isIsoDate("2024-02-29T23:59:59Z"));
+    }
+
+    @Test
+    void isIsoDateRefusesAnotherText() {
+        assertFalse(OgValues.isIsoDate("next week"));
+        assertFalse(OgValues.isIsoDate(""));
+        assertFalse(OgValues.isIsoDate("19/10/2026"));
+        assertFalse(OgValues.isIsoDate("2026-10-19 09:30:00Z"));
+        assertFalse(OgValues.isIsoDate("2026-10-19T09"));
+        assertFalse(OgValues.isIsoDate("2026-10-19Z"));
+        assertFalse(OgValues.isIsoDate("2026-02-30"));
+        assertFalse(OgValues.isIsoDate("2025-02-29"));
+        assertFalse(OgValues.isIsoDate("2026-13-01"));
+        assertFalse(OgValues.isIsoDate("2026-10-19T24:00:00Z"));
+        assertFalse(OgValues.isIsoDate("2026-10-19T09:60Z"));
+        assertFalse(OgValues.isIsoDate("2026-10-19T09:30:00+19:00"));
+        assertFalse(OgValues.isIsoDate("2026-10-19T09:30+18:01"));
+    }
+
+    @Test
+    void isAbsoluteUrlReadsAnHttpOrHttpsUrlWithAHost() {
+        assertTrue(OgValues.isAbsoluteUrl("https://www.example.com"));
+        assertTrue(OgValues.isAbsoluteUrl("http://example.com/a/b?c=d#e"));
+        assertTrue(OgValues.isAbsoluteUrl("HTTPS://EXAMPLE.COM/"));
+        assertTrue(OgValues.isAbsoluteUrl("https://user:secret@example.com:8443/path"));
+        assertTrue(OgValues.isAbsoluteUrl("https://[2001:db8::1]:8080/"));
+        assertTrue(OgValues.isAbsoluteUrl("https://example.com?q"));
+        assertTrue(OgValues.isAbsoluteUrl("https://bücher.example/straße"));
+    }
+
+    @Test
+    void isAbsoluteUrlRefusesAnotherText() {
+        assertFalse(OgValues.isAbsoluteUrl("next week"));
+        assertFalse(OgValues.isAbsoluteUrl(""));
+        assertFalse(OgValues.isAbsoluteUrl("/files/live/sites/demo/image.png"));
+        assertFalse(OgValues.isAbsoluteUrl("www.example.com"));
+        assertFalse(OgValues.isAbsoluteUrl("//www.example.com"));
+        assertFalse(OgValues.isAbsoluteUrl("ftp://example.com"));
+        assertFalse(OgValues.isAbsoluteUrl("javascript:alert(1)"));
+        assertFalse(OgValues.isAbsoluteUrl("https://"));
+        assertFalse(OgValues.isAbsoluteUrl("https:///path"));
+        assertFalse(OgValues.isAbsoluteUrl("https://user@"));
+        assertFalse(OgValues.isAbsoluteUrl("https://:8080/"));
+        assertFalse(OgValues.isAbsoluteUrl("https://example.com:80a/"));
+        assertFalse(OgValues.isAbsoluteUrl("https://example.com/a b"));
+        assertFalse(OgValues.isAbsoluteUrl("https://exa mple.com"));
+        assertFalse(OgValues.isAbsoluteUrl("https://example.com/\n"));
     }
 
     private static Set<String> allowedValues(OgType ogType, String property) {

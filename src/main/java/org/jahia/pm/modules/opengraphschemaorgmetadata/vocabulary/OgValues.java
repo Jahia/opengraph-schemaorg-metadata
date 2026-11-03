@@ -1,7 +1,11 @@
 package org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary;
 
 import java.time.ZoneOffset;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -18,6 +22,25 @@ import java.util.regex.Pattern;
 public final class OgValues {
 
     private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    // The extended format of ISO 8601: a date, then an optional time, then an optional offset. ISO_LOCAL_TIME reads the
+    // seconds and their fraction as optional.
+    private static final DateTimeFormatter ISO_DATE_OR_DATE_TIME = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            .optionalStart()
+            .appendLiteral('T')
+            .append(DateTimeFormatter.ISO_LOCAL_TIME)
+            .optionalStart()
+            .appendOffsetId()
+            .optionalEnd()
+            .optionalEnd()
+            .toFormatter(Locale.ROOT)
+            .withChronology(IsoChronology.INSTANCE)
+            .withResolverStyle(ResolverStyle.STRICT);
+    private static final Pattern URL_START = Pattern.compile("https?://([^/?#]*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern URL_FORBIDDEN = Pattern.compile("[\\p{Cc}\\p{Z}]");
+    // A host name, or an IPv6 address in brackets, then an optional port.
+    private static final Pattern HOST_AND_PORT = Pattern.compile("(?:\\[[0-9A-Fa-f:.]+\\]|[^\\[\\]:]+)(?::[0-9]*)?");
 
     private static final String[] INVISIBLE_ELEMENTS = {"script", "style"};
     private static final String[] BLOCK_ELEMENTS = {"p", "div", "br", "hr", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5",
@@ -289,6 +312,38 @@ public final class OgValues {
             // The number is greater than the largest long.
             return null;
         }
+    }
+
+    /**
+     * Reads a date that an editor typed, in the extended format of ISO 8601: a date, such as {@code 2026-10-19}, or a
+     * date and a time with an optional offset, such as {@code 2026-10-19T09:30} or {@code 2026-10-19T09:30:00Z}.
+     * The date and the time must exist, so {@code 2026-02-30} is not a date.
+     *
+     * @return true when the text is such a date
+     */
+    public static boolean isIsoDate(String value) {
+        try {
+            ISO_DATE_OR_DATE_TIME.parse(value);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Reads a URL that an editor typed. An absolute URL starts with {@code http://} or {@code https://} in any case,
+     * names a host, and holds no white space and no control character.
+     *
+     * @return true when the text is such a URL
+     */
+    public static boolean isAbsoluteUrl(String value) {
+        Matcher start = URL_START.matcher(value);
+        if (!start.lookingAt() || URL_FORBIDDEN.matcher(value).find()) {
+            return false;
+        }
+        // The user information ends at the last @ of the authority.
+        String authority = start.group(1);
+        return HOST_AND_PORT.matcher(authority.substring(authority.lastIndexOf('@') + 1)).matches();
     }
 
     private static String decodeEntities(String text) {
