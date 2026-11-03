@@ -16,7 +16,7 @@ import {
 } from '../support/editorTags';
 import {previewValue, save} from '../support/editorField';
 import {deleteEverywhere, getLivePage, LivePage, metaContents, metaTags, publish} from '../support/livePage';
-import {cancelAndDiscard, close, menuItem, OPEN_MENU} from '../support/mappingScreen';
+import {cancelAndDiscard, close, MENU_ITEMS, menuItem} from '../support/mappingScreen';
 import {
     deleteMapping,
     expectNoError,
@@ -155,7 +155,7 @@ describe('Open Graph tags that an editor sets on one content', () => {
         switchCustomTags(true);
         addValue();
         openPropertyMenu(0);
-        cy.get(`${OPEN_MENU} .moonstone-menuItem`).should($items => {
+        cy.get(MENU_ITEMS).should($items => {
             expect(Array.from($items).map(item => item.getAttribute('data-value'))).to.deep.equal(ARTICLE_PROPERTIES);
         });
         cy.get(menuItem('og:title')).click();

@@ -22,7 +22,7 @@ import {
     SCHEMA_SAVE_HINT
 } from '../support/editorField';
 import {CUSTOM_SCHEMA_MIXIN, CUSTOM_TAGS_MIXIN, customSchemaValues} from '../support/editorTags';
-import {menuItem, OPEN_MENU} from '../support/mappingScreen';
+import {MENU_ITEMS, menuItem} from '../support/mappingScreen';
 import {EDITOR, SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
 const NEWS_PATH = `${SITE_PATH}/contents/osm-schema-editor-news`;
@@ -213,7 +213,7 @@ describe('schema.org values of a content in the Content Editor', () => {
         cy.get(customSchemaValues.field).scrollIntoView();
         customSchemaValues.addValue();
         customSchemaValues.openPropertyMenu(0);
-        cy.get(`${OPEN_MENU} .moonstone-menuItem`).then($items => {
+        cy.get(MENU_ITEMS).then($items => {
             expect(Array.from($items).map(item => item.dataset.value)).to.deep.equal(ARTICLE_PROPERTIES);
         });
         cy.get(menuItem('author.name')).click();
