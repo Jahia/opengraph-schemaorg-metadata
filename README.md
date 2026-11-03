@@ -38,9 +38,10 @@ The module has three parts:
 - **Render filter**: a filter that writes the `og:*` meta tags of the mapping in the head of each page. When the mapping names a schema.org type, the filter also writes one `<script type="application/ld+json">` block of that type.
 - **Content Editor fieldsets**: the read-only values and the overrides of each vocabulary, in the SEO section of the Content Editor.
 
-## Status
+## Documentation
 
-Skeleton, no feature yet. The Open Graph screen shows a placeholder, and the module has no Java code and no node type definitions.
+- [`docs/store/README.md`](docs/store/README.md) describes the module for site administrators and editors, with screenshots. It is the text of the page of the module on the Jahia Store.
+- [`docs/architecture/`](docs/architecture/README.md) describes the architecture of the module for developers and agents: its building blocks, its runtime scenarios and its concepts.
 
 ## Permissions
 
