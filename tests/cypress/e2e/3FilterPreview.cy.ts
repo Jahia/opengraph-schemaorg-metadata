@@ -66,6 +66,19 @@ const expectLiveUrl = (url: string, pathSuffixes: string[]) => {
     cy.request({url: parsed.pathname}).its('status').should('equal', 200);
 };
 
+// Checks that no Open Graph tag and no JSON-LD block holds the URL of a page or a file in the edit workspace. The
+// template may write such a URL in the body, and the module writes none.
+const expectNoPreviewUrl = (page: LivePage) => {
+    const written = [
+        ...Array.from(page.doc.head.querySelectorAll('meta[property]')).map(meta => meta.getAttribute('content')),
+        ...jsonLdScripts(page).map(script => script.textContent)
+    ];
+    expect(
+        written.filter(value => /\/cms\/render\/default\/|\/files\/default\//.test(value)),
+        'the tags and the JSON-LD block that hold a preview URL'
+    ).to.be.empty;
+};
+
 describe('Open Graph tags and JSON-LD in the head of preview pages', () => {
     before(() => {
         ['jnt:page', 'jnt:news'].forEach(nodeType => deleteMapping(nodeType));
@@ -107,23 +120,14 @@ describe('Open Graph tags and JSON-LD in the head of preview pages', () => {
             expect(single(page, 'og:title')).to.equal('Preview page, not published');
             expect(single(page, 'og:type')).to.equal('website');
             expect(page.html.indexOf('property="og:title"')).to.be.lessThan(page.html.search(/<\/head>/i));
+            expectNoPreviewUrl(page);
             expectLiveUrl(single(page, 'og:url'), ['/sites/osmSite/home/osm-preview-page.html']);
         });
     });
 
     it('writes the live URLs of a news item and of its image in the tags and the JSON-LD block of preview', () => {
         getPreviewPage(NEWS_PATH).then(page => {
-            // The template writes the preview URL of the image in the body, and the module writes none.
-            const written = [
-                ...Array.from(page.doc.head.querySelectorAll('meta[property]')).map(meta =>
-                    meta.getAttribute('content')
-                ),
-                ...jsonLdScripts(page).map(script => script.textContent)
-            ];
-            expect(
-                written.filter(value => /\/cms\/render\/default\/|\/files\/default\//.test(value)),
-                'the tags and the JSON-LD block that hold a preview URL'
-            ).to.be.empty;
+            expectNoPreviewUrl(page);
             expect(single(page, 'og:title')).to.equal('Preview news');
             expectLiveUrl(single(page, 'og:image'), [`/files/live${IMAGE_PATH}`]);
             livePathsOf(NEWS_PATH).then(livePaths => expectLiveUrl(single(page, 'og:url'), livePaths));
