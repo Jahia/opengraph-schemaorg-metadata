@@ -1,5 +1,7 @@
 package org.jahia.pm.modules.opengraphschemaorgmetadata.render;
 
+import org.jahia.api.Constants;
+import org.jahia.bin.Render;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.OgTag;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.OpenGraphService;
 import org.jahia.services.content.JCRNodeWrapper;
@@ -28,8 +30,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Writes the Open Graph tags of the main resource before the first {@code </head>} tag of a live page, then its
- * schema.org JSON-LD block when its mapping has a schema.org type.
+ * Writes the Open Graph tags of the main resource before the first {@code </head>} tag of a live or a preview page,
+ * then its schema.org JSON-LD block when its mapping has a schema.org type. A preview page gets the live URLs, so it
+ * shows the tags that the live page shows once published.
  * <p>
  * The filter runs outside the cache filter, so a mapping change applies to a cached page at once. Its input is the
  * HTML of the template: the static assets filter adds the CSS and JavaScript links later. The filter applies only on
@@ -53,7 +56,7 @@ public class OpenGraphFilter extends AbstractFilter {
         // Outside AggregateCacheFilter, which runs at 16.
         setPriority(14);
         setApplyOnConfigurations("page");
-        setApplyOnModes("live");
+        setApplyOnModes("live,preview");
         setApplyOnTemplateTypes("html");
         setSkipOnAjaxRequest(true);
         addCondition(new ModuleOnSiteCondition());
@@ -133,16 +136,30 @@ public class OpenGraphFilter extends AbstractFilter {
         URLGenerator urlGenerator = renderContext.getURLGenerator();
         String url;
         if (node.isNodeType(FILE_TYPE)) {
-            // Already holds the context path and the workspace of the session, live here.
-            url = node.getUrl();
+            url = liveFileUrl(node);
         } else {
             String language = renderContext.getMainResourceLocale().toString();
-            url = rewrite(urlGenerator.getContext() + urlGenerator.buildURL(node, language, null, "html"), renderContext);
+            url = rewrite(urlGenerator.getContext() + Render.getRenderServletPath() + "/" + Constants.LIVE_WORKSPACE + "/"
+                    + language + node.getPath() + ".html", renderContext);
         }
         if (url == null) {
             return null;
         }
         return isAbsolute(url) ? url : urlGenerator.getServer() + url;
+    }
+
+    /**
+     * @return the URL of a file in the live workspace, with the context path, whatever the workspace of its session
+     */
+    private static String liveFileUrl(JCRNodeWrapper node) throws RepositoryException {
+        // Holds the HTTP path of the provider, then the workspace of the session.
+        String url = node.getUrl();
+        String httpPath = node.getProvider().getHttpPath();
+        String workspacePath = httpPath + "/" + node.getSession().getWorkspace().getName() + "/";
+        if (url == null || !url.startsWith(workspacePath)) {
+            return url;
+        }
+        return httpPath + "/" + Constants.LIVE_WORKSPACE + "/" + url.substring(workspacePath.length());
     }
 
     private String rewrite(String url, RenderContext renderContext) {
