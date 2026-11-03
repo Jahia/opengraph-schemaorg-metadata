@@ -98,17 +98,22 @@ export const fieldSetsShouldNotExist = () => {
 };
 
 // The names of the fieldsets of the module that the section seo shows, in the order of the page.
-export const moduleFieldSetsOnPage = (): Cypress.Chainable<string[]> =>
+const moduleFieldSetNames = ($elements: JQuery<HTMLElement>): string[] =>
+    Array.from($elements)
+        .map(element => element.dataset.selRoleDynamicFieldset ?? element.dataset.selContentEditorField)
+        .map(name => name.split('_')[0])
+        .filter((name, index, names) => MODULE_FIELD_SETS.includes(name) && names.indexOf(name) === index);
+
+// Checks the fieldsets of the module that the section seo shows. A fieldset hides in an effect, one render after the
+// field that decides it, so the check queries the page again until the names match. A .then() would read them once.
+export const expectModuleFieldSets = (expected: string[]) =>
     cy
         .get(
             `${SECTION_SELECTOR} [data-sel-role-dynamic-fieldset], ${SECTION_SELECTOR} [data-sel-content-editor-field]`
         )
-        .then($elements =>
-            Array.from($elements)
-                .map(element => element.dataset.selRoleDynamicFieldset ?? element.dataset.selContentEditorField)
-                .map(name => name.split('_')[0])
-                .filter((name, index, names) => MODULE_FIELD_SETS.includes(name) && names.indexOf(name) === index)
-        );
+        .should($elements => {
+            expect(moduleFieldSetNames($elements)).to.deep.equal(expected);
+        });
 
 // Expands the section seo, and waits for the JSON-LD of the node.
 export const openSchemaPreview = (): Cypress.Chainable<Record<string, unknown>> => {

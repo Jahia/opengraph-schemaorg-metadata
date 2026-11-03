@@ -7,7 +7,7 @@ import {
     fieldSetsShouldNotExist,
     FormSection,
     MODULE_FIELD_SETS,
-    moduleFieldSetsOnPage,
+    expectModuleFieldSets,
     nodeProperties,
     NodeProperty,
     openContentEditor,
@@ -170,11 +170,7 @@ describe('Open Graph values in the Content Editor', () => {
                 'have.text',
                 'schema.org is off in the mapping of this content type, so the live page has no JSON-LD block.'
             );
-            moduleFieldSetsOnPage().should('deep.equal', [
-                'sdmOpenGraphValues',
-                'sdmmix:customTags',
-                'sdmSchemaOrgValues'
-            ]);
+            expectModuleFieldSets(['sdmOpenGraphValues', 'sdmmix:customTags', 'sdmSchemaOrgValues']);
         });
 
         it('keeps the inactive tab of the full-screen editor hidden once the Open Graph values are shown', () => {
