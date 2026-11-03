@@ -16,7 +16,7 @@ export type PreviewData = {
 export type PreviewVariables = { uuid: string; language: string };
 
 export const PREVIEW_QUERY = gql`
-  query structuredDataMapperPreview($uuid: String!, $language: String!) {
+  query openGraphSchemaOrgMetadataPreview($uuid: String!, $language: String!) {
     jcr {
       nodeById(uuid: $uuid) {
         openGraphTags(language: $language) {

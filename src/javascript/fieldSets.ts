@@ -2,10 +2,10 @@ import { useContentEditorSectionContext } from "@jahia/jcontent";
 import { useEffect } from "react";
 
 // The fieldsets of the module in the section seo, in their order: the forms files give them the ranks 10 to 13.
-export const OPEN_GRAPH_VALUES = "sdmOpenGraphValues";
-export const CUSTOM_TAGS = "sdmmix:customTags";
-export const SCHEMA_ORG_VALUES = "sdmSchemaOrgValues";
-export const CUSTOM_SCHEMA_VALUES = "sdmmix:customSchemaOrg";
+export const OPEN_GRAPH_VALUES = "osmOpenGraphValues";
+export const CUSTOM_TAGS = "osmmix:customTags";
+export const SCHEMA_ORG_VALUES = "osmSchemaOrgValues";
+export const CUSTOM_SCHEMA_VALUES = "osmmix:customSchemaOrg";
 
 const SECTION = "seo";
 

@@ -23,12 +23,12 @@ import {
 } from '../support/editorField';
 import {CUSTOM_SCHEMA_MIXIN, CUSTOM_TAGS_MIXIN, customSchemaValues} from '../support/editorTags';
 import {menuItem, OPEN_MENU} from '../support/mappingScreen';
-import {EDITOR, SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
+import {EDITOR, SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
-const NEWS_PATH = `${SITE_PATH}/contents/sdm-schema-editor-news`;
-const IMAGE_NAME = 'sdm-schema-editor-image.png';
+const NEWS_PATH = `${SITE_PATH}/contents/osm-schema-editor-news`;
+const IMAGE_NAME = 'osm-schema-editor-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
-const OTHER_IMAGE_NAME = 'sdm-schema-editor-other.png';
+const OTHER_IMAGE_NAME = 'osm-schema-editor-other.png';
 const OTHER_IMAGE_PATH = `${SITE_PATH}/files/${OTHER_IMAGE_NAME}`;
 const NODE_PATHS = [NEWS_PATH, IMAGE_PATH, OTHER_IMAGE_PATH];
 const TITLE = 'Schema editor news';
@@ -81,13 +81,13 @@ describe('schema.org values of a content in the Content Editor', () => {
     before(() => {
         deleteMapping('jnt:news');
         NODE_PATHS.forEach(deleteEverywhere);
-        uploadFile('images/sdm-filter-image.png', `${SITE_PATH}/files`, OTHER_IMAGE_NAME, 'image/png').then(result => {
+        uploadFile('images/osm-filter-image.png', `${SITE_PATH}/files`, OTHER_IMAGE_NAME, 'image/png').then(result => {
             otherImageUuid = result.data.jcr.addNode.uuid;
         });
-        uploadFile('images/sdm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
+        uploadFile('images/osm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
             addNode({
                 parentPathOrId: `${SITE_PATH}/contents`,
-                name: 'sdm-schema-editor-news',
+                name: 'osm-schema-editor-news',
                 primaryNodeType: 'jnt:news',
                 properties: [
                     {name: 'jcr:title', value: TITLE, language: 'en'},

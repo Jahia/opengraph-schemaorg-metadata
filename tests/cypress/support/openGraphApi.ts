@@ -1,6 +1,6 @@
-import {SETTINGS_PATH, SITE_PATH, TestUser} from './structuredDataMapper';
+import {SETTINGS_PATH, SITE_PATH, TestUser} from './openGraphSchemaOrgMetadata';
 
-const FIXTURES = 'graphql/structuredDataMapper';
+const FIXTURES = 'graphql/openGraphSchemaOrgMetadata';
 
 export type PropertyMapping = {ogProperty: string; sourceProperty: string};
 export type SchemaPropertyMapping = {schemaProperty: string; sourceProperty: string};
@@ -73,7 +73,7 @@ const run = <T>(request: ApolloRequest, user?: TestUser): Cypress.Chainable<GqlR
 export const getVocabulary = (user?: TestUser) =>
     run<{openGraphVocabulary: OgVocabulary}>({queryFile: `${FIXTURES}/vocabulary.graphql`}, user);
 
-// The user runs the request, root when absent, on the site node at path, sdmSite when absent.
+// The user runs the request, root when absent, on the site node at path, osmSite when absent.
 export type Scope = {user?: TestUser; path?: string};
 
 export const getMappings = ({user, path = SITE_PATH}: Scope = {}) =>
@@ -132,19 +132,19 @@ export const deleteMapping = (
 
 export type CustomTagsNode = {uuid: string; mixinTypes: {name: string}[]; property: {values: string[]} | null};
 
-// The mixin types of a node, and the English values of sdm:customTags.
+// The mixin types of a node, and the English values of osm:customTags.
 export const getCustomTags = (path: string) =>
     run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customTags.graphql`, variables: {path}});
 
-// Adds the mixin sdmmix:customTags to a node, and sets the English values of sdm:customTags.
+// Adds the mixin osmmix:customTags to a node, and sets the English values of osm:customTags.
 export const setCustomTags = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomTags.graphql`, variables: {path, values}});
 
-// The mixin types of a node, and the English values of sdm:customSchemaOrg.
+// The mixin types of a node, and the English values of osm:customSchemaOrg.
 export const getCustomSchemaValues = (path: string) =>
     run<NodeData<CustomTagsNode>>({queryFile: `${FIXTURES}/customSchemaValues.graphql`, variables: {path}});
 
-// Adds the mixin sdmmix:customSchemaOrg to a node, and sets the English values of sdm:customSchemaOrg.
+// Adds the mixin osmmix:customSchemaOrg to a node, and sets the English values of osm:customSchemaOrg.
 export const setCustomSchemaValues = (path: string, values: string[]) =>
     run<MutationData<unknown>>({mutationFile: `${FIXTURES}/setCustomSchemaValues.graphql`, variables: {path, values}});
 

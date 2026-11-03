@@ -34,7 +34,7 @@ const formatted = (jsonLd: string, urlOf: (path: string) => string) =>
     INDENT
   );
 
-// The read-only field sdm:schemaPreview: the JSON-LD block of the saved node in the edit workspace.
+// The read-only field osm:schemaPreview: the JSON-LD block of the saved node in the edit workspace.
 const SchemaPreview = ({ id, editorContext }: SchemaPreviewProps) => {
   const { t } = useTranslation(NAMESPACE);
   const formik: FormikContextType<unknown> | undefined = useFormikContext();
@@ -51,7 +51,7 @@ const SchemaPreview = ({ id, editorContext }: SchemaPreviewProps) => {
 
   if (hasNoValue || jsonLd === null) {
     return isOff ? (
-        <Typography id={id} data-sel-role="sdm-schema-off">
+        <Typography id={id} data-sel-role="osm-schema-off">
             {t("schemaPreview.off")}
         </Typography>
     ) : null;
@@ -60,11 +60,11 @@ const SchemaPreview = ({ id, editorContext }: SchemaPreviewProps) => {
   return (
       <>
           {isDirty && (
-          <Typography data-sel-role="sdm-schema-save-hint" variant="caption">
+          <Typography data-sel-role="osm-schema-save-hint" variant="caption">
               {t("schemaPreview.saveHint")}
           </Typography>
           )}
-          <Typography id={id} component="pre" data-sel-role="sdm-schema-preview" className={styles.json}>
+          <Typography id={id} component="pre" data-sel-role="osm-schema-preview" className={styles.json}>
               {formatted(jsonLd, path => t("preview.urlOf", { path, ...RAW }))}
           </Typography>
       </>

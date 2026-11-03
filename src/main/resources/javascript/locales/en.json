@@ -1,8 +1,8 @@
 {
-  "label": "Structured Data Mapper",
+  "label": "Open Graph & Schema.org Metadata",
   "mappings": {
-    "nav": "Structured data",
-    "title": "Structured data",
+    "nav": "Open Graph & schema.org",
+    "title": "Open Graph & schema.org",
     "empty": "No mapping yet.",
     "addMapping": "Add a mapping",
     "list": {

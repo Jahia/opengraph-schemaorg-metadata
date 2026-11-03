@@ -23,12 +23,12 @@ import {
     typeInField
 } from '../support/editorField';
 import {LOAD_TIMEOUT} from '../support/mappingScreen';
-import {SITE_KEY, SITE_MODULES, SITE_PATH, TEMPLATE_SET} from '../support/structuredDataMapper';
+import {SITE_KEY, SITE_MODULES, SITE_PATH, TEMPLATE_SET} from '../support/openGraphSchemaOrgMetadata';
 
-const NEWS_NAME = 'sdm-editor-news';
+const NEWS_NAME = 'osm-editor-news';
 const NEWS_PATH = `${SITE_PATH}/contents/${NEWS_NAME}`;
 const PAGE_PATH = `${SITE_PATH}/home`;
-const OTHER_SITE_KEY = 'sdmSiteOther';
+const OTHER_SITE_KEY = 'osmSiteOther';
 const OTHER_SITE_PATH = `/sites/${OTHER_SITE_KEY}`;
 const OTHER_NEWS_PATH = `${OTHER_SITE_PATH}/contents/${NEWS_NAME}`;
 const TITLE = 'Editor news';
@@ -68,10 +68,10 @@ const expectSection = (sections: FormSection[]) => {
         .flatMap(fieldSet => fieldSet.fields)
         .map(({name, selectorType, readOnly, i18n}) => ({name, selectorType, readOnly, i18n}));
     // The values of each field depend on the language, so the Content Editor does not say that all languages share it.
-    expect(fields).to.deep.include({name: 'sdm:ogPreview', selectorType: 'SdmPreview', readOnly: true, i18n: true});
+    expect(fields).to.deep.include({name: 'osm:ogPreview', selectorType: 'OsmPreview', readOnly: true, i18n: true});
     expect(fields).to.deep.include({
-        name: 'sdm:schemaPreview',
-        selectorType: 'SdmSchemaPreview',
+        name: 'osm:schemaPreview',
+        selectorType: 'OsmSchemaPreview',
         readOnly: true,
         i18n: true
     });
@@ -80,33 +80,33 @@ const expectSection = (sections: FormSection[]) => {
         .filter(fieldSet => MODULE_FIELD_SETS.includes(fieldSet.name))
         .map(({name, displayName}) => ({name, displayName}));
     expect(fieldSets).to.deep.equal([
-        {name: 'sdmOpenGraphValues', displayName: 'Open Graph'},
-        {name: 'sdmmix:customTags', displayName: 'Override Open Graph tags'},
-        {name: 'sdmSchemaOrgValues', displayName: 'schema.org'},
-        {name: 'sdmmix:customSchemaOrg', displayName: 'Override schema.org properties'}
+        {name: 'osmOpenGraphValues', displayName: 'Open Graph'},
+        {name: 'osmmix:customTags', displayName: 'Override Open Graph tags'},
+        {name: 'osmSchemaOrgValues', displayName: 'schema.org'},
+        {name: 'osmmix:customSchemaOrg', displayName: 'Override schema.org properties'}
     ]);
 };
 
-// The save request carries the new title, and no request carries the field sdm:ogPreview.
+// The save request carries the new title, and no request carries the field osm:ogPreview.
 const expectNoPreviewSent = (bodies: string[]) => {
     expect(
         bodies.some(body => body.includes(NEW_TITLE)),
         'a request saves the title'
     ).to.equal(true);
     expect(
-        bodies.filter(body => body.includes('sdm:ogPreview')),
-        'requests with sdm:ogPreview'
+        bodies.filter(body => body.includes('osm:ogPreview')),
+        'requests with osm:ogPreview'
     ).to.be.empty;
 };
 
 const expectSavedNews = (properties: NodeProperty[]) => {
     expect(properties.find(property => property.name === 'jcr:title')?.value).to.equal(NEW_TITLE);
-    expect(properties.map(property => property.name).filter(name => name.startsWith('sdm:'))).to.be.empty;
+    expect(properties.map(property => property.name).filter(name => name.startsWith('osm:'))).to.be.empty;
 };
 
 const expectNoFlexColRule = (document: Document) => {
     const sheets = Array.from(document.styleSheets).filter(sheet =>
-        sheet.href?.includes('/modules/structured-data-mapper/')
+        sheet.href?.includes('/modules/opengraph-schemaorg-metadata/')
     );
     expect(sheets, 'stylesheets of the module').not.to.be.empty;
     const selectors = sheets
@@ -120,7 +120,7 @@ describe('Open Graph values in the Content Editor', () => {
         ['jnt:news', 'jnt:page'].forEach(nodeType => deleteMapping(nodeType));
         deleteEverywhere(NEWS_PATH);
         deleteSite(OTHER_SITE_KEY);
-        createSite(OTHER_SITE_KEY, {templateSet: TEMPLATE_SET, serverName: 'sdmsiteother', locale: 'en'});
+        createSite(OTHER_SITE_KEY, {templateSet: TEMPLATE_SET, serverName: 'osmsiteother', locale: 'en'});
         SITE_MODULES.forEach(moduleName => enableModule(moduleName, OTHER_SITE_KEY));
         addNews(SITE_PATH);
         addNews(OTHER_SITE_PATH);
@@ -140,7 +140,7 @@ describe('Open Graph values in the Content Editor', () => {
 
         it('have no section "Open Graph" of their own', () => {
             editFormSections(NEWS_PATH).then(sections =>
-                expect(sectionNames(sections)).not.to.include('structuredDataMapper')
+                expect(sectionNames(sections)).not.to.include('openGraphSchemaOrgMetadata')
             );
         });
     });
@@ -170,7 +170,7 @@ describe('Open Graph values in the Content Editor', () => {
                 'have.text',
                 'schema.org is off in the mapping of this content type, so the live page has no JSON-LD block.'
             );
-            expectModuleFieldSets(['sdmOpenGraphValues', 'sdmmix:customTags', 'sdmSchemaOrgValues']);
+            expectModuleFieldSets(['osmOpenGraphValues', 'osmmix:customTags', 'osmSchemaOrgValues']);
         });
 
         it('keeps the inactive tab of the full-screen editor hidden once the Open Graph values are shown', () => {
@@ -213,7 +213,7 @@ describe('Open Graph values in the Content Editor', () => {
             fieldSetsShouldNotExist();
         });
 
-        it('shows a typed title at once, asks to save for another change, and saves no sdm:ogPreview', () => {
+        it('shows a typed title at once, asks to save for another change, and saves no osm:ogPreview', () => {
             const requests: string[] = [];
             cy.intercept('POST', '**/modules/graphql', request => {
                 requests.push(JSON.stringify(request.body));

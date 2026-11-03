@@ -1,0 +1,13 @@
+mutation openGraphSchemaOrgMetadataAddMappingNode($path: String!, $name: String!, $nodeType: String!) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            addChild(
+                name: $name
+                primaryNodeType: "osmnt:typeMapping"
+                properties: [{name: "osm:nodeType", value: $nodeType}, {name: "osm:templateName", value: "*"}]
+            ) {
+                uuid
+            }
+        }
+    }
+}

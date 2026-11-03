@@ -1,0 +1,21 @@
+{
+  "nodeType": "osmmix:customSchemaOrg",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "seo",
+      "fieldSets": [
+        {
+          "name": "osmmix:customSchemaOrg",
+          "rank": 13.0,
+          "fields": [
+            {
+              "name": "osm:customSchemaOrg",
+              "selectorType": "OsmSchemaValue"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

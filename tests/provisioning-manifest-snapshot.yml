@@ -5,6 +5,6 @@
 - installBundle:
       - 'mvn:org.jahia.modules/grid/8.1.0'
       - 'mvn:org.jahia.modules/news/3.4.0'
-      - 'mvn:org.jahia.pm.modules/structured-data-mapper'
+      - 'mvn:org.jahia.pm.modules/opengraph-schemaorg-metadata'
   autoStart: true
   uninstallPreviousVersion: true

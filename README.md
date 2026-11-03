@@ -1,6 +1,6 @@
-# Structured Data Mapper
+# Open Graph & Schema.org Metadata
 
-Structured Data Mapper is a Jahia module that maps content types to Open Graph types and properties, and to schema.org types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page`, for the types that inherit `jmix:mainResource`, and for the mixins that extend one of them with `extends=`. A template mapping applies only to the contents of its type that use its template, such as the pages with the template `event`.
+Open Graph & Schema.org Metadata is a Jahia module that maps content types to Open Graph types and properties, and to schema.org types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page`, for the types that inherit `jmix:mainResource`, and for the mixins that extend one of them with `extends=`. A template mapping applies only to the contents of its type that use its template, such as the pages with the template `event`.
 
 One mapping applies to a content: a template mapping for the template of the content first, then the mapping of a mixin of the content, then the mapping of its type or of its closest supertype.
 
@@ -34,7 +34,7 @@ The values are those of the edit workspace in the language of the editor, not th
 
 The module has three parts:
 
-- **Mapping screen**: the screen **Structured data**, in the SEO group of the Additional accordion of jContent, that maps a content type to an Open Graph type and to a schema.org type.
+- **Mapping screen**: the screen **Open Graph & schema.org**, in the SEO group of the Additional accordion of jContent, that maps a content type to an Open Graph type and to a schema.org type.
 - **Render filter**: a filter that writes the `og:*` meta tags of the mapping in the head of each page. When the mapping names a schema.org type, the filter also writes one `<script type="application/ld+json">` block of that type.
 - **Content Editor fieldsets**: the read-only values and the overrides of each vocabulary, in the SEO section of the Content Editor.
 
@@ -44,7 +44,7 @@ Skeleton, no feature yet. The Open Graph screen shows a placeholder, and the mod
 
 ## Permissions
 
-The module adds the permission `structuredDataMapperManage` under the `site-admin` permission group. The `site-administrator` role holds `site-admin`, and the module grants `structuredDataMapperManage` to the `editor-in-chief` role.
+The module adds the permission `openGraphSchemaOrgMetadataManage` under the `site-admin` permission group. The `site-administrator` role holds `site-admin`, and the module grants `openGraphSchemaOrgMetadataManage` to the `editor-in-chief` role.
 
 The permission binds the mapping nodes themselves, and not only the screen and the GraphQL fields of the module. A user without it cannot create a mapping or change its values through any API, such as the generic node mutations of GraphQL that the Content Editor uses. Jahia offers no check on the removal or the move of a node, so a user who can write the site can still remove a mapping.
 
@@ -56,4 +56,4 @@ The Maven settings file reads the Nexus credentials from the variables `NEXUS_US
 mvn -s .github/maven.settings.xml clean install
 ```
 
-The build runs the Vite build of the UI and writes `target/structured-data-mapper-0.1.0-SNAPSHOT.jar`.
+The build runs the Vite build of the UI and writes `target/opengraph-schemaorg-metadata-0.1.0-SNAPSHOT.jar`.

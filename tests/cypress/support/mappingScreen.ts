@@ -1,16 +1,16 @@
 import {PropertyMapping} from './openGraphApi';
-import {SITE_KEY, TestUser} from './structuredDataMapper';
+import {SITE_KEY, TestUser} from './openGraphSchemaOrgMetadata';
 
 export const LOAD_TIMEOUT = 30000;
-export const SCREEN_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/structuredDataMapper`;
+export const SCREEN_URL = `/jahia/jcontent/${SITE_KEY}/en/apps/openGraphSchemaOrgMetadata`;
 
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
-export const EMPTY = role('structured-data-mapper-empty');
-export const ADD_MAPPING = role('sdm-add-mapping');
-export const EDIT = role('sdm-edit');
-export const DELETE = role('sdm-delete');
-export const CONFIRM_DELETE = role('sdm-confirm-delete');
+export const EMPTY = role('opengraph-schemaorg-metadata-empty');
+export const ADD_MAPPING = role('osm-add-mapping');
+export const EDIT = role('osm-edit');
+export const DELETE = role('osm-delete');
+export const CONFIRM_DELETE = role('osm-confirm-delete');
 
 export const CONTENT_EDITOR = '[aria-labelledby="dialog-content-editor"]';
 const CREATE = role('createButton');
@@ -20,23 +20,23 @@ const DISCARD = role('close-dialog-discard');
 
 const field = (name: string) => `${CONTENT_EDITOR} [data-sel-content-editor-field="${name}"]`;
 
-export const NODE_TYPE_FIELD = field('sdmnt:typeMapping_sdm:nodeType');
-export const TEMPLATE_FIELD = field('sdmnt:typeMapping_sdm:templateName');
+export const NODE_TYPE_FIELD = field('osmnt:typeMapping_osm:nodeType');
+export const TEMPLATE_FIELD = field('osmnt:typeMapping_osm:templateName');
 // The mixin of each switch of the form, which is also the name of its fieldset.
-export const OPEN_GRAPH = 'sdmmix:openGraph';
-export const SCHEMA_ORG = 'sdmmix:schemaOrg';
+export const OPEN_GRAPH = 'osmmix:openGraph';
+export const SCHEMA_ORG = 'osmmix:schemaOrg';
 
-export const OG_TYPE_FIELD = field(`${OPEN_GRAPH}_sdm:ogType`);
-export const SCHEMA_TYPE_FIELD = field(`${SCHEMA_ORG}_sdm:schemaType`);
+export const OG_TYPE_FIELD = field(`${OPEN_GRAPH}_osm:ogType`);
+export const SCHEMA_TYPE_FIELD = field(`${SCHEMA_ORG}_osm:schemaType`);
 
-// The Content Editor names a field after its fieldset and its property, such as sdmmix:openGraph_sdm:og_title, and
-// the mapping stores article:tag in sdm:article_tag.
+// The Content Editor names a field after its fieldset and its property, such as osmmix:openGraph_osm:og_title, and
+// the mapping stores article:tag in osm:article_tag.
 const sourceFieldSelector = (ogProperty: string) =>
-    `[data-sel-content-editor-field$="_sdm:${ogProperty.replace(/:/g, '_')}"]`;
+    `[data-sel-content-editor-field$="_osm:${ogProperty.replace(/:/g, '_')}"]`;
 
 export const sourceField = (ogProperty: string) => `${CONTENT_EDITOR} ${sourceFieldSelector(ogProperty)}`;
 
-// The mapping stores the source of author.name in sdm:schema_author_name.
+// The mapping stores the source of author.name in osm:schema_author_name.
 export const schemaSourceField = (schemaProperty: string) =>
     sourceField(`schema_${schemaProperty.replace(/\./g, '_')}`);
 
@@ -70,7 +70,7 @@ export const openScreen = (user: TestUser) => {
 
 // The row of the mapping of every template, or of the template mapping of templateName.
 export const mappingRow = (nodeType: string, templateName = '') =>
-    cy.get(`${role('sdm-mapping-row')}[data-sel-node-type="${nodeType}"][data-sel-template="${templateName}"]`, {
+    cy.get(`${role('osm-mapping-row')}[data-sel-node-type="${nodeType}"][data-sel-template="${templateName}"]`, {
         timeout: LOAD_TIMEOUT
     });
 

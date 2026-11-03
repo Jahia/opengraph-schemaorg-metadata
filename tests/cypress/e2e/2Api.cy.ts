@@ -23,13 +23,13 @@ import {
     SITE_ADMIN,
     SITE_PATH,
     TEMPLATE_SET
-} from '../support/structuredDataMapper';
+} from '../support/openGraphSchemaOrgMetadata';
 
 const NEWS_TYPE = 'jnt:news';
-const NEWS_NAME = 'sdm-api-news';
+const NEWS_NAME = 'osm-api-news';
 const NEWS_PATH = `${SITE_PATH}/contents/${NEWS_NAME}`;
 const HOME_PATH = `${SITE_PATH}/home`;
-const SITE_WITHOUT_NEWS = 'sdmSiteNoNews';
+const SITE_WITHOUT_NEWS = 'osmSiteNoNews';
 
 const ARTICLE_PROPERTIES: PropertyMapping[] = [
     {ogProperty: 'og:title', sourceProperty: 'jcr:title'},
@@ -120,7 +120,7 @@ const expectDescription = (expected: string) => {
     });
 };
 
-describe('Structured data mapping API', () => {
+describe('Open Graph & schema.org mapping API', () => {
     before(() => {
         deleteNode(NEWS_PATH);
         deleteSite(SITE_WITHOUT_NEWS);
@@ -139,7 +139,7 @@ describe('Structured data mapping API', () => {
                 {name: 'j:expiration', value: '215'}
             ]
         });
-        createSite(SITE_WITHOUT_NEWS, {templateSet: TEMPLATE_SET, serverName: 'sdmsitenonews', locale: 'en'});
+        createSite(SITE_WITHOUT_NEWS, {templateSet: TEMPLATE_SET, serverName: 'osmsitenonews', locale: 'en'});
     });
 
     after(() => {
@@ -299,8 +299,8 @@ describe('Structured data mapping API', () => {
         saveMapping(VIDEO_MAPPING).then(expectNoError);
         expectMappings([VIDEO_MAPPING]);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins).to.include('sdmmix:videoMovie');
-            expect(stored.properties).to.include.members(['sdm:video_release_date', 'sdm:video_tag']);
+            expect(stored.mixins).to.include('osmmix:videoMovie');
+            expect(stored.properties).to.include.members(['osm:video_release_date', 'osm:video_tag']);
         });
         getTags(NEWS_PATH).then(result => {
             expectNoError(result);
@@ -320,10 +320,10 @@ describe('Structured data mapping API', () => {
         expectMappings([{nodeType: NEWS_TYPE, ogType: 'music.song', properties}]);
         getStoredMapping(NEWS_TYPE).then(stored => {
             expect(stored.mixins)
-                .to.include('sdmmix:musicSong')
-                .and.include('sdmmix:openGraph')
-                .and.not.include('sdmmix:videoMovie');
-            expect(stored.properties.filter(name => name.startsWith('sdm:video_'))).to.be.empty;
+                .to.include('osmmix:musicSong')
+                .and.include('osmmix:openGraph')
+                .and.not.include('osmmix:videoMovie');
+            expect(stored.properties.filter(name => name.startsWith('osm:video_'))).to.be.empty;
         });
         getTags(NEWS_PATH).then(result => {
             expectNoError(result);
@@ -337,8 +337,8 @@ describe('Structured data mapping API', () => {
         saveMapping({nodeType: NEWS_TYPE, ogType: null, properties: []}).then(expectNoError);
         expectMappings([{nodeType: NEWS_TYPE, ogType: null, properties: []}]);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins).not.to.include('sdmmix:openGraph').and.not.include('sdmmix:musicSong');
-            expect(stored.properties.filter(name => name.startsWith('sdm:og') || name.startsWith('sdm:music_'))).to.be
+            expect(stored.mixins).not.to.include('osmmix:openGraph').and.not.include('osmmix:musicSong');
+            expect(stored.properties.filter(name => name.startsWith('osm:og') || name.startsWith('osm:music_'))).to.be
                 .empty;
         });
         getTags(NEWS_PATH).then(result => {
@@ -419,10 +419,10 @@ describe('Structured data mapping API', () => {
             },
             {
                 reason: 'an unknown content type',
-                nodeType: 'sdmnt:doesNotExist',
+                nodeType: 'osmnt:doesNotExist',
                 ogType: 'website',
                 properties: title,
-                message: "Unknown content type 'sdmnt:doesNotExist'"
+                message: "Unknown content type 'osmnt:doesNotExist'"
             },
             {
                 reason: 'a content type of a module that is not active on the site',
@@ -520,7 +520,7 @@ describe('Structured data mapping API', () => {
         });
     });
 
-    describe('checks the permission structuredDataMapperManage on the site', () => {
+    describe('checks the permission openGraphSchemaOrgMetadataManage on the site', () => {
         it('denies every mapping field to the editor', () => {
             getMappings({user: EDITOR}).then(expectError(PERMISSION));
             getSourceProperties(NEWS_TYPE, {user: EDITOR}).then(expectError(PERMISSION));
@@ -542,7 +542,7 @@ describe('Structured data mapping API', () => {
             saveMapping(ARTICLE_MAPPING).then(expectNoError);
             getStoredMapping(NEWS_TYPE).its('path').as('mappingPath');
             cy.get<string>('@mappingPath').then(path =>
-                setNodeProperty(path, 'sdm:og_description', 'jcr:createdBy', EDITOR).then(expectError(PERMISSION))
+                setNodeProperty(path, 'osm:og_description', 'jcr:createdBy', EDITOR).then(expectError(PERMISSION))
             );
             addMappingNode('jnt_page', 'jnt:page', EDITOR).then(expectError(PERMISSION));
             expectMappings([ARTICLE_MAPPING]);
@@ -550,7 +550,7 @@ describe('Structured data mapping API', () => {
 
             // The same write passes for a role that holds the permission, as a save of the Content Editor does.
             cy.get<string>('@mappingPath').then(path =>
-                setNodeProperty(path, 'sdm:og_description', 'jcr:title', EDITOR_IN_CHIEF).then(expectNoError)
+                setNodeProperty(path, 'osm:og_description', 'jcr:title', EDITOR_IN_CHIEF).then(expectNoError)
             );
             expectDescription('Open Graph news');
             deleteMapping(NEWS_TYPE).then(expectNoError);

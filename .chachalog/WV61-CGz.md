@@ -1,6 +1,6 @@
 ---
 # Allowed version bumps: patch, minor, major
-structured-data-mapper: minor
+opengraph-schemaorg-metadata: minor
 ---
 
-Renamed the Open Graph entry and screen of jContent to Structured data, with a new icon, as they also manage schema.org.
+Renamed the Open Graph entry and screen of jContent to Open Graph & schema.org, with a new icon, as they also manage schema.org.

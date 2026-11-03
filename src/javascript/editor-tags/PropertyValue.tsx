@@ -1,10 +1,10 @@
 import { Dropdown } from "@jahia/moonstone";
 import { registry } from "@jahia/ui-extender";
 import { useMemo, type ComponentType, type HTMLAttributes } from "react";
-import styles from "./SdmTag.module.css";
-import type { OgKind, VocabularyProperty } from "./sdmTag.gql.ts";
+import styles from "./OsmTag.module.css";
+import type { OgKind, VocabularyProperty } from "./osmTag.gql.ts";
 
-// A value of sdm:customTags or sdm:customSchemaOrg is a JSON object. An image holds the identifier of its file in node,
+// A value of osm:customTags or osm:customSchemaOrg is a JSON object. An image holds the identifier of its file in node,
 // such as {"property":"og:image","node":"<uuid>"}, and another property holds its text in content, such as
 // {"property":"og:title","content":"Summer in Mykonos"}.
 type Tag = { property: string; content?: string; node?: string };
@@ -163,7 +163,7 @@ const PropertyValue = (props: PropertyValueProps) => {
       <>
           {/* The props of the single choice list of the Content Editor, so both dropdowns look the same. */}
           <Dropdown
-              data-sel-role="sdm-tag-property"
+              data-sel-role="osm-tag-property"
               className={styles.property}
               variant="outlined"
               size="medium"

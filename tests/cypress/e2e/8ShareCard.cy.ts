@@ -12,11 +12,11 @@ import {
     shareCardRoles,
     typeInField
 } from '../support/editorField';
-import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
+import {SERVER_NAME, SITE_KEY, SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
-const IMAGE_NEWS_PATH = `${SITE_PATH}/contents/sdm-share-image-news`;
-const TEXT_NEWS_PATH = `${SITE_PATH}/contents/sdm-share-text-news`;
-const IMAGE_NAME = 'sdm-share-image.png';
+const IMAGE_NEWS_PATH = `${SITE_PATH}/contents/osm-share-image-news`;
+const TEXT_NEWS_PATH = `${SITE_PATH}/contents/osm-share-text-news`;
+const IMAGE_NAME = 'osm-share-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
 const TITLE = 'Share news';
 const DESCRIPTION = 'A news item for the share card test';
@@ -32,14 +32,14 @@ const NEWS_MAPPING: TypeMapping = {
     ]
 };
 
-const IMAGE = 'sdm-share-card-image';
-const THUMBNAIL = 'sdm-share-card-thumbnail';
-const DOMAIN = 'sdm-share-card-domain';
-const TITLE_ROLE = 'sdm-share-card-title';
-const DESCRIPTION_ROLE = 'sdm-share-card-description';
+const IMAGE = 'osm-share-card-image';
+const THUMBNAIL = 'osm-share-card-thumbnail';
+const DOMAIN = 'osm-share-card-domain';
+const TITLE_ROLE = 'osm-share-card-title';
+const DESCRIPTION_ROLE = 'osm-share-card-description';
 
 // The ratio of the image, the order of the card with an image and without one, and the domain line of each network,
-// as the issue Jahia/structured-data-mapper#24 lists them. X writes its summary card, with a square beside the text, for a
+// as the issue Jahia/opengraph-schemaorg-metadata#24 lists them. X writes its summary card, with a square beside the text, for a
 // content with no image, and shows the domain below a large image card.
 const NETWORKS = [
     {
@@ -89,7 +89,7 @@ describe('Share card of a content in the Content Editor', () => {
     before(() => {
         deleteMapping('jnt:news');
         [IMAGE_NEWS_PATH, TEXT_NEWS_PATH, IMAGE_PATH].forEach(deleteEverywhere);
-        uploadFile('images/sdm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
+        uploadFile('images/osm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result =>
             addNews(IMAGE_NEWS_PATH, result.data.jcr.addNode.uuid)
         );
         addNews(TEXT_NEWS_PATH);

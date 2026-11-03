@@ -39,7 +39,7 @@ import {
     switchFieldSet,
     TEMPLATE_FIELD
 } from '../support/mappingScreen';
-import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/structuredDataMapper';
+import {EDITOR_IN_CHIEF, SITE_ADMIN} from '../support/openGraphSchemaOrgMetadata';
 
 const NEWS_TYPE = 'jnt:news';
 const PAGE_TYPE = 'jnt:page';
@@ -53,18 +53,18 @@ const VIDEO_TAG: PropertyMapping = {ogProperty: 'video:tag', sourceProperty: 'j:
 // The Open Graph fields of an article mapping, in the order of the form: the properties of every og:type, the
 // og:type, then the properties of article, which the Content Editor moves after the og:type.
 const ARTICLE_FIELD_ORDER = [
-    `${OPEN_GRAPH}_sdm:og_title`,
-    `${OPEN_GRAPH}_sdm:og_video_alt`,
-    `${OPEN_GRAPH}_sdm:ogType`,
-    'sdmmix:article_sdm:article_published_time'
+    `${OPEN_GRAPH}_osm:og_title`,
+    `${OPEN_GRAPH}_osm:og_video_alt`,
+    `${OPEN_GRAPH}_osm:ogType`,
+    'osmmix:article_osm:article_published_time'
 ];
 
-// The properties of a mapping node that hold the source of a video property, such as sdm:video_tag.
-const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('sdm:video_'));
+// The properties of a mapping node that hold the source of a video property, such as osm:video_tag.
+const videoProperties = (stored: StoredMapping) => stored.properties.filter(name => name.startsWith('osm:video_'));
 
 // The properties of a mapping node that hold the og:type or the source of an Open Graph property of music.song.
 const songProperties = (stored: StoredMapping) =>
-    stored.properties.filter(name => name.startsWith('sdm:og') || name.startsWith('sdm:music_'));
+    stored.properties.filter(name => name.startsWith('osm:og') || name.startsWith('osm:music_'));
 
 const expectArticleFieldOrder = (names: string[]) => {
     const positions = ARTICLE_FIELD_ORDER.map(name => names.indexOf(name));
@@ -72,7 +72,7 @@ const expectArticleFieldOrder = (names: string[]) => {
     expect(positions, 'the order of the fields').to.deep.equal([...positions].sort((a, b) => a - b));
 };
 
-describe('Structured data mapping screen', () => {
+describe('Open Graph & schema.org mapping screen', () => {
     before(() => {
         deleteMapping(NEWS_TYPE);
         deleteMapping(PAGE_TYPE, {templateName: TEMPLATE});
@@ -178,8 +178,8 @@ describe('Structured data mapping screen', () => {
                 .should('contain.text', 'video.movie')
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION, VIDEO_TAG]));
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).to.include('sdmmix:videoMovie');
-                expect(stored.properties).to.include('sdm:video_tag');
+                expect(stored.mixins).to.include('osmmix:videoMovie');
+                expect(stored.properties).to.include('osm:video_tag');
             });
 
             mappingRow(NEWS_TYPE).find(EDIT).click();
@@ -192,7 +192,7 @@ describe('Structured data mapping screen', () => {
                 .and('contain.text', propertiesText([TITLE, DESCRIPTION]))
                 .and('not.contain.text', VIDEO_TAG.ogProperty);
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).not.to.include('sdmmix:videoMovie');
+                expect(stored.mixins).not.to.include('osmmix:videoMovie');
                 expect(videoProperties(stored)).to.be.empty;
             });
             getMappings({user: SITE_ADMIN}).then(result => {
@@ -212,11 +212,11 @@ describe('Structured data mapping screen', () => {
             switchFieldSet(SCHEMA_ORG, true);
             choose(SCHEMA_TYPE_FIELD, 'NewsArticle');
             save();
-            mappingRow(NEWS_TYPE).find('[data-sel-role="sdm-og-type"]').should('have.text', 'None');
-            mappingRow(NEWS_TYPE).find('[data-sel-role="sdm-schema-type"]').should('have.text', 'NewsArticle');
+            mappingRow(NEWS_TYPE).find('[data-sel-role="osm-og-type"]').should('have.text', 'None');
+            mappingRow(NEWS_TYPE).find('[data-sel-role="osm-schema-type"]').should('have.text', 'NewsArticle');
             getStoredMapping(NEWS_TYPE).then(stored => {
-                expect(stored.mixins).to.include('sdmmix:schemaOrg').and.include('sdmmix:schemaNewsArticle');
-                expect(stored.mixins).not.to.include(OPEN_GRAPH).and.not.include('sdmmix:musicSong');
+                expect(stored.mixins).to.include('osmmix:schemaOrg').and.include('osmmix:schemaNewsArticle');
+                expect(stored.mixins).not.to.include(OPEN_GRAPH).and.not.include('osmmix:musicSong');
                 expect(songProperties(stored)).to.be.empty;
             });
             getMappings({user: SITE_ADMIN}).then(result => {
@@ -254,7 +254,7 @@ describe('Structured data mapping screen', () => {
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
             openDropdown(NODE_TYPE_FIELD);
             cy.get(menuItem(PAGE_MIXIN)).should('exist');
-            cy.get(menuItem('sdmmix:customTags')).should('not.exist');
+            cy.get(menuItem('osmmix:customTags')).should('not.exist');
         });
 
         it('creates a template mapping of jnt:page for the template home in the Content Editor', () => {

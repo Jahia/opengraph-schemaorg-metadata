@@ -63,14 +63,14 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
     if (confirming === mapping.uuid) {
       return (
           <>
-              <Button data-sel-role="sdm-confirm-delete"
+              <Button data-sel-role="osm-confirm-delete"
                       color="danger"
                       label={t("mappings.list.confirmDelete")}
                       isDisabled={isDeleting}
                       onClick={() => confirmDeletion(mapping)}
               />
               {" "}
-              <Button data-sel-role="sdm-cancel-delete"
+              <Button data-sel-role="osm-cancel-delete"
                       variant="ghost"
                       label={t("mappings.list.cancel")}
                       isDisabled={isDeleting}
@@ -82,14 +82,14 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
 
     return (
         <>
-            <Button data-sel-role="sdm-edit"
+            <Button data-sel-role="osm-edit"
                     variant="ghost"
                     icon={<Edit/>}
                     label={t("mappings.list.edit")}
                     onClick={() => onEdit(mapping)}
             />
             {" "}
-            <Button data-sel-role="sdm-delete"
+            <Button data-sel-role="osm-delete"
                     variant="ghost"
                     icon={<Delete/>}
                     label={t("mappings.list.delete")}
@@ -100,7 +100,7 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
   };
 
   return (
-      <Paper hasPadding={false} data-sel-role="sdm-mappings">
+      <Paper hasPadding={false} data-sel-role="osm-mappings">
           <Table>
               <TableHead>
                   <TableRow>
@@ -115,17 +115,17 @@ export const MappingTable = ({ mappings, onEdit, onDelete }: MappingTableProps) 
               <TableBody>
                   {mappings.map(mapping => (
                       <TableRow key={mapping.uuid}
-                                data-sel-role="sdm-mapping-row"
+                                data-sel-role="osm-mapping-row"
                                 data-sel-node-type={mapping.nodeType}
                                 data-sel-template={mapping.templateName ?? ""}
                       >
                           <TableBodyCell>{contentTypeOf(mapping)}</TableBodyCell>
                           <TableBodyCell width={TEMPLATE_WIDTH}>{mapping.templateName ?? t("mappings.list.anyTemplate")}</TableBodyCell>
-                          <TableBodyCell width={OG_TYPE_WIDTH} data-sel-role="sdm-og-type">
+                          <TableBodyCell width={OG_TYPE_WIDTH} data-sel-role="osm-og-type">
                               {mapping.ogType ?? t("mappings.list.noOgType")}
                           </TableBodyCell>
                           <TableBodyCell width={SCHEMA_TYPE_WIDTH}
-                                         data-sel-role="sdm-schema-type"
+                                         data-sel-role="osm-schema-type"
                                          title={schemaPropertiesOf(mapping)}
                           >
                               {mapping.schemaType ?? t("mappings.list.noSchemaType")}

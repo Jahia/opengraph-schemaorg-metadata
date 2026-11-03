@@ -9,7 +9,7 @@ export default defineConfig(() => ({
 	platform: github(),
 	managers: {
 		packages: {
-			name: "structured-data-mapper",
+			name: "opengraph-schemaorg-metadata",
 			path: process.cwd(),
 			version: fs.readFileSync(".chachalog/.version", "utf-8").trim(),
 		},

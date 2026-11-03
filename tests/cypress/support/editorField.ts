@@ -1,21 +1,21 @@
 import {LOAD_TIMEOUT} from './mappingScreen';
 
-const FIXTURES = 'graphql/structuredDataMapper';
+const FIXTURES = 'graphql/openGraphSchemaOrgMetadata';
 
 // The module adds its fieldsets to the section seo, which also holds the fieldsets of other modules.
 export const SECTION = 'seo';
 // The Content Editor names a field after its fieldset and its property.
-const PREVIEW_FIELD = 'sdmOpenGraphValues_sdm:ogPreview';
-const SCHEMA_PREVIEW_FIELD = 'sdmSchemaOrgValues_sdm:schemaPreview';
-const CUSTOM_TAGS_FIELD_SET = 'sdmmix:customTags';
-const CUSTOM_SCHEMA_FIELD_SET = 'sdmmix:customSchemaOrg';
+const PREVIEW_FIELD = 'osmOpenGraphValues_osm:ogPreview';
+const SCHEMA_PREVIEW_FIELD = 'osmSchemaOrgValues_osm:schemaPreview';
+const CUSTOM_TAGS_FIELD_SET = 'osmmix:customTags';
+const CUSTOM_SCHEMA_FIELD_SET = 'osmmix:customSchemaOrg';
 
 // The fieldsets of the module in the section seo, in the order of the form: the values of each vocabulary, then its
 // custom values.
 export const MODULE_FIELD_SETS = [
-    'sdmOpenGraphValues',
+    'osmOpenGraphValues',
     CUSTOM_TAGS_FIELD_SET,
-    'sdmSchemaOrgValues',
+    'osmSchemaOrgValues',
     CUSTOM_SCHEMA_FIELD_SET
 ];
 
@@ -30,13 +30,13 @@ const PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${
 const SCHEMA_PREVIEW_SELECTOR = `${SECTION_SELECTOR} [data-sel-content-editor-field="${SCHEMA_PREVIEW_FIELD}"]`;
 const role = (name: string) => `[data-sel-role="${name}"]`;
 
-export const PREVIEW_TABLE = `${PREVIEW_SELECTOR} ${role('sdm-preview')}`;
-export const PREVIEW_ROW = role('sdm-preview-row');
-export const SAVE_HINT = role('sdm-preview-save-hint');
-export const OPEN_GRAPH_OFF = `${PREVIEW_SELECTOR} ${role('sdm-preview-off')}`;
-export const SCHEMA_PREVIEW = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-preview')}`;
-export const SCHEMA_SAVE_HINT = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-save-hint')}`;
-export const SCHEMA_ORG_OFF = `${SCHEMA_PREVIEW_SELECTOR} ${role('sdm-schema-off')}`;
+export const PREVIEW_TABLE = `${PREVIEW_SELECTOR} ${role('osm-preview')}`;
+export const PREVIEW_ROW = role('osm-preview-row');
+export const SAVE_HINT = role('osm-preview-save-hint');
+export const OPEN_GRAPH_OFF = `${PREVIEW_SELECTOR} ${role('osm-preview-off')}`;
+export const SCHEMA_PREVIEW = `${SCHEMA_PREVIEW_SELECTOR} ${role('osm-schema-preview')}`;
+export const SCHEMA_SAVE_HINT = `${SCHEMA_PREVIEW_SELECTOR} ${role('osm-schema-save-hint')}`;
+export const SCHEMA_ORG_OFF = `${SCHEMA_PREVIEW_SELECTOR} ${role('osm-schema-off')}`;
 
 // The sections of the edit form of a node, as the jContent GraphQL API gives them to the Content Editor.
 export const editFormSections = (uuidOrPath: string): Cypress.Chainable<FormSection[]> =>
@@ -131,16 +131,16 @@ export const openSection = () => {
 };
 
 export const previewValue = (property: string) =>
-    cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}[data-sel-property="${property}"] ${role('sdm-preview-value')}`, {
+    cy.get(`${PREVIEW_SELECTOR} ${PREVIEW_ROW}[data-sel-property="${property}"] ${role('osm-preview-value')}`, {
         timeout: LOAD_TIMEOUT
     });
 
-export const SHARE_CARD = `${PREVIEW_SELECTOR} ${role('sdm-share-card')}`;
+export const SHARE_CARD = `${PREVIEW_SELECTOR} ${role('osm-share-card')}`;
 
 // Shows the share card of a network, and waits for the card of that network. Moonstone takes the mouse events away from
 // the selected tab, so the function clicks an unselected tab only.
 export const selectShareTab = (network: string) => {
-    const tab = `${PREVIEW_SELECTOR} ${role('sdm-share-tab')}[data-sel-network="${network}"]`;
+    const tab = `${PREVIEW_SELECTOR} ${role('osm-share-tab')}[data-sel-network="${network}"]`;
     cy.get(tab).then($tab => {
         if ($tab.attr('aria-selected') !== 'true') {
             cy.get(tab).click({scrollBehavior: 'center'});
@@ -152,10 +152,10 @@ export const selectShareTab = (network: string) => {
 // The roles of the image, the thumbnail and the text lines of the share card, in the order of the card.
 export const shareCardRoles = (): Cypress.Chainable<string[]> =>
     cy
-        .get(`${SHARE_CARD} [data-sel-role^="sdm-share-card-"]`)
+        .get(`${SHARE_CARD} [data-sel-role^="osm-share-card-"]`)
         .then($items => Array.from($items).map(item => item.dataset.selRole));
 
-export const shareCardPart = (part: string) => cy.get(`${SHARE_CARD} ${role(`sdm-share-card-${part}`)}`);
+export const shareCardPart = (part: string) => cy.get(`${SHARE_CARD} ${role(`osm-share-card-${part}`)}`);
 
 export const fieldNamed = (name: string) => `[data-sel-content-editor-field="${name}"]`;
 
