@@ -73,11 +73,11 @@ export const isAbsoluteUrl = (text: string) => {
 const javaTrim = (text: string) => {
   let start = 0;
   let end = text.length;
-  while (start < end && text.charCodeAt(start) <= 0x20) {
+  while (start < end && (text.codePointAt(start) ?? 0) <= 0x20) {
     start++;
   }
 
-  while (end > start && text.charCodeAt(end - 1) <= 0x20) {
+  while (end > start && (text.codePointAt(end - 1) ?? 0) <= 0x20) {
     end--;
   }
 

@@ -40,7 +40,7 @@ public final class OgValues {
     private static final Pattern URL_START = Pattern.compile("https?://([^/?#]*)", Pattern.CASE_INSENSITIVE);
     private static final Pattern URL_FORBIDDEN = Pattern.compile("[\\p{Cc}\\p{Z}]");
     // A host name, or an IPv6 address in brackets, then an optional port.
-    private static final Pattern HOST_AND_PORT = Pattern.compile("(?:\\[[0-9A-Fa-f:.]+\\]|[^\\[\\]:]+)(?::[0-9]*)?");
+    private static final Pattern HOST_AND_PORT = Pattern.compile("(?:\\[[\\p{XDigit}:.]+\\]|[^\\[\\]:]+)(?::\\d*)?");
 
     private static final String[] INVISIBLE_ELEMENTS = {"script", "style"};
     private static final String[] BLOCK_ELEMENTS = {"p", "div", "br", "hr", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5",
