@@ -26,7 +26,7 @@ The module writes no site-wide type, such as `WebSite`, `Organization` or `Bread
 The SEO section of the Content Editor shows four fieldsets for a content that a mapping applies to. Each vocabulary shows its values first, then the switch that overrides them:
 
 1. **Open Graph**: the Open Graph tags of the content, then the share card of Facebook, LinkedIn and X.
-2. **Override Open Graph tags**: a switch, then one custom tag for each Open Graph property of the og:type of the mapping. A custom tag replaces the mapped values of its property.
+2. **Override Open Graph tags**: a switch, then one custom tag for each Open Graph property of the og:type of the mapping. A custom tag replaces the mapped values of its property. The Content Editor refuses to save a date that is not valid, or a URL that is not absolute, such as `videos/summer.mp4`.
 3. **schema.org**: the JSON-LD block of the content, as formatted JSON. A content or a file shows as "Live URL of" its path, because its live URL depends on the host of the site.
 4. **Override schema.org properties**: a switch, then one custom property for each schema.org property of the type of the mapping, such as `author.name`. A custom property replaces the mapped values of its property, or adds a property that the mapping does not fill. A property with several values, such as `author.name`, takes each value of the editor, and another property takes the first valid value.
 
