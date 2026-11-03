@@ -3,6 +3,7 @@ query structuredDataMapperMappingNodes($path: String!) {
         nodeByPath(path: $path) {
             children {
                 nodes {
+                    path
                     nodeType: property(name: "sdm:nodeType") {
                         value
                     }

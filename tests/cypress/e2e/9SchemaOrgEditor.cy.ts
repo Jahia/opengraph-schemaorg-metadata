@@ -13,7 +13,7 @@ import {
     customFieldSet,
     fieldSetsShouldNotExist,
     MODULE_FIELD_SETS,
-    moduleFieldSetsOnPage,
+    expectModuleFieldSets,
     OPEN_GRAPH_OFF,
     openContentEditor,
     openSchemaPreview,
@@ -126,7 +126,7 @@ describe('schema.org values of a content in the Content Editor', () => {
             image: `Live URL of ${IMAGE_PATH}`,
             datePublished: '2026-10-19T09:30:00Z'
         });
-        moduleFieldSetsOnPage().should('deep.equal', MODULE_FIELD_SETS);
+        expectModuleFieldSets(MODULE_FIELD_SETS);
         cy.get(SCHEMA_SAVE_HINT).should('not.exist');
     });
 
