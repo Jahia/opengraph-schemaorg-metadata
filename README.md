@@ -2,6 +2,8 @@
 
 Open Graph & Schema.org Metadata is a Jahia module that maps content types to Open Graph types and properties, and to schema.org types and properties. A site administrator or an editor in chief sets the mapping for `jnt:page`, for the types that inherit `jmix:mainResource`, and for the mixins that extend one of them with `extends=`. A template mapping applies only to the contents of its type that use its template, such as the pages with the template `event`.
 
+The module is not meant for a site whose templates already write the Open Graph tags or the schema.org values. The render filter adds its tags before `</head>` and does not read the tags that a template wrote. A page of such a template would hold both. When only a few templates write their own values, a template mapping with both switches off stops the module on each of them.
+
 One mapping applies to a content: a template mapping for the template of the content first, then the mapping of a mixin of the content, then the mapping of its type or of its closest supertype.
 
 ## Mapping form
@@ -38,9 +40,10 @@ The module has three parts:
 - **Render filter**: a filter that writes the `og:*` meta tags of the mapping in the head of each page. When the mapping names a schema.org type, the filter also writes one `<script type="application/ld+json">` block of that type. The filter writes them in live mode and in preview mode, and not in edit mode. A preview page gets the live URLs of its tags, such as `og:url` and `og:image`, so it shows what the live page shows once published.
 - **Content Editor fieldsets**: the read-only values and the overrides of each vocabulary, in the SEO section of the Content Editor.
 
-## Status
+## Documentation
 
-Skeleton, no feature yet. The Open Graph screen shows a placeholder, and the module has no Java code and no node type definitions.
+- [`docs/store/README.md`](docs/store/README.md) describes the module for site administrators and editors, with screenshots. It is the text of the page of the module on the Jahia Store.
+- [`docs/architecture/`](docs/architecture/README.md) describes the architecture of the module for developers and agents: its building blocks, its runtime scenarios and its concepts.
 
 ## Permissions
 

@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Architecture
+
+[`docs/architecture/`](docs/architecture/README.md) describes the building blocks, the runtime scenarios and the concepts of the module. A change to a building block, a runtime scenario or the deployment updates the section of that architecture in the same pull request.
+
 ## Build
 
 ```bash
