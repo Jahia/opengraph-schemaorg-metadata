@@ -1,8 +1,8 @@
 {
-  "label": "Structured Data Mapper",
+  "label": "Open Graph & Schema.org Metadata",
   "mappings": {
-    "nav": "Données structurées",
-    "title": "Données structurées",
+    "nav": "Open Graph & schema.org",
+    "title": "Open Graph & schema.org",
     "empty": "Aucune correspondance pour l'instant.",
     "addMapping": "Ajouter une correspondance",
     "list": {

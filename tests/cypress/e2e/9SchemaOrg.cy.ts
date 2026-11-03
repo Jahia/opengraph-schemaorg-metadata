@@ -31,12 +31,12 @@ import {
     schemaSourceField,
     switchFieldSet
 } from '../support/mappingScreen';
-import {SERVER_NAME, SITE_ADMIN, SITE_KEY, SITE_PATH} from '../support/structuredDataMapper';
+import {SERVER_NAME, SITE_ADMIN, SITE_KEY, SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
-const PAGE_PATH = `${SITE_PATH}/home/sdm-schema-page`;
-const NEWS_PATH = `${SITE_PATH}/contents/sdm-schema-news`;
-const ESCAPE_PATH = `${SITE_PATH}/contents/sdm-schema-escape`;
-const IMAGE_NAME = 'sdm-schema-image.png';
+const PAGE_PATH = `${SITE_PATH}/home/osm-schema-page`;
+const NEWS_PATH = `${SITE_PATH}/contents/osm-schema-news`;
+const ESCAPE_PATH = `${SITE_PATH}/contents/osm-schema-escape`;
+const IMAGE_NAME = 'osm-schema-image.png';
 const IMAGE_PATH = `${SITE_PATH}/files/${IMAGE_NAME}`;
 const ESCAPE_TITLE = 'Tom "Jerry" </script><script>alert(3)</script>';
 const NODE_PATHS = [PAGE_PATH, NEWS_PATH, ESCAPE_PATH, IMAGE_PATH];
@@ -92,17 +92,17 @@ describe('schema.org JSON-LD in the head of live pages', () => {
         NODE_PATHS.forEach(deleteEverywhere);
         addNode({
             parentPathOrId: `${SITE_PATH}/home`,
-            name: 'sdm-schema-page',
+            name: 'osm-schema-page',
             primaryNodeType: PAGE_TYPE,
             properties: [
                 {name: 'jcr:title', value: 'Schema page', language: 'en'},
                 {name: 'j:templateName', value: 'home'}
             ]
         });
-        uploadFile('images/sdm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result => {
+        uploadFile('images/osm-filter-image.png', `${SITE_PATH}/files`, IMAGE_NAME, 'image/png').then(result => {
             addNode({
                 parentPathOrId: `${SITE_PATH}/contents`,
-                name: 'sdm-schema-news',
+                name: 'osm-schema-news',
                 primaryNodeType: NEWS_TYPE,
                 mixins: ['jmix:tagged'],
                 properties: [
@@ -117,7 +117,7 @@ describe('schema.org JSON-LD in the head of live pages', () => {
         });
         addNode({
             parentPathOrId: `${SITE_PATH}/contents`,
-            name: 'sdm-schema-escape',
+            name: 'osm-schema-escape',
             primaryNodeType: NEWS_TYPE,
             properties: [{name: 'jcr:title', value: ESCAPE_TITLE, language: 'en'}]
         });
@@ -234,8 +234,8 @@ describe('schema.org JSON-LD in the head of live pages', () => {
     it('drops the JSON-LD block and the schema.org mixin when the mapping loses its schema.org type', () => {
         saveMapping(NEWS_OG).then(expectNoError);
         getStoredMapping(NEWS_TYPE).then(stored => {
-            expect(stored.mixins.filter(mixin => mixin.startsWith('sdmmix:schema'))).to.be.empty;
-            expect(stored.properties.filter(name => name.startsWith('sdm:schema'))).to.be.empty;
+            expect(stored.mixins.filter(mixin => mixin.startsWith('osmmix:schema'))).to.be.empty;
+            expect(stored.properties.filter(name => name.startsWith('osm:schema'))).to.be.empty;
         });
         getLivePage(NEWS_PATH).then(page => {
             expect(metaContents(page, 'og:type')).to.deep.equal(['article']);

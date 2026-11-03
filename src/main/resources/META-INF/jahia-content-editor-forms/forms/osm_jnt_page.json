@@ -1,0 +1,41 @@
+{
+  "nodeType": "jnt:page",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "seo",
+      "fieldSets": [
+        {
+          "name": "osmOpenGraphValues",
+          "rank": 10.0,
+          "labelKey": "opengraph-schemaorg-metadata:fieldset.openGraphValues",
+          "descriptionKey": "opengraph-schemaorg-metadata:fieldset.openGraphValues.description",
+          "fields": [
+            {
+              "name": "osm:ogPreview",
+              "selectorType": "OsmPreview",
+              "readOnly": true,
+              "i18n": true,
+              "labelKey": "opengraph-schemaorg-metadata:field.ogPreview"
+            }
+          ]
+        },
+        {
+          "name": "osmSchemaOrgValues",
+          "rank": 12.0,
+          "labelKey": "opengraph-schemaorg-metadata:fieldset.schemaOrgValues",
+          "descriptionKey": "opengraph-schemaorg-metadata:fieldset.schemaOrgValues.description",
+          "fields": [
+            {
+              "name": "osm:schemaPreview",
+              "selectorType": "OsmSchemaPreview",
+              "readOnly": true,
+              "i18n": true,
+              "labelKey": "opengraph-schemaorg-metadata:field.schemaPreview"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

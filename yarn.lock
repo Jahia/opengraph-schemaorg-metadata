@@ -4552,6 +4552,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"opengraphschemaorgmetadata@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "opengraphschemaorgmetadata@workspace:."
+  dependencies:
+    "@apollo/client": "npm:^3.14.1"
+    "@jahia/eslint-config": "npm:^2.2.0"
+    "@jahia/moonstone": "npm:^2.21.1"
+    "@jahia/ui-extender": "npm:2.0.0"
+    "@jahia/vite-federation-plugin": "npm:0.2.0"
+    "@types/react": "npm:~18.3"
+    "@types/react-dom": "npm:~18.3"
+    "@typescript-eslint/eslint-plugin": "npm:^8.51.0"
+    "@typescript-eslint/parser": "npm:^8.51.0"
+    eslint: "npm:^8.57.1"
+    eslint-plugin-json: "npm:^4.0.1"
+    formik: "npm:2.4.9"
+    graphql: "npm:^16.13.1"
+    i18next: "npm:23.16.8"
+    react: "npm:18.3.1"
+    react-dom: "npm:18.3.1"
+    react-i18next: "npm:15.7.4"
+    typescript: "npm:^5.9.3"
+    vite: "npm:8.2.2"
+  peerDependencies:
+    "@jahia/ui-extender": ^2.0.0
+    formik: ^2.4.9
+    i18next: ">=23.16.8 <27"
+    react: ^18.3.1 || ^19.0.0
+    react-dom: ^18.3.1 || ^19.0.0
+    react-i18next: ">=15.7.4 <18"
+  languageName: unknown
+  linkType: soft
+
 "optimism@npm:^0.18.0":
   version: 0.18.1
   resolution: "optimism@npm:0.18.1"
@@ -5349,39 +5382,6 @@ __metadata:
   checksum: 10c0/9681a6257b925a7fa0f285851c0e613cc934a50661fa7bb41ca9cbbff89686bb4a0ee366e6ecedc4daafd01e83eee0720111ab294366fe7c185e935475ebcecd
   languageName: node
   linkType: hard
-
-"structureddatamapper@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "structureddatamapper@workspace:."
-  dependencies:
-    "@apollo/client": "npm:^3.14.1"
-    "@jahia/eslint-config": "npm:^2.2.0"
-    "@jahia/moonstone": "npm:^2.21.1"
-    "@jahia/ui-extender": "npm:2.0.0"
-    "@jahia/vite-federation-plugin": "npm:0.2.0"
-    "@types/react": "npm:~18.3"
-    "@types/react-dom": "npm:~18.3"
-    "@typescript-eslint/eslint-plugin": "npm:^8.51.0"
-    "@typescript-eslint/parser": "npm:^8.51.0"
-    eslint: "npm:^8.57.1"
-    eslint-plugin-json: "npm:^4.0.1"
-    formik: "npm:2.4.9"
-    graphql: "npm:^16.13.1"
-    i18next: "npm:23.16.8"
-    react: "npm:18.3.1"
-    react-dom: "npm:18.3.1"
-    react-i18next: "npm:15.7.4"
-    typescript: "npm:^5.9.3"
-    vite: "npm:8.2.2"
-  peerDependencies:
-    "@jahia/ui-extender": ^2.0.0
-    formik: ^2.4.9
-    i18next: ">=23.16.8 <27"
-    react: ^18.3.1 || ^19.0.0
-    react-dom: ^18.3.1 || ^19.0.0
-    react-i18next: ">=15.7.4 <18"
-  languageName: unknown
-  linkType: soft
 
 "supports-color@npm:^7.1.0":
   version: 7.2.0

@@ -1,0 +1,21 @@
+{
+  "nodeType": "osmmix:customTags",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "seo",
+      "fieldSets": [
+        {
+          "name": "osmmix:customTags",
+          "rank": 11.0,
+          "fields": [
+            {
+              "name": "osm:customTags",
+              "selectorType": "OsmTag"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

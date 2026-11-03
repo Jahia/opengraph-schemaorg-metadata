@@ -10,15 +10,15 @@ import {
     TypeMapping
 } from '../support/openGraphApi';
 import {deleteEverywhere, getLivePage, metaContents, publish} from '../support/livePage';
-import {SITE_PATH} from '../support/structuredDataMapper';
+import {SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
 // A mixin of Jahia core that extends jnt:page, with the property j:pageTemplateTitle.
 const MIXIN = 'jmix:canBeUseAsTemplateModel';
-// The one page template of templates-system, the template set of sdmSite.
+// The one page template of templates-system, the template set of osmSite.
 const TEMPLATE = 'home';
-const PAGE_PATH = `${SITE_PATH}/home/sdm-plain-page`;
-const MIXIN_PAGE_PATH = `${SITE_PATH}/home/sdm-mixin-page`;
-const OTHER_TEMPLATE_PAGE_PATH = `${SITE_PATH}/home/sdm-other-template-page`;
+const PAGE_PATH = `${SITE_PATH}/home/osm-plain-page`;
+const MIXIN_PAGE_PATH = `${SITE_PATH}/home/osm-mixin-page`;
+const OTHER_TEMPLATE_PAGE_PATH = `${SITE_PATH}/home/osm-other-template-page`;
 
 const PAGE_MAPPING: TypeMapping = {
     nodeType: 'jnt:page',
@@ -86,7 +86,7 @@ describe('Open Graph mappings of a mixin and of a template', () => {
         addPage(PAGE_PATH, 'Plain page', TEMPLATE);
         addPage(MIXIN_PAGE_PATH, 'Mixin page', TEMPLATE, [MIXIN]);
         // No template of the site has this name, so the page is checked through the API only.
-        addPage(OTHER_TEMPLATE_PAGE_PATH, 'Other template page', 'sdm-other');
+        addPage(OTHER_TEMPLATE_PAGE_PATH, 'Other template page', 'osm-other');
         publish(SITE_PATH);
     });
 
@@ -162,8 +162,8 @@ describe('Open Graph mappings of a mixin and of a template', () => {
         const refusals = [
             {
                 reason: 'a template that the site does not have',
-                mapping: {nodeType: 'jnt:page', templateName: 'sdm-other', ogType: 'website', properties: title},
-                message: "has no template 'sdm-other'"
+                mapping: {nodeType: 'jnt:page', templateName: 'osm-other', ogType: 'website', properties: title},
+                message: "has no template 'osm-other'"
             },
             {
                 reason: 'a template on a mixin',

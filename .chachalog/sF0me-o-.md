@@ -1,6 +1,6 @@
 ---
 # Allowed version bumps: patch, minor, major
-structured-data-mapper: minor
+opengraph-schemaorg-metadata: minor
 ---
 
-The module is named Structured Data Mapper, and its artifact ID is `structured-data-mapper`.
+The module is named Open Graph & Schema.org Metadata, and its artifact ID is `opengraph-schemaorg-metadata`.

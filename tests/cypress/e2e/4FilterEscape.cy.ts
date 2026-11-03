@@ -1,9 +1,9 @@
 import {addNode} from '@jahia/cypress';
 import {deleteMapping, expectNoError, saveMapping} from '../support/openGraphApi';
 import {deleteEverywhere, getLivePage, metaContents, publish} from '../support/livePage';
-import {SITE_PATH} from '../support/structuredDataMapper';
+import {SITE_PATH} from '../support/openGraphSchemaOrgMetadata';
 
-const NEWS_PATH = `${SITE_PATH}/contents/sdm-escape-news`;
+const NEWS_PATH = `${SITE_PATH}/contents/osm-escape-news`;
 const TITLE = 'Tom "Jerry" <script>alert(1)</script>';
 // The rich text holds encoded markup, and the module decodes it to text: the attribute must encode it again.
 const DESCRIPTION_HTML = '<p>&quot;&gt;&lt;script&gt;alert(2)&lt;/script&gt;</p>';
@@ -15,7 +15,7 @@ describe('Open Graph tags with markup in the values', () => {
         deleteEverywhere(NEWS_PATH);
         addNode({
             parentPathOrId: `${SITE_PATH}/contents`,
-            name: 'sdm-escape-news',
+            name: 'osm-escape-news',
             primaryNodeType: 'jnt:news',
             properties: [
                 {name: 'jcr:title', value: TITLE, language: 'en'},

@@ -1,0 +1,13 @@
+query openGraphSchemaOrgMetadataCustomTags($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            uuid
+            mixinTypes {
+                name
+            }
+            property(name: "osm:customTags", language: "en") {
+                values
+            }
+        }
+    }
+}

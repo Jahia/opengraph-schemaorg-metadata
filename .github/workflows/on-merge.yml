@@ -60,11 +60,11 @@ jobs:
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
     secrets: inherit
     with:
-      module_id: structured-data-mapper
+      module_id: opengraph-schemaorg-metadata
       module_branch: ${{ github.ref }}
       jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
       provisioning_manifest: provisioning-manifest-build.yml
-      artifact_prefix: structured-data-mapper-artifacts
+      artifact_prefix: opengraph-schemaorg-metadata-artifacts
       should_use_build_artifacts: true
       should_skip_testrail: true
       pagerduty_skip_notification: true

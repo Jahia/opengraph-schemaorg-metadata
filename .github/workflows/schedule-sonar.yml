@@ -15,7 +15,7 @@ jobs:
       matrix:
         git_branch: ["${{ github.event.repository.default_branch }}"]
     with:
-      module_id: structured-data-mapper
+      module_id: opengraph-schemaorg-metadata
       git_branch: ${{ matrix.git_branch }}
-      incident_service: structured-data-mapper-sonar
-      github_slug: Jahia/structured-data-mapper
+      incident_service: opengraph-schemaorg-metadata-sonar
+      github_slug: Jahia/opengraph-schemaorg-metadata

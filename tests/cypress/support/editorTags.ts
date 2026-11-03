@@ -1,9 +1,9 @@
 import {openContentEditor, openSection} from './editorField';
 import {CONTENT_EDITOR, LOAD_TIMEOUT, menuItem} from './mappingScreen';
-import {SITE_KEY} from './structuredDataMapper';
+import {SITE_KEY} from './openGraphSchemaOrgMetadata';
 
-export const CUSTOM_TAGS_MIXIN = 'sdmmix:customTags';
-export const CUSTOM_SCHEMA_MIXIN = 'sdmmix:customSchemaOrg';
+export const CUSTOM_TAGS_MIXIN = 'osmmix:customTags';
+export const CUSTOM_SCHEMA_MIXIN = 'osmmix:customSchemaOrg';
 
 const PICKER_DIALOG = '[data-sel-role="picker-dialog"]';
 
@@ -13,7 +13,7 @@ export const openEditForm = (uuid: string) => {
     openSection();
 };
 
-// The helpers of a field of custom values: sdm:customTags, or sdm:customSchemaOrg. The Content Editor names the field
+// The helpers of a field of custom values: osm:customTags, or osm:customSchemaOrg. The Content Editor names the field
 // after its fieldset, which is the mixin.
 const customValueField = (mixin: string, property: string) => {
     const field = `${CONTENT_EDITOR} [data-sel-content-editor-field="${mixin}_${property}"]`;
@@ -21,7 +21,7 @@ const customValueField = (mixin: string, property: string) => {
 
     const value = (index: number) =>
         `${CONTENT_EDITOR} [data-sel-content-editor-multiple-generic-field="${mixin}_${property}[${index}]"]`;
-    const propertyOf = (index: number) => `${value(index)} [data-sel-role="sdm-tag-property"]`;
+    const propertyOf = (index: number) => `${value(index)} [data-sel-role="osm-tag-property"]`;
     // The text field and the number field of the Content Editor render one text input.
     const content = (index: number) => `${value(index)} input[type="text"]`;
     const fieldSetSwitch = () => cy.get(switchSelector, {timeout: LOAD_TIMEOUT}).find('input[type="checkbox"]');
@@ -84,7 +84,7 @@ const customValueField = (mixin: string, property: string) => {
     };
 };
 
-const customTags = customValueField(CUSTOM_TAGS_MIXIN, 'sdm:customTags');
+const customTags = customValueField(CUSTOM_TAGS_MIXIN, 'osm:customTags');
 
 export const tagValue = customTags.value;
 export const tagProperty = customTags.propertyOf;
@@ -99,4 +99,4 @@ export const addTag = customTags.addText;
 export const addImage = customTags.addImage;
 export const addDate = customTags.addDate;
 
-export const customSchemaValues = customValueField(CUSTOM_SCHEMA_MIXIN, 'sdm:customSchemaOrg');
+export const customSchemaValues = customValueField(CUSTOM_SCHEMA_MIXIN, 'osm:customSchemaOrg');

@@ -1,10 +1,10 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
-import {SITE_KEY, USERS} from '../support/structuredDataMapper';
+import {SITE_KEY, USERS} from '../support/openGraphSchemaOrgMetadata';
 
-describe('Structured Data Mapper test suite teardown', () => {
-    it('deletes the site sdmSite and the users', () => {
-        if (Cypress.env('STRUCTURED_DATA_MAPPER_KEEP_SITE') === true) {
-            cy.log('Skipping the site deletion because STRUCTURED_DATA_MAPPER_KEEP_SITE=true');
+describe('Open Graph & Schema.org Metadata test suite teardown', () => {
+    it('deletes the site osmSite and the users', () => {
+        if (Cypress.env('OPENGRAPH_SCHEMAORG_METADATA_KEEP_SITE') === true) {
+            cy.log('Skipping the site deletion because OPENGRAPH_SCHEMAORG_METADATA_KEEP_SITE=true');
             return;
         }
 

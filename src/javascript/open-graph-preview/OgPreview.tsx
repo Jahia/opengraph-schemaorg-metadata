@@ -80,7 +80,7 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
 
   if (isOff) {
     return (
-        <Typography id={id} data-sel-role="sdm-preview-off">
+        <Typography id={id} data-sel-role="osm-preview-off">
             {t("preview.off")}
         </Typography>
     );
@@ -109,11 +109,11 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
   return (
       <>
           {hasOtherChange && (
-          <Typography data-sel-role="sdm-preview-save-hint" variant="caption">
+          <Typography data-sel-role="osm-preview-save-hint" variant="caption">
               {t("preview.saveHint")}
           </Typography>
           )}
-          <Table id={id} data-sel-role="sdm-preview">
+          <Table id={id} data-sel-role="osm-preview">
               <TableHead>
                   <TableRow>
                       <TableHeadCell width={PROPERTY_WIDTH}>{t("preview.property")}</TableHeadCell>
@@ -124,9 +124,9 @@ const OgPreview = ({ id, editorContext }: OgPreviewProps) => {
                   {rows.map((tag, index) => (
                       // A property such as og:locale:alternate can repeat, so the key needs the index.
                       // eslint-disable-next-line react/no-array-index-key
-                      <TableRow key={`${tag.property}-${index}`} data-sel-role="sdm-preview-row" data-sel-property={tag.property}>
+                      <TableRow key={`${tag.property}-${index}`} data-sel-role="osm-preview-row" data-sel-property={tag.property}>
                           <TableBodyCell width={PROPERTY_WIDTH}>{tag.property}</TableBodyCell>
-                          <TableBodyCell data-sel-role="sdm-preview-value">{valueOf(tag)}</TableBodyCell>
+                          <TableBodyCell data-sel-role="osm-preview-value">{valueOf(tag)}</TableBodyCell>
                       </TableRow>
                   ))}
               </TableBody>

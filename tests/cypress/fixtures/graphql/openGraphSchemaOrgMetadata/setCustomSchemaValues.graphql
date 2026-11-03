@@ -1,0 +1,10 @@
+mutation openGraphSchemaOrgMetadataSetCustomSchemaValues($path: String!, $values: [String]!) {
+    jcr {
+        mutateNode(pathOrId: $path) {
+            addMixins(mixins: ["osmmix:customSchemaOrg"])
+            mutateProperty(name: "osm:customSchemaOrg") {
+                setValues(values: $values, language: "en")
+            }
+        }
+    }
+}

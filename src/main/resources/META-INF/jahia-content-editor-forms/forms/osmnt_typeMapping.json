@@ -1,0 +1,48 @@
+{
+  "nodeType": "osmnt:typeMapping",
+  "priority": 1.0,
+  "sections": [
+    {
+      "name": "content",
+      "fieldSets": [
+        {
+          "name": "osmnt:typeMapping",
+          "rank": 0.0
+        },
+        {
+          "name": "osmmix:openGraph",
+          "rank": 1.0,
+          "labelKey": "opengraph-schemaorg-metadata:fieldset.openGraph",
+          "descriptionKey": "opengraph-schemaorg-metadata:fieldset.openGraph.description",
+          "fields": [
+            {"name": "osm:og_title", "declaringNodeType": "osmmix:openGraph", "rank": 1.0},
+            {"name": "osm:og_description", "declaringNodeType": "osmmix:openGraph", "rank": 2.0},
+            {"name": "osm:og_determiner", "declaringNodeType": "osmmix:openGraph", "rank": 3.0},
+            {"name": "osm:og_image", "declaringNodeType": "osmmix:openGraph", "rank": 4.0},
+            {"name": "osm:og_image_secure_url", "declaringNodeType": "osmmix:openGraph", "rank": 5.0},
+            {"name": "osm:og_image_alt", "declaringNodeType": "osmmix:openGraph", "rank": 6.0},
+            {"name": "osm:og_audio", "declaringNodeType": "osmmix:openGraph", "rank": 7.0},
+            {"name": "osm:og_audio_secure_url", "declaringNodeType": "osmmix:openGraph", "rank": 8.0},
+            {"name": "osm:og_audio_type", "declaringNodeType": "osmmix:openGraph", "rank": 9.0},
+            {"name": "osm:og_video", "declaringNodeType": "osmmix:openGraph", "rank": 10.0},
+            {"name": "osm:og_video_secure_url", "declaringNodeType": "osmmix:openGraph", "rank": 11.0},
+            {"name": "osm:og_video_type", "declaringNodeType": "osmmix:openGraph", "rank": 12.0},
+            {"name": "osm:og_video_width", "declaringNodeType": "osmmix:openGraph", "rank": 13.0},
+            {"name": "osm:og_video_height", "declaringNodeType": "osmmix:openGraph", "rank": 14.0},
+            {"name": "osm:og_video_alt", "declaringNodeType": "osmmix:openGraph", "rank": 15.0},
+            {"name": "osm:ogType", "declaringNodeType": "osmmix:openGraph", "rank": 16.0}
+          ]
+        },
+        {
+          "name": "osmmix:schemaOrg",
+          "rank": 2.0,
+          "labelKey": "opengraph-schemaorg-metadata:fieldset.schemaOrg",
+          "descriptionKey": "opengraph-schemaorg-metadata:fieldset.schemaOrg.description",
+          "fields": [
+            {"name": "osm:schemaType", "declaringNodeType": "osmmix:schemaOrg", "rank": 1.0}
+          ]
+        }
+      ]
+    }
+  ]
+}

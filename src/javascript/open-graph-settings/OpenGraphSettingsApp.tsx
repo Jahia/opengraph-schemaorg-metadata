@@ -19,7 +19,7 @@ import {
   type TypeMapping,
 } from "./openGraph.gql.ts";
 
-const MAPPING_TYPE = "sdmnt:typeMapping";
+const MAPPING_TYPE = "osmnt:typeMapping";
 
 type OpenGraphSettingsProps = Readonly<{ siteKey: string }>;
 
@@ -94,7 +94,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   };
 
   const addButton = (
-      <Button data-sel-role="sdm-add-mapping"
+      <Button data-sel-role="osm-add-mapping"
               color="accent"
               icon={<Add/>}
               label={t("mappings.addMapping")}
@@ -106,7 +106,7 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   let errorText: ReactNode = null;
   const shownError = error?.message ?? actionError;
   if (shownError) {
-    errorText = <Typography data-sel-role="sdm-error" weight="bold">{shownError}</Typography>;
+    errorText = <Typography data-sel-role="osm-error" weight="bold">{shownError}</Typography>;
   }
 
   let list: ReactNode = null;
@@ -120,14 +120,14 @@ const OpenGraphSettings = ({ siteKey }: OpenGraphSettingsProps) => {
   } else if (data) {
     list = (
         <Paper hasPadding>
-            <Typography data-sel-role="structured-data-mapper-empty">{t("mappings.empty")}</Typography>
+            <Typography data-sel-role="opengraph-schemaorg-metadata-empty">{t("mappings.empty")}</Typography>
         </Paper>
     );
   }
 
   return (
       <LayoutContent hasPadding
-                     data-sel-role="structured-data-mapper"
+                     data-sel-role="opengraph-schemaorg-metadata"
                      isLoading={loading && data === undefined}
                      header={<Header title={t("mappings.title")} mainActions={addButton}/>}
       >

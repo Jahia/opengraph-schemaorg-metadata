@@ -1,0 +1,20 @@
+query openGraphSchemaOrgMetadataMappingNodes($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            children {
+                nodes {
+                    path
+                    nodeType: property(name: "osm:nodeType") {
+                        value
+                    }
+                    mixinTypes {
+                        name
+                    }
+                    properties {
+                        name
+                    }
+                }
+            }
+        }
+    }
+}

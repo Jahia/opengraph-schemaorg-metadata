@@ -48,13 +48,13 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
   // A line of the card, or nothing when its text is empty, as the network leaves it out.
   const line = (role: string, text: string, className?: string) =>
     text === "" ? null : (
-        <Typography data-sel-role={`sdm-share-card-${role}`} className={classes(styles.text, className)}>
+        <Typography data-sel-role={`osm-share-card-${role}`} className={classes(styles.text, className)}>
             {text}
         </Typography>
     );
   const image =
     src === null ? null : (
-        <img data-sel-role="sdm-share-card-image" className={styles.image} src={src} alt={textOf("og:image:alt")}/>
+        <img data-sel-role="osm-share-card-image" className={styles.image} src={src} alt={textOf("og:image:alt")}/>
     );
 
   const cards: Record<Network, () => JSX.Element[]> = {
@@ -82,13 +82,13 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
                 {image}
                 {line("title", title, styles.overlay)}
             </Paper>,
-            <Typography key="from" data-sel-role="sdm-share-card-domain" className={classes(styles.text, styles.from)}>
+            <Typography key="from" data-sel-role="osm-share-card-domain" className={classes(styles.text, styles.from)}>
                 {t("shareCard.from", { domain })}
             </Typography>,
           ]
         : [
             <Paper key="frame" className={classes(styles.frame, styles.summary)} hasPadding={false}>
-                <Paper data-sel-role="sdm-share-card-thumbnail" className={styles.thumbnail} hasPadding={false}>
+                <Paper data-sel-role="osm-share-card-thumbnail" className={styles.thumbnail} hasPadding={false}>
                     {src === null ? <File size="big"/> : image}
                 </Paper>
                 <Paper className={styles.summaryText} hasPadding={false}>
@@ -102,12 +102,12 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
 
   return (
       <>
-          <Tab data-sel-role="sdm-share-tabs" className={styles.tabs}>
+          <Tab data-sel-role="osm-share-tabs" className={styles.tabs}>
               {NETWORKS.map(item => (
                   <TabItem
                     key={item.name}
                     type="button"
-                    data-sel-role="sdm-share-tab"
+                    data-sel-role="osm-share-tab"
                     data-sel-network={item.name}
                     label={item.label}
                     isSelected={item.name === network}
@@ -116,7 +116,7 @@ const ShareCard = ({ tags, domain }: ShareCardProps) => {
               ))}
           </Tab>
           <Paper
-            data-sel-role="sdm-share-card"
+            data-sel-role="osm-share-card"
             data-sel-network={network}
             className={classes(styles.card, styles[network])}
             hasPadding={false}

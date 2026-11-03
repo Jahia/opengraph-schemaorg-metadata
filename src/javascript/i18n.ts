@@ -1,6 +1,6 @@
 import i18nModule from "i18next";
 
-export const NAMESPACE = "structured-data-mapper";
+export const NAMESPACE = "opengraph-schemaorg-metadata";
 
 // The shared i18next has no __esModule marker, so the default import can be the module namespace.
 export const i18n =

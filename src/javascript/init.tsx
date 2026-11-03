@@ -1,8 +1,8 @@
 import { Code } from "@jahia/moonstone/dist/icons";
 import { registry } from "@jahia/ui-extender";
 import { lazy, Suspense, type ComponentType } from "react";
-import type { SdmSchemaValueProps } from "./editor-tags/SdmSchemaValue.tsx";
-import type { SdmTagProps } from "./editor-tags/SdmTag.tsx";
+import type { OsmSchemaValueProps } from "./editor-tags/OsmSchemaValue.tsx";
+import type { OsmTagProps } from "./editor-tags/OsmTag.tsx";
 import { i18n, NAMESPACE } from "./i18n.ts";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
 import type { SchemaPreviewProps } from "./schema-org-preview/SchemaPreview.tsx";
@@ -15,8 +15,8 @@ const OgPreviewApp = lazy<ComponentType<OgPreviewProps>>(() =>
 const SchemaPreviewApp = lazy<ComponentType<SchemaPreviewProps>>(() =>
   import("./schema-org-preview/SchemaPreview.tsx").catch(() => ({ default: () => null }))
 );
-const SdmTagApp = lazy(() => import("./editor-tags/SdmTag.tsx"));
-const SdmSchemaValueApp = lazy(() => import("./editor-tags/SdmSchemaValue.tsx"));
+const OsmTagApp = lazy(() => import("./editor-tags/OsmTag.tsx"));
+const OsmSchemaValueApp = lazy(() => import("./editor-tags/OsmSchemaValue.tsx"));
 
 const OgPreviewSelector = (props: OgPreviewProps) => (
     <Suspense fallback={null}>
@@ -30,15 +30,15 @@ const SchemaPreviewSelector = (props: SchemaPreviewProps) => (
     </Suspense>
 );
 
-const SdmTagSelector = (props: SdmTagProps) => (
+const OsmTagSelector = (props: OsmTagProps) => (
     <Suspense fallback={null}>
-        <SdmTagApp {...props}/>
+        <OsmTagApp {...props}/>
     </Suspense>
 );
 
-const SdmSchemaValueSelector = (props: SdmSchemaValueProps) => (
+const OsmSchemaValueSelector = (props: OsmSchemaValueProps) => (
     <Suspense fallback={null}>
-        <SdmSchemaValueApp {...props}/>
+        <OsmSchemaValueApp {...props}/>
     </Suspense>
 );
 
@@ -47,19 +47,19 @@ type RouteProps = { match?: { params?: { siteKey?: string } } };
 const siteKeyOf = (props: RouteProps): string =>
   props?.match?.params?.siteKey ?? globalThis.jahia?.reduxStore?.getState().site ?? "";
 
-export default function registerStructuredDataMapper() {
-  registry.add("callback", "structured-data-mapper", {
+export default function registerOpenGraphSchemaOrgMetadata() {
+  registry.add("callback", "opengraph-schemaorg-metadata", {
     targets: ["jahiaApp-init:50"],
     callback: () => {
       i18n.loadNamespaces(NAMESPACE);
 
-      registry.add("adminRoute", "structuredDataMapper", {
+      registry.add("adminRoute", "openGraphSchemaOrgMetadata", {
         targets: ["jcontent-siteSettingsSeo:90"],
         icon: <Code/>,
-        label: "structured-data-mapper:mappings.nav",
+        label: "opengraph-schemaorg-metadata:mappings.nav",
         isSelectable: true,
-        requiredPermission: "structuredDataMapperManage",
-        requireModuleInstalledOnSite: "structured-data-mapper",
+        requiredPermission: "openGraphSchemaOrgMetadataManage",
+        requireModuleInstalledOnSite: "opengraph-schemaorg-metadata",
         render: (props: RouteProps) => {
           const siteKey = siteKeyOf(props);
           return (
@@ -70,14 +70,14 @@ export default function registerStructuredDataMapper() {
         },
       });
 
-      // The read-only fields sdm:ogPreview and sdm:schemaPreview of the section SEO in the Content Editor.
-      registry.add("selectorType", "SdmPreview", { cmp: OgPreviewSelector, supportMultiple: false });
-      registry.add("selectorType", "SdmSchemaPreview", { cmp: SchemaPreviewSelector, supportMultiple: false });
+      // The read-only fields osm:ogPreview and osm:schemaPreview of the section SEO in the Content Editor.
+      registry.add("selectorType", "OsmPreview", { cmp: OgPreviewSelector, supportMultiple: false });
+      registry.add("selectorType", "OsmSchemaPreview", { cmp: SchemaPreviewSelector, supportMultiple: false });
 
-      // One value of sdm:customTags, below sdm:ogPreview, and one value of sdm:customSchemaOrg, below
-      // sdm:schemaPreview. The forms files of sdmmix:customTags and sdmmix:customSchemaOrg set these selector types.
-      registry.add("selectorType", "SdmTag", { cmp: SdmTagSelector, supportMultiple: false });
-      registry.add("selectorType", "SdmSchemaValue", { cmp: SdmSchemaValueSelector, supportMultiple: false });
+      // One value of osm:customTags, below osm:ogPreview, and one value of osm:customSchemaOrg, below
+      // osm:schemaPreview. The forms files of osmmix:customTags and osmmix:customSchemaOrg set these selector types.
+      registry.add("selectorType", "OsmTag", { cmp: OsmTagSelector, supportMultiple: false });
+      registry.add("selectorType", "OsmSchemaValue", { cmp: OsmSchemaValueSelector, supportMultiple: false });
     },
   });
 }

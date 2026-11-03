@@ -24,7 +24,7 @@ export type ScreenData = {
 export type ScreenVariables = { path: string; language: string };
 
 export const SCREEN_QUERY = gql`
-  query structuredDataMapperScreen($path: String!, $language: String!) {
+  query openGraphSchemaOrgMetadataScreen($path: String!, $language: String!) {
     jcr {
       nodeByPath(path: $path) {
         openGraphMappings {
@@ -53,7 +53,7 @@ export type CreateSettingsData = { jcr: { mutateNode: { createOpenGraphSettings:
 export type CreateSettingsVariables = { path: string };
 
 export const CREATE_SETTINGS = gql`
-  mutation structuredDataMapperCreateSettings($path: String!) {
+  mutation openGraphSchemaOrgMetadataCreateSettings($path: String!) {
     jcr {
       mutateNode(pathOrId: $path) {
         createOpenGraphSettings
@@ -67,7 +67,7 @@ export type DeleteMappingData = { jcr: { mutateNode: { deleteOpenGraphMapping: b
 export type DeleteMappingVariables = { path: string; nodeType: string; templateName: string | null };
 
 export const DELETE_MAPPING = gql`
-  mutation structuredDataMapperDeleteMapping($path: String!, $nodeType: String!, $templateName: String) {
+  mutation openGraphSchemaOrgMetadataDeleteMapping($path: String!, $nodeType: String!, $templateName: String) {
     jcr {
       mutateNode(pathOrId: $path) {
         deleteOpenGraphMapping(nodeType: $nodeType, templateName: $templateName)

@@ -1,9 +1,0 @@
-mutation structuredDataMapperSetNodeProperty($path: String!, $name: String!, $value: String!) {
-    jcr {
-        mutateNode(pathOrId: $path) {
-            mutateProperty(name: $name) {
-                setValue(value: $value)
-            }
-        }
-    }
-}

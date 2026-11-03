@@ -1,0 +1,15 @@
+query openGraphSchemaOrgMetadataSchemaMappings($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            openGraphMappings {
+                uuid
+                nodeType
+                schemaType
+                schemaProperties {
+                    schemaProperty
+                    sourceProperty
+                }
+            }
+        }
+    }
+}
