@@ -43,6 +43,7 @@ The module has three parts:
 ## Documentation
 
 - [`docs/store/README.md`](docs/store/README.md) describes the module for site administrators and editors, with screenshots. It is the text of the page of the module on the Jahia Store.
+- [`docs/store/icon.png`](docs/store/icon.png) is the icon of that page, 512 x 512 pixels. The Store takes no SVG, so [`docs/store/icon.svg`](docs/store/icon.svg) is its source.
 - [`docs/architecture/`](docs/architecture/README.md) describes the architecture of the module for developers and agents: its building blocks, its runtime scenarios and its concepts.
 
 ## Permissions
