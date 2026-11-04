@@ -1,6 +1,7 @@
 package org.jahia.pm.modules.opengraphschemaorgmetadata;
 
 import org.jahia.api.Constants;
+import org.jahia.bin.Render;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgKind;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgProperty;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgType;
@@ -127,7 +128,6 @@ public class OpenGraphService {
     private static final String TEMPLATE_NAME_PROPERTY = "j:templateName";
     private static final String TEMPLATES_INITIALIZER = "templatesNode";
     private static final String HTML = "html";
-    private static final String LIVE_SERVLET_PATH = "/cms/render/live";
     private static final String MODULE_ID = "opengraph-schemaorg-metadata";
     private static final String FILE_TYPE = "jnt:file";
     private static final String IMAGE_MIXIN = "jmix:image";
@@ -1167,7 +1167,7 @@ public class OpenGraphService {
         if (context == null) {
             context = new RenderContext(null, null, node.getSession().getUser());
             context.setMainResource(new Resource(node, HTML, null, Resource.CONFIGURATION_PAGE));
-            context.setServletPath(LIVE_SERVLET_PATH);
+            context.setServletPath(Render.getRenderServletPath() + "/" + Constants.LIVE_WORKSPACE);
         }
         Template template;
         try {
