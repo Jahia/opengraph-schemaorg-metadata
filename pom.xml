@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.jahia.pm.modules</groupId>
     <artifactId>opengraph-schemaorg-metadata</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <name>Open Graph &amp; Schema.org Metadata</name>
     <description>Map content types to Open Graph tags and to a schema.org JSON-LD block, and write them in the page head.</description>
     <packaging>bundle</packaging>
@@ -25,7 +25,7 @@
         <connection>scm:git:git@github.com:Jahia/opengraph-schemaorg-metadata.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/opengraph-schemaorg-metadata.git</developerConnection>
         <url>https://github.com/Jahia/opengraph-schemaorg-metadata</url>
-        <tag>0_1_0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
