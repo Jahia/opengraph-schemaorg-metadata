@@ -29,7 +29,9 @@
     "off": "Open Graph ist in der Zuordnung dieses Inhaltstyps deaktiviert, daher hat die Live-Seite keinen Open-Graph-Tag."
   },
   "customTags": {
-    "property": "Open-Graph-Eigenschaft"
+    "property": "Open-Graph-Eigenschaft",
+    "invalidDate": "{{property}}: „{{value}}“ ist kein gültiges Datum.",
+    "invalidUrl": "{{property}}: „{{value}}“ ist keine absolute URL wie https://www.example.com/page."
   },
   "schemaPreview": {
     "saveHint": "Speichern Sie, um die aktualisierten schema.org-Werte zu sehen",

@@ -29,7 +29,9 @@
     "off": "Open Graph est désactivé dans la correspondance de ce type de contenu, donc la page en ligne n'a pas de balise Open Graph."
   },
   "customTags": {
-    "property": "Propriété Open Graph"
+    "property": "Propriété Open Graph",
+    "invalidDate": "{{property}} : « {{value}} » n'est pas une date valide.",
+    "invalidUrl": "{{property}} : « {{value}} » n'est pas une URL absolue, telle que https://www.example.com/page."
   },
   "schemaPreview": {
     "saveHint": "Enregistrez pour voir les valeurs schema.org mises à jour",

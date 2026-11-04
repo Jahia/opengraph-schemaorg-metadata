@@ -172,3 +172,12 @@ export const save = () => {
     cy.get(`${CONTENT_EDITOR} ${role('submitSave')}`).click();
     cy.get('[role="alertdialog"]', {timeout: LOAD_TIMEOUT}).should('contain', 'Content successfully saved');
 };
+
+// The Content Editor refuses to save a form with an error, and names the fields in error in a dialog.
+export const saveRefused = () => {
+    const dialog = role('dialog-errorBeforeSave');
+    cy.get(`${CONTENT_EDITOR} ${role('submitSave')}`).click();
+    cy.get(dialog).should('be.visible');
+    cy.get(`${dialog} ${role('content-type-dialog-cancel')}`).click();
+    cy.get(dialog).should('not.exist');
+};

@@ -9,7 +9,7 @@ import type { OgKind, VocabularyProperty } from "./osmTag.gql.ts";
 // {"property":"og:title","content":"Summer in Mykonos"}.
 type Tag = { property: string; content?: string; node?: string };
 
-const parseTag = (value: unknown): Tag => {
+export const parseTag = (value: unknown): Tag => {
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value) as Partial<Record<keyof Tag, unknown>>;
@@ -26,10 +26,21 @@ const parseTag = (value: unknown): Tag => {
   return { property: "" };
 };
 
-// The date picker gives a local date and time, such as 2026-10-20T09:30:00.000. The tag holds it in UTC, to the
-// second, as the module writes a mapped date: 2026-10-20T07:30:00Z.
-const isoDate = (localDate: string | null | undefined) =>
-  localDate ? new Date(localDate).toISOString().replace(/\.\d{3}Z$/, "Z") : "";
+// The date picker gives a date in ISO 8601, such as 2026-10-20T07:30:00.000Z, or the text that the editor typed when it
+// is not a date, such as 31/31/2026 09:30. The tag holds a date in UTC, to the second, as the module writes a mapped
+// date: 2026-10-20T07:30:00Z. It keeps a text that is not a date, so the check of the field refuses the save.
+const PICKER_DATE = /^\d{4}-\d{2}-\d{2}T/;
+
+const isoDate = (pickerValue: string | null | undefined) => {
+  if (!pickerValue) {
+    return "";
+  }
+
+  const date = new Date(pickerValue);
+  return PICKER_DATE.test(pickerValue) && !Number.isNaN(date.getTime())
+    ? date.toISOString().replace(/\.\d{3}Z$/, "Z")
+    : pickerValue;
+};
 
 type SelectorType = {
   cmp: ComponentType<Record<string, unknown>>;
@@ -41,12 +52,19 @@ const selectorType = (key: string) => registry.get("selectorType", key) as unkno
 
 type EditorField = { name: string; readOnly?: boolean } & Record<string, unknown>;
 
+// The Formik form of the Content Editor, which the FastField of each value gives its selector.
+type EditorForm = {
+  registerField: (name: string, options: { validate?: (value: unknown) => string | undefined }) => void;
+  unregisterField: (name: string) => void;
+};
+
 export type CustomValueProps = Readonly<{
   id: string;
   value?: string;
   field: EditorField;
   editorContext: { lang: string; nodeData?: { uuid?: string } } & Record<string, unknown>;
   inputContext: Record<string, unknown>;
+  form?: EditorForm;
   onChange: (value: string | undefined) => void;
   onBlur: () => void;
 }>;

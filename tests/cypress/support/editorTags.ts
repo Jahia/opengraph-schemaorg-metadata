@@ -54,6 +54,8 @@ const customValueField = (mixin: string, property: string) => {
 
     return {
         field,
+        // The Content Editor shows the error of the field below its values.
+        error: `${field} [data-sel-error]`,
         value,
         propertyOf,
         content,
@@ -86,6 +88,7 @@ const customValueField = (mixin: string, property: string) => {
 
 const customTags = customValueField(CUSTOM_TAGS_MIXIN, 'osm:customTags');
 
+export const tagsError = customTags.error;
 export const tagValue = customTags.value;
 export const tagProperty = customTags.propertyOf;
 export const tagContent = customTags.content;
