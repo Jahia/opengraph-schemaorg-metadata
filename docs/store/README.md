@@ -137,6 +137,5 @@ it is enabled.
 
 ## Limits
 
-- The module writes the tags on live pages only. A page in preview mode has no tag.
 - The module writes no site-wide schema.org type, such as `WebSite`, `Organization` or `BreadcrumbList`.
 - A user who can write the site can still remove a mapping without `openGraphSchemaOrgMetadataManage`.

@@ -1,6 +1,6 @@
 # Runtime View
 
-## Tags in the head of a live page
+## Tags in the head of a page
 
 ```mermaid
 sequenceDiagram
