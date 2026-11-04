@@ -89,6 +89,15 @@ each list offers only the values that the validation accepts. `ContentTypesIniti
 leave out a content type and a template that a mapping of the site already uses. In the form of an existing mapping,
 they list its own value only.
 
+`osm:templateName` depends on `osm:nodeType`, so the Content Editor asks `TemplatesInitializer` for the templates again
+when the content type changes. The forms file of `osmnt:typeMapping` gives the field the selector type
+`OsmTemplateChoicelist` of [`TemplateField.tsx`](../../src/javascript/open-graph-settings/TemplateField.tsx). It shows the
+choice list of the Content Editor, read-only while the list offers one value or none: before the form has a content
+type, for a mixin, and in the form of an existing mapping. A list of one value sets that value, because the choice list
+empties a value that it no longer offers. The name of the selector type holds `Choicelist`, because the Content Editor
+checks a value against the values of such a selector type, and reads the values of any other selector type as patterns:
+the value `*` of every template is not a valid pattern.
+
 ## Values of a content in the Content Editor
 
 ```mermaid
@@ -119,10 +128,17 @@ change shows the hint "Save to see the updated Open Graph values", and the value
 
 `OpenGraphService.findMapping` selects one mapping for a node:
 
-1. The template mappings whose template is the `j:templateName` of the node, then the mappings of every template.
+1. The template mappings whose template is the template of the node, then the mappings of every template.
 2. In each group, a mapping of a mixin of the node or of a supertype of that mixin, in the order of the list.
 3. Then the mapping of the primary type of the node.
 4. Then the mapping of the closest supertype of the primary type.
 
 The first match wins. When the mapping has no og:type, `resolve` returns no tag. When it has no schema.org type,
 `resolveSchemaOrg` returns an empty entity.
+
+The template of a page, or of a content with `j:templateName`, is the value of that property. A main resource without it
+has the content template that Jahia resolves for it: the default template of the highest priority among the templates
+that apply to its type, or the template that the URL names. `findMapping` asks `RenderService.resolveTemplate` for it,
+and only when a template mapping exists for the type of the node. The filter gives the render of the page, so the
+template is the one of that page. Outside a render, such as in the Content Editor, the template is the one of the
+default URL of the node in live.

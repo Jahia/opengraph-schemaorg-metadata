@@ -72,13 +72,13 @@ public class OpenGraphFilter extends AbstractFilter {
         JCRNodeWrapper main = renderContext.getMainResource().getNode();
         StringBuilder tags = new StringBuilder();
         try {
-            for (OgTag tag : openGraphService.resolve(main, renderContext.getMainResourceLocale())) {
+            for (OgTag tag : openGraphService.resolve(main, renderContext.getMainResourceLocale(), renderContext)) {
                 String content = tag.getNode() == null ? tag.getContent() : absoluteUrl(tag.getNode(), renderContext);
                 if (content != null) {
                     tags.append(HeadWriter.meta(tag.getProperty(), content));
                 }
             }
-            Map<String, Object> entity = openGraphService.resolveSchemaOrg(main, renderContext.getMainResourceLocale());
+            Map<String, Object> entity = openGraphService.resolveSchemaOrg(main, renderContext.getMainResourceLocale(), renderContext);
             if (!entity.isEmpty()) {
                 tags.append(JsonLdWriter.script(withUrls(entity, renderContext)));
             }

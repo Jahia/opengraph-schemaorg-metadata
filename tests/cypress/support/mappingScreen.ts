@@ -82,6 +82,10 @@ export const propertiesText = (properties: PropertyMapping[]) =>
 const dropdownOf = (fieldSelector: string) =>
     cy.get(`${fieldSelector} [data-sel-content-editor-select-readonly="false"]`, {timeout: LOAD_TIMEOUT});
 
+// A read-only choicelist shows its value and opens no menu.
+export const readOnlyDropdown = (fieldSelector: string) =>
+    cy.get(`${fieldSelector} [data-sel-content-editor-select-readonly="true"]`, {timeout: LOAD_TIMEOUT});
+
 // The Menu page object of @jahia/cypress holds the selector of the open menu. The choicelist of the Content Editor and
 // the property dropdown of the module set data-value on each item.
 export const OPEN_MENU = Menu.defaultSelector;
@@ -89,6 +93,10 @@ export const OPEN_MENU = Menu.defaultSelector;
 export const MENU_ITEMS = `${OPEN_MENU} [data-value]`;
 
 export const menuItem = (value: string) => `${OPEN_MENU} [data-value="${value}"]`;
+
+// The values of the items of the open menu, in their order.
+export const menuValues = () =>
+    cy.get(MENU_ITEMS).then(items => Cypress._.map(items, item => item.getAttribute('data-value')));
 
 export const openDropdown = (fieldSelector: string) => dropdownOf(fieldSelector).click();
 
