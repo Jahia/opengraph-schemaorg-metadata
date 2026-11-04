@@ -108,6 +108,9 @@ Switch on **Override Open Graph tags** to replace a mapped value for this conten
 then type its value, or pick an image for an image property. **Override schema.org properties** works the same way,
 and can also add a property that the mapping does not fill.
 
+The Content Editor refuses to save a custom Open Graph tag with a date that is not valid. It also refuses a URL that is
+not absolute, such as `videos/summer.mp4`.
+
 ![A custom og:title replaces the mapped title of the news entry.](editor-custom-tags.png)
 
 ![A custom author.name adds the author to the JSON-LD block.](editor-custom-schema-org.png)

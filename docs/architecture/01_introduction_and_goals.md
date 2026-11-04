@@ -28,7 +28,7 @@ its own values.
 |---|---|---|
 | 1 | Security | A value that holds markup, such as `"` or `</script>`, reaches the head of the page encoded and adds no element. A user without `openGraphSchemaOrgMetadataManage` cannot create a mapping or change its values through any API. |
 | 2 | Time behaviour of the live page | The render filter reads the mappings of a site from memory. The service reads them from the repository again only after a change of the mappings of that site. |
-| 3 | Conformity to the protocols | A mapped tag holds a value of the kind that its Open Graph property takes, and a structured property, such as `og:video:width`, follows its root. |
+| 3 | Conformity to the protocols | A tag holds a value of the kind that its Open Graph property takes, and a structured property, such as `og:video:width`, follows its root. |
 | 4 | Feedback to the editor | The Content Editor shows the values of the edit workspace, and a tag that a text field fills changes while the editor types. |
 
 ## Stakeholders
