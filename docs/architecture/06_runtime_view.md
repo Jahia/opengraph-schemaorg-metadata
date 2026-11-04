@@ -142,3 +142,9 @@ that apply to its type, or the template that the URL names. `findMapping` asks `
 and only when a template mapping exists for the type of the node. The filter gives the render of the page, so the
 template is the one of that page. Outside a render, such as in the Content Editor, the template is the one of the
 default URL of the node in live.
+
+The choice list of `j:templateName` gives a main resource every content template with no `j:applyOn` too, such as the
+settings screens of jExperience. Jahia renders a main resource with such a template only when the URL names it, so
+`OpenGraphService.getTemplates` keeps, for a main resource without `j:templateName`, the content templates whose
+`j:applyOn` names its type or a supertype, and the templates that have no node, which a JavaScript module declares for
+the type. A page, and a content with `j:templateName`, keep the list of their own template field.

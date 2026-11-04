@@ -1,0 +1,14 @@
+query newsTemplatesFolder {
+    jcr {
+        nodesByQuery(
+            query: "select * from [jnt:contentTemplate] where localname() = 'news-template' and isdescendantnode('/modules/news')"
+            queryLanguage: SQL2
+        ) {
+            nodes {
+                parent {
+                    path
+                }
+            }
+        }
+    }
+}

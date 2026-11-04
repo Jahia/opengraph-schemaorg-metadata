@@ -29,7 +29,7 @@ A site administrator or an editor in chief sets the mappings of a site.
 2. Click **Add a mapping**.
 3. In **Content type or mixin**, choose the type of the contents, such as **News entry**.
 4. In **Template**, keep **All templates**, or choose one template of the content type. A page has the page templates
-   of the site, and a full-page content, such as a news entry, has the content templates that apply to its type. The
+   of the site, and a full-page content, such as a news entry, has the content templates made for its type. The
    field is read-only until you choose a content type, and for a mixin.
 5. Switch on **Open Graph**. For each Open Graph property, choose the property of the content that fills it.
 6. In **og:type**, choose the type of the contents, such as `article`. Then fill the properties of that type.

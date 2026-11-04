@@ -110,6 +110,31 @@ export const getSourceChoices = (nodeType: string, {user, path = SITE_PATH}: Sco
         user
     );
 
+// The values of the field osm:templateName once the form of a new mapping has the content type nodeType.
+export const getTemplateChoices = (nodeType: string): Cypress.Chainable<string[]> =>
+    run<{forms: {fieldConstraints: {value: {string: string}}[]}}>({
+        queryFile: `${FIXTURES}/templateChoices.graphql`,
+        variables: {
+            path: SITE_PATH,
+            context: [
+                {key: 'dependentProperties', value: 'osm:nodeType'},
+                {key: 'osm:nodeType', value: [nodeType]}
+            ]
+        }
+    }).then(result => {
+        expectNoError(result);
+        return result.data.forms.fieldConstraints.map(constraint => constraint.value.string);
+    });
+
+// The templates folder of the module news, which holds its content template news-template.
+export const getNewsTemplatesFolder = (): Cypress.Chainable<string> =>
+    run<{jcr: {nodesByQuery: {nodes: {parent: {path: string}}[]}}}>({
+        queryFile: `${FIXTURES}/newsTemplatesFolder.graphql`
+    }).then(result => {
+        expectNoError(result);
+        return result.data.jcr.nodesByQuery.nodes[0].parent.path;
+    });
+
 export const getTags = (path: string, user?: TestUser) =>
     run<NodeData<{openGraphTags: OgTag[] | null}>>(
         {queryFile: `${FIXTURES}/tags.graphql`, variables: {path, language: 'en'}},

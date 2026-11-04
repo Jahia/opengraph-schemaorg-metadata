@@ -124,7 +124,8 @@ The service validates a mapping in `saveMapping` before it writes:
 
 - The content type is mappable, and its module is active on the site.
 - A template mapping names a template of the choice list of `j:templateName` for that type: a page template for a
-  page, and a content template that applies to the type for a main resource. A mixin has no template.
+  page, and for a main resource, a content template whose `j:applyOn` names the type or a supertype, or a template of
+  a JavaScript module. A mixin has no template.
 - The og:type and the schema.org type are values of the vocabulary, and a property needs its type.
 - A property of the vocabulary is mapped once, from a source property of the content type or of a mixin that extends
   it.

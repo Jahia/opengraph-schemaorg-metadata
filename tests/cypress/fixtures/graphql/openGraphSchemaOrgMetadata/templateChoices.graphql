@@ -1,0 +1,17 @@
+query templateChoices($path: String!, $context: [InputContextEntryInput]) {
+    forms {
+        fieldConstraints(
+            parentNodeUuidOrPath: $path
+            primaryNodeType: "osmnt:typeMapping"
+            fieldNodeType: "osmnt:typeMapping"
+            fieldName: "osm:templateName"
+            context: $context
+            uiLocale: "en"
+            locale: "en"
+        ) {
+            value {
+                string
+            }
+        }
+    }
+}

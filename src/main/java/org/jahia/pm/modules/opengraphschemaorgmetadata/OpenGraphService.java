@@ -34,9 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.ItemNotFoundException;
+import javax.jcr.NodeIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -127,6 +129,8 @@ public class OpenGraphService {
     private static final String HAS_TEMPLATE_MIXIN = "jmix:hasTemplateNode";
     private static final String TEMPLATE_NAME_PROPERTY = "j:templateName";
     private static final String TEMPLATES_INITIALIZER = "templatesNode";
+    private static final String CONTENT_TEMPLATE_TYPE = "jnt:contentTemplate";
+    private static final String APPLY_ON_PROPERTY = "j:applyOn";
     private static final String HTML = "html";
     private static final String MODULE_ID = "opengraph-schemaorg-metadata";
     private static final String FILE_TYPE = "jnt:file";
@@ -520,7 +524,8 @@ public class OpenGraphService {
      * Lists the templates that a template mapping of the content type can use. The list comes from the choice list of
      * {@code j:templateName}, so it holds the templates of the template set and of the modules of the site: the page
      * templates of a page, and the content templates that apply to the type of a main resource. A JavaScript module
-     * adds its own templates to this choice list.
+     * adds its own templates to this choice list. A main resource without {@code j:templateName} keeps the content
+     * templates that {@link #namingType} keeps.
      *
      * @return the display name of each template, by name, in the order of the choice list
      * @throws InvalidMappingException when the site cannot map the content type, or when the type has no template
@@ -552,7 +557,55 @@ public class OpenGraphService {
                 templates.putIfAbsent(name, value.getDisplayName());
             }
         }
-        return templates;
+        return type.getPropertyDefinitionsAsMap().containsKey(TEMPLATE_NAME_PROPERTY) ? templates
+                : namingType(templates, site, type);
+    }
+
+    /**
+     * The choice list gives a main resource every content template with no {@code j:applyOn}, such as the settings
+     * screen of a module. Jahia renders a main resource with such a template only when the URL names it.
+     *
+     * @return the templates whose node names the type or a supertype in {@code j:applyOn}, and the templates that have
+     * no node, which a JavaScript module declares for the type
+     */
+    private static Map<String, String> namingType(Map<String, String> templates, JCRSiteNode site, ExtendedNodeType type) {
+        Set<String> modules = site.getInstalledModulesWithAllDependencies();
+        Set<String> naming = new HashSet<>();
+        Set<String> notNaming = new HashSet<>();
+        try {
+            NodeIterator nodes = site.getSession().getWorkspace().getQueryManager()
+                    .createQuery("select * from [" + CONTENT_TEMPLATE_TYPE + "] where isdescendantnode('/modules')", Query.JCR_SQL2)
+                    .execute().getNodes();
+            while (nodes.hasNext()) {
+                JCRNodeWrapper template = (JCRNodeWrapper) nodes.nextNode();
+                // The path of a template starts with /modules/<module>/<version>/templates.
+                String[] path = template.getPath().split("/");
+                if (templates.containsKey(template.getName()) && path.length > 2 && modules.contains(path[2])) {
+                    (namesType(template, type) ? naming : notNaming).add(template.getName());
+                }
+            }
+        } catch (RepositoryException e) {
+            logger.warn("Cannot read the content templates of the site {}: {}", site.getSiteKey(), e.getMessage());
+            return templates;
+        }
+        Map<String, String> kept = new LinkedHashMap<>(templates);
+        kept.keySet().removeIf(name -> notNaming.contains(name) && !naming.contains(name));
+        return kept;
+    }
+
+    /**
+     * @return true when the {@code j:applyOn} of the template names the type or one of its supertypes
+     */
+    private static boolean namesType(JCRNodeWrapper template, ExtendedNodeType type) throws RepositoryException {
+        if (!template.hasProperty(APPLY_ON_PROPERTY)) {
+            return false;
+        }
+        for (JCRValueWrapper value : template.getProperty(APPLY_ON_PROPERTY).getValues()) {
+            if (type.isNodeType(value.getString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

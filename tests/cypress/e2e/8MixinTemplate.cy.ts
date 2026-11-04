@@ -1,11 +1,13 @@
-import {addNode} from '@jahia/cypress';
+import {addNode, deleteNode} from '@jahia/cypress';
 import {
     deleteMapping,
     expectError,
     expectNoError,
     getMappingTargets,
+    getNewsTemplatesFolder,
     getSourceProperties,
     getTags,
+    getTemplateChoices,
     saveMapping,
     TypeMapping
 } from '../support/openGraphApi';
@@ -22,6 +24,8 @@ const OTHER_TEMPLATE_PAGE_PATH = `${SITE_PATH}/home/osm-other-template-page`;
 // A main resource has no j:templateName. The module news gives jnt:news its default content template, news-template.
 const NEWS_TEMPLATE = 'news-template';
 const NEWS_PATH = `${SITE_PATH}/contents/osm-template-news`;
+// A content template with no j:applyOn, as the settings screen of a module holds, which applies to no type in particular.
+const SETTINGS_TEMPLATE = 'osm-settings-template';
 
 const PAGE_MAPPING: TypeMapping = {
     nodeType: 'jnt:page',
@@ -184,6 +188,34 @@ describe('Open Graph mappings of a mixin and of a template', () => {
         expectLiveOgType(NEWS_PATH, 'article');
         deleteMapping('jnt:news', {templateName: NEWS_TEMPLATE}).then(expectNoError);
         expectLiveOgType(NEWS_PATH, 'website');
+    });
+
+    describe('a content template with no j:applyOn, next to the content template of jnt:news', () => {
+        let templatesFolder: string;
+
+        before(() => {
+            getNewsTemplatesFolder().then(folder => {
+                templatesFolder = folder;
+                addNode({parentPathOrId: folder, name: SETTINGS_TEMPLATE, primaryNodeType: 'jnt:contentTemplate'});
+            });
+        });
+
+        after(() => {
+            deleteNode(`${templatesFolder}/${SETTINGS_TEMPLATE}`);
+        });
+
+        it('is not a template of jnt:news', () => {
+            getTemplateChoices('jnt:news').then(values => {
+                expect(values, 'the templates of jnt:news').to.include(NEWS_TEMPLATE);
+                expect(values, 'the templates of jnt:news').not.to.include(SETTINGS_TEMPLATE);
+            });
+        });
+
+        it('cannot be the template of a mapping of jnt:news', () => {
+            saveMapping({...NEWS_TEMPLATE_MAPPING, templateName: SETTINGS_TEMPLATE}).then(
+                expectError(`has no template '${SETTINGS_TEMPLATE}'`)
+            );
+        });
     });
 
     describe('refuses an invalid template mapping', () => {
