@@ -107,6 +107,7 @@ order of `specPattern` in [`tests/cypress.config.ts`](../../tests/cypress.config
 | `1AdminRoute.cy.ts` | The permission, and the entry of the mapping screen in jContent. |
 | `2Api.cy.ts` | The GraphQL API, the validation and the permission checks. |
 | `3Filter.cy.ts`, `4FilterEscape.cy.ts` | The Open Graph tags in the head of a live page, and their encoding. |
+| `3FilterPreview.cy.ts` | The Open Graph tags and the JSON-LD block in the head of a preview page, with the live URLs. |
 | `5AdminScreen.cy.ts` | The mapping screen, as a site administrator and as an editor in chief. |
 | `6EditorField.cy.ts`, `7EditorTags.cy.ts`, `8ShareCard.cy.ts` | The Open Graph values, the custom tags and the share card in the Content Editor. |
 | `8MixinTemplate.cy.ts` | The mappings of a mixin and of a template. |

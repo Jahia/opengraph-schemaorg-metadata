@@ -22,16 +22,17 @@ sequenceDiagram
     Chain-->>Crawler: page
 ```
 
-The filter applies to the `page` configuration, in live mode, for the `html` template type, and not to an Ajax request.
-Its condition `ModuleOnSiteCondition` requires the module on the site of the request. When the HTML has no `</head>`,
+The filter applies to the `page` configuration, in live mode and in preview mode, for the `html` template type, and not
+to an Ajax request. Its condition `ModuleOnSiteCondition` requires the module on the site of the request. When the HTML has no `</head>`,
 or when no mapping applies, the filter returns the HTML unchanged. A `RepositoryException` writes a warning to the log
 and leaves the page unchanged.
 
-`OpenGraphFilter.absoluteUrl` builds the absolute URL of a node:
+`OpenGraphFilter.absoluteUrl` builds the absolute URL of a node in the live workspace, in both modes, so a preview page
+gives the URLs of the live page:
 
-- A file gives the URL of `JCRNodeWrapper.getUrl`.
-- A page or a main resource gives the URL of the `URLGenerator`, after the outbound rules of `UrlRewriteService`, so
-  the URL holds a vanity URL.
+- A file gives the HTTP path of its provider, `/live`, then its escaped path, the form of `JCRNodeWrapper.getUrl`.
+- A page or a main resource gives its URL under `/cms/render/live/<language>`, after the outbound rules of
+  `UrlRewriteService`, so the URL holds a vanity URL.
 - A relative URL takes the server of the render context as its prefix.
 
 ## Creation of a mapping
