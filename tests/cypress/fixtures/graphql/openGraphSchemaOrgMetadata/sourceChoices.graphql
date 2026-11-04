@@ -1,0 +1,13 @@
+query openGraphSourceChoices($path: String!, $nodeType: String!, $language: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            openGraphSourceChoices(nodeType: $nodeType, language: $language) {
+                property
+                choices {
+                    value
+                    label
+                }
+            }
+        }
+    }
+}

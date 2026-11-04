@@ -21,11 +21,12 @@ flowchart TB
         vocabulary["Vocabulary"]
     end
     model["Content model"]
-    registration -- "admin route and selector types" --> screen
+    registration -- "admin route and the handler osmSourceChoices" --> screen
     registration -- "selector types" --> editorext
-    screen -- "openGraphMappings, createOpenGraphSettings, deleteOpenGraphMapping" --> api
+    screen -- "openGraphMappings, openGraphSourceChoices, createOpenGraphSettings, deleteOpenGraphMapping" --> api
     editorext -- "openGraphTags, schemaOrgJsonLd, openGraphVocabulary" --> api
     api -- "calls" --> service
+    api -- "choices of every source field" --> choices
     choices -- "mappable types, templates, source properties" --> service
     filter -- "resolve and resolveSchemaOrg" --> service
     service -- "property lists" --> vocabulary
@@ -42,8 +43,8 @@ flowchart TB
 | Choice lists: [`choicelist/`](../../src/main/java/org/jahia/pm/modules/opengraphschemaorgmetadata/choicelist/) | The choice lists fill the fields of the mapping form in the Content Editor. |
 | GraphQL API: [`graphql/`](../../src/main/java/org/jahia/pm/modules/opengraphschemaorgmetadata/graphql/) | The GraphQL API extends the schema of `graphql-dxm-provider` with the fields and the mutations of the module. |
 | Render filter: [`render/`](../../src/main/java/org/jahia/pm/modules/opengraphschemaorgmetadata/render/) | The render filter writes the tags and the JSON-LD block of the main resource before the first `</head>` of a live or a preview page. |
-| UI registration: [`init.tsx`](../../src/javascript/init.tsx), [`appShellRemotes.ts`](../../src/javascript/appShellRemotes.ts) | The UI registration adds the admin route and the selector types of the module to the registry of jContent. |
-| Mapping screen: [`open-graph-settings/`](../../src/javascript/open-graph-settings/) | The mapping screen lists the mappings of a site, and opens the Content Editor to create or edit one. |
+| UI registration: [`init.tsx`](../../src/javascript/init.tsx), [`appShellRemotes.ts`](../../src/javascript/appShellRemotes.ts) | The UI registration adds the admin route, the selector types and the handler `osmSourceChoices` of the module to the registry of jContent. |
+| Mapping screen: [`open-graph-settings/`](../../src/javascript/open-graph-settings/) | The mapping screen lists the mappings of a site, and opens the Content Editor to create or edit one. Its handler `osmSourceChoices` fills the source fields of the form when the content type changes. |
 | Content Editor extensions: [`open-graph-preview/`](../../src/javascript/open-graph-preview/), [`schema-org-preview/`](../../src/javascript/schema-org-preview/), [`editor-tags/`](../../src/javascript/editor-tags/), [`fieldSets.ts`](../../src/javascript/fieldSets.ts) | The Content Editor extensions show the values of a content and edit its custom values in the SEO section. |
 
 ### Content model
@@ -75,6 +76,7 @@ types of `graphql-dxm-provider`. `OpenGraphSchemaOrgMetadataExtensionsProvider` 
 | `openGraphVocabulary` | `Query` | None | The og:types and the schema.org types, and the kind of each property. |
 | `openGraphMappings` | `JCRNode`, on a site node | `openGraphSchemaOrgMetadataManage` on the site | The mappings of the site. |
 | `openGraphSourceProperties(nodeType, language)` | `JCRNode`, on a site node | `openGraphSchemaOrgMetadataManage` on the site | The properties of a content type that can fill a property, with their kinds. |
+| `openGraphSourceChoices(nodeType, language)` | `JCRNode`, on a site node | `openGraphSchemaOrgMetadataManage` on the site | The choices of every source field of a mapping of the content type, as the choice list `osmSourceProperties` lists them. |
 | `openGraphTags(language)` | `JCRNode` | Read access to the node | The Open Graph tags of the node. A node value is a path in `nodePath`. |
 | `schemaOrgJsonLd(language)` | `JCRNode` | Read access to the node | The JSON-LD text of the node, with `{"nodePath": "<path>"}` in place of each live URL. |
 | `createOpenGraphSettings` | `JCRNodeMutation`, on a site node | `openGraphSchemaOrgMetadataManage` on the site | The path of the settings node, which the mutation creates when it does not exist. |

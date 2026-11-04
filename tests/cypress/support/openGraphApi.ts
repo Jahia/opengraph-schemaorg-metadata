@@ -37,6 +37,7 @@ export type SourceProperty = {
     declaringType: string;
     compatibleOgKinds: string[];
 };
+export type SourceChoices = {property: string; choices: {value: string; label: string}[]};
 export type OgVocabulary = {
     ogTypes: {name: string; properties: {name: string; kind: string; multiple: boolean}[]}[];
 };
@@ -99,6 +100,13 @@ export const getMappingTargets = ({user, path = SITE_PATH}: Scope = {}) =>
 export const getSourceProperties = (nodeType: string, {user, path = SITE_PATH}: Scope = {}) =>
     run<NodeData<{openGraphSourceProperties: SourceProperty[] | null}>>(
         {queryFile: `${FIXTURES}/sourceProperties.graphql`, variables: {path, nodeType, language: 'en'}},
+        user
+    );
+
+// The choices of every source field of a mapping, as the form of a mapping lists them.
+export const getSourceChoices = (nodeType: string, {user, path = SITE_PATH}: Scope = {}) =>
+    run<NodeData<{openGraphSourceChoices: SourceChoices[] | null}>>(
+        {queryFile: `${FIXTURES}/sourceChoices.graphql`, variables: {path, nodeType, language: 'en'}},
         user
     );
 

@@ -32,6 +32,7 @@ import {
     openScreen,
     propertiesText,
     readOnlyDropdown,
+    recordListQueries,
     save,
     SCHEMA_ORG,
     SCHEMA_TYPE_FIELD,
@@ -150,6 +151,32 @@ describe('Open Graph & schema.org mapping screen', () => {
             chooseSources([DESCRIPTION]);
             save();
             mappingRow(NEWS_TYPE).should('contain.text', propertiesText([TITLE, DESCRIPTION, PUBLISHED]));
+        });
+
+        it('fills the source lists with one query per content type, and with none when the form of a mapping opens', () => {
+            const queries = recordListQueries();
+            // The field osm:templateName still depends on osm:nodeType, so its fieldConstraints query is not counted.
+            const sourceFieldQueries = () => queries.fieldConstraints.filter(name => name !== 'osm:templateName');
+
+            cy.get(ADD_MAPPING).click();
+            choose(NODE_TYPE_FIELD, PAGE_TYPE);
+            switchFieldSet(OPEN_GRAPH, true);
+            openDropdown(sourceField(TITLE.ogProperty));
+            cy.get(menuItem('jcr:title')).click();
+            cy.wrap(queries).should(() => {
+                expect(queries.sourceChoices, 'openGraphSchemaOrgMetadataSourceChoices').to.equal(1);
+                expect(sourceFieldQueries(), 'fieldConstraints of a source field').to.be.empty;
+            });
+            cancelAndDiscard();
+
+            mappingRow(NEWS_TYPE).find(EDIT).click();
+            openDropdown(sourceField(TITLE.ogProperty));
+            cy.get(menuItem(TITLE.sourceProperty)).click();
+            cy.wrap(queries).should(() => {
+                expect(queries.sourceChoices, 'openGraphSchemaOrgMetadataSourceChoices').to.equal(1);
+                expect(sourceFieldQueries(), 'fieldConstraints of a source field').to.be.empty;
+            });
+            close();
         });
 
         it('returns the same mapping from openGraphMappings', () => {

@@ -5,6 +5,7 @@ import {
     expectError,
     expectNoError,
     getMappings,
+    getSourceChoices,
     getSourceProperties,
     getStoredMapping,
     getTags,
@@ -223,6 +224,26 @@ describe('Open Graph & schema.org mapping API', () => {
                         'INTEGER'
                     );
                 });
+        });
+    });
+
+    it('lists the choices of every source field of a mapping of jnt:news, as the form filters them', () => {
+        getSourceChoices(NEWS_TYPE).then(result => {
+            expectNoError(result);
+            const fields = result.data.jcr.nodeByPath.openGraphSourceChoices;
+            const choices = Object.fromEntries(
+                fields.map(field => [field.property, Cypress._.map(field.choices, 'value')])
+            );
+            const labels = Object.fromEntries(
+                Cypress._.flatMap(fields, 'choices').map(choice => [choice.value, choice.label])
+            );
+            expect(choices['osm:og_title']).to.include('jcr:title');
+            expect(choices['osm:og_title'], 'a text with one value takes no list').not.to.include('j:tagList');
+            expect(choices['osm:article_tag']).to.include('j:tagList');
+            expect(choices['osm:og_image'], 'sorted by label').to.deep.equal(['image', 'openGraphImage']);
+            expect(choices['osm:article_published_time']).to.include('date').and.not.to.include('jcr:title');
+            expect(choices['osm:schema_headline']).to.include('jcr:title');
+            expect(labels['jcr:title']).to.equal('News Title (jcr:title)');
         });
     });
 
@@ -524,6 +545,7 @@ describe('Open Graph & schema.org mapping API', () => {
         it('denies every mapping field to the editor', () => {
             getMappings({user: EDITOR}).then(expectError(PERMISSION));
             getSourceProperties(NEWS_TYPE, {user: EDITOR}).then(expectError(PERMISSION));
+            getSourceChoices(NEWS_TYPE, {user: EDITOR}).then(expectError(PERMISSION));
             saveMapping(ARTICLE_MAPPING, {user: EDITOR}).then(expectError(PERMISSION));
             deleteMapping(NEWS_TYPE, {user: EDITOR}).then(expectError(PERMISSION));
             expectMappings([]);

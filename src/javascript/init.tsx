@@ -7,7 +7,10 @@ import { i18n, NAMESPACE } from "./i18n.ts";
 import ChoiceList from "./open-graph-settings/ChoiceList.tsx";
 import type { TemplateFieldProps } from "./open-graph-settings/TemplateField.tsx";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
+import type { EditorField, OnChangeContext } from "./open-graph-settings/sourceChoices.ts";
 import type { SchemaPreviewProps } from "./schema-org-preview/SchemaPreview.tsx";
+
+const NODE_TYPE_PROPERTY = "osm:nodeType";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
 // The preview needs the federated module of jContent. If it does not load, the Content Editor shows an empty field.
@@ -94,6 +97,19 @@ export default function registerOpenGraphSchemaOrgMetadata() {
       // The field osm:templateName of the mapping form, which the forms file of osmnt:typeMapping sets. The Content Editor
       // checks the value of a selector type whose name holds "choicelist" against its values, and not as a pattern.
       registry.add("selectorType", "OsmTemplateChoicelist", { cmp: TemplateFieldSelector, supportMultiple: false });
+
+      // The source fields of a mapping declare no dependentProperties, so this handler fills their lists when the
+      // content type of the mapping changes. jContent calls it with undefined when the field unmounts.
+      registry.add("selectorType.onChange", "osmSourceChoices", {
+        targets: ["Choicelist"],
+        onChange: (_previousValue: unknown, currentValue: unknown, field: EditorField, context: OnChangeContext) => {
+          if (field.propertyName === NODE_TYPE_PROPERTY && currentValue !== undefined) {
+            import("./open-graph-settings/sourceChoices.ts")
+              .then(({ followNodeType }) => followNodeType(currentValue, field, context))
+              .catch(console.error);
+          }
+        },
+      });
     },
   });
 }

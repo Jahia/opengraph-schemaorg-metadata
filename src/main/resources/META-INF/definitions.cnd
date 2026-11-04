@@ -13,23 +13,25 @@
  - osm:templateName (string, choicelist[osmTemplates,dependentProperties='osm:nodeType']) = '*' mandatory
 
 // Each osm:og_* property holds the name of the source property that fills one Open Graph property of every og:type.
+// A source field declares no dependentProperties: the handler osmSourceChoices of init.tsx fills every source list
+// with one query when osm:nodeType changes (docs/architecture/06_runtime_view.md).
 [osmmix:openGraph] mixin
  extends = osmnt:typeMapping
- - osm:og_title (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_determiner (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_image_secure_url (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_image_alt (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_audio (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_audio_secure_url (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_audio_type (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video_secure_url (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video_type (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video_width (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video_height (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:og_video_alt (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:og_title (string, choicelist[osmSourceProperties])
+ - osm:og_description (string, choicelist[osmSourceProperties])
+ - osm:og_determiner (string, choicelist[osmSourceProperties])
+ - osm:og_image (string, choicelist[osmSourceProperties])
+ - osm:og_image_secure_url (string, choicelist[osmSourceProperties])
+ - osm:og_image_alt (string, choicelist[osmSourceProperties])
+ - osm:og_audio (string, choicelist[osmSourceProperties])
+ - osm:og_audio_secure_url (string, choicelist[osmSourceProperties])
+ - osm:og_audio_type (string, choicelist[osmSourceProperties])
+ - osm:og_video (string, choicelist[osmSourceProperties])
+ - osm:og_video_secure_url (string, choicelist[osmSourceProperties])
+ - osm:og_video_type (string, choicelist[osmSourceProperties])
+ - osm:og_video_width (string, choicelist[osmSourceProperties])
+ - osm:og_video_height (string, choicelist[osmSourceProperties])
+ - osm:og_video_alt (string, choicelist[osmSourceProperties])
  - osm:ogType (string, choicelist[osmOgTypes]) = 'website' mandatory < 'website', 'article', 'book', 'profile', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'video.movie', 'video.episode', 'video.tv_show', 'video.other'
 
 // The value of osm:schemaType adds the mixin of its schema.org properties.
@@ -40,19 +42,19 @@
 // The value of osm:ogType adds the mixin of its own Open Graph properties.
 [osmmix:article] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:article_published_time (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:article_modified_time (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:article_expiration_time (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:article_author (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:article_section (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:article_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:article_published_time (string, choicelist[osmSourceProperties])
+ - osm:article_modified_time (string, choicelist[osmSourceProperties])
+ - osm:article_expiration_time (string, choicelist[osmSourceProperties])
+ - osm:article_author (string, choicelist[osmSourceProperties])
+ - osm:article_section (string, choicelist[osmSourceProperties])
+ - osm:article_tag (string, choicelist[osmSourceProperties])
 
 [osmmix:book] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:book_author (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:book_isbn (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:book_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:book_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:book_author (string, choicelist[osmSourceProperties])
+ - osm:book_isbn (string, choicelist[osmSourceProperties])
+ - osm:book_release_date (string, choicelist[osmSourceProperties])
+ - osm:book_tag (string, choicelist[osmSourceProperties])
 
 // Each value is a JSON object that sets one Open Graph tag, such as {"property":"og:title","content":"Summer in Mykonos"}.
 // An image holds the identifier of its file instead, such as {"property":"og:image","node":"<uuid>"}.
@@ -72,169 +74,169 @@
 // A mapping carries one of these mixins at a time, because the JCR refuses two declarations of one name on a node.
 [osmmix:musicAlbum] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:music_song (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_song_disc (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_song_track (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_musician (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:music_song (string, choicelist[osmSourceProperties])
+ - osm:music_song_disc (string, choicelist[osmSourceProperties])
+ - osm:music_song_track (string, choicelist[osmSourceProperties])
+ - osm:music_musician (string, choicelist[osmSourceProperties])
+ - osm:music_release_date (string, choicelist[osmSourceProperties])
 
 [osmmix:musicPlaylist] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:music_song (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_song_disc (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_song_track (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_creator (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:music_song (string, choicelist[osmSourceProperties])
+ - osm:music_song_disc (string, choicelist[osmSourceProperties])
+ - osm:music_song_track (string, choicelist[osmSourceProperties])
+ - osm:music_creator (string, choicelist[osmSourceProperties])
 
 [osmmix:musicRadioStation] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:music_creator (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:music_creator (string, choicelist[osmSourceProperties])
 
 [osmmix:musicSong] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:music_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_album (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_album_disc (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_album_track (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:music_musician (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:music_duration (string, choicelist[osmSourceProperties])
+ - osm:music_album (string, choicelist[osmSourceProperties])
+ - osm:music_album_disc (string, choicelist[osmSourceProperties])
+ - osm:music_album_track (string, choicelist[osmSourceProperties])
+ - osm:music_musician (string, choicelist[osmSourceProperties])
 
 [osmmix:profile] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:profile_first_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:profile_last_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:profile_username (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:profile_gender (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:profile_first_name (string, choicelist[osmSourceProperties])
+ - osm:profile_last_name (string, choicelist[osmSourceProperties])
+ - osm:profile_username (string, choicelist[osmSourceProperties])
+ - osm:profile_gender (string, choicelist[osmSourceProperties])
 
 // Each osm:schema_* property holds the name of the source property that fills one schema.org property, such as
 // osm:schema_author_name for author.name, the name of the Person of the author.
 // Two mixins that share a schema.org property declare the same storage name, as the mixins of the og:types do.
 [osmmix:schemaArticle] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_headline (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_datePublished (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateModified (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_author_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_headline (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_datePublished (string, choicelist[osmSourceProperties])
+ - osm:schema_dateModified (string, choicelist[osmSourceProperties])
+ - osm:schema_author_name (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaNewsArticle] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_headline (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_datePublished (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateModified (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_author_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_headline (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_datePublished (string, choicelist[osmSourceProperties])
+ - osm:schema_dateModified (string, choicelist[osmSourceProperties])
+ - osm:schema_author_name (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaBlogPosting] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_headline (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_datePublished (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateModified (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_author_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_headline (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_datePublished (string, choicelist[osmSourceProperties])
+ - osm:schema_dateModified (string, choicelist[osmSourceProperties])
+ - osm:schema_author_name (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaWebPage] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_datePublished (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateModified (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_name (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_datePublished (string, choicelist[osmSourceProperties])
+ - osm:schema_dateModified (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaProfilePage] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_mainEntity_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_mainEntity_alternateName (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_mainEntity_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_mainEntity_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateCreated (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_dateModified (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_mainEntity_name (string, choicelist[osmSourceProperties])
+ - osm:schema_mainEntity_alternateName (string, choicelist[osmSourceProperties])
+ - osm:schema_mainEntity_description (string, choicelist[osmSourceProperties])
+ - osm:schema_mainEntity_image (string, choicelist[osmSourceProperties])
+ - osm:schema_dateCreated (string, choicelist[osmSourceProperties])
+ - osm:schema_dateModified (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaProduct] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_sku (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_brand_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_offers_price (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_offers_priceCurrency (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_name (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_sku (string, choicelist[osmSourceProperties])
+ - osm:schema_brand_name (string, choicelist[osmSourceProperties])
+ - osm:schema_offers_price (string, choicelist[osmSourceProperties])
+ - osm:schema_offers_priceCurrency (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaEvent] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_startDate (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_endDate (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_location_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_location_address (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_organizer_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_name (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_startDate (string, choicelist[osmSourceProperties])
+ - osm:schema_endDate (string, choicelist[osmSourceProperties])
+ - osm:schema_location_name (string, choicelist[osmSourceProperties])
+ - osm:schema_location_address (string, choicelist[osmSourceProperties])
+ - osm:schema_organizer_name (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaRecipe] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_image (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_author_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_datePublished (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_prepTime (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_cookTime (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_totalTime (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_recipeYield (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_recipeCategory (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_recipeCuisine (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_recipeIngredient (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_recipeInstructions (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_name (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_image (string, choicelist[osmSourceProperties])
+ - osm:schema_author_name (string, choicelist[osmSourceProperties])
+ - osm:schema_datePublished (string, choicelist[osmSourceProperties])
+ - osm:schema_prepTime (string, choicelist[osmSourceProperties])
+ - osm:schema_cookTime (string, choicelist[osmSourceProperties])
+ - osm:schema_totalTime (string, choicelist[osmSourceProperties])
+ - osm:schema_recipeYield (string, choicelist[osmSourceProperties])
+ - osm:schema_recipeCategory (string, choicelist[osmSourceProperties])
+ - osm:schema_recipeCuisine (string, choicelist[osmSourceProperties])
+ - osm:schema_recipeIngredient (string, choicelist[osmSourceProperties])
+ - osm:schema_recipeInstructions (string, choicelist[osmSourceProperties])
 
 [osmmix:schemaVideoObject] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:schema_name (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_description (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_thumbnailUrl (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_uploadDate (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_contentUrl (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:schema_embedUrl (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:schema_name (string, choicelist[osmSourceProperties])
+ - osm:schema_description (string, choicelist[osmSourceProperties])
+ - osm:schema_thumbnailUrl (string, choicelist[osmSourceProperties])
+ - osm:schema_uploadDate (string, choicelist[osmSourceProperties])
+ - osm:schema_duration (string, choicelist[osmSourceProperties])
+ - osm:schema_contentUrl (string, choicelist[osmSourceProperties])
+ - osm:schema_embedUrl (string, choicelist[osmSourceProperties])
 
 [osmmix:videoEpisode] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:video_actor (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_actor_role (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_director (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_writer (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_series (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:video_actor (string, choicelist[osmSourceProperties])
+ - osm:video_actor_role (string, choicelist[osmSourceProperties])
+ - osm:video_director (string, choicelist[osmSourceProperties])
+ - osm:video_writer (string, choicelist[osmSourceProperties])
+ - osm:video_duration (string, choicelist[osmSourceProperties])
+ - osm:video_release_date (string, choicelist[osmSourceProperties])
+ - osm:video_tag (string, choicelist[osmSourceProperties])
+ - osm:video_series (string, choicelist[osmSourceProperties])
 
 [osmmix:videoMovie] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:video_actor (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_actor_role (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_director (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_writer (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:video_actor (string, choicelist[osmSourceProperties])
+ - osm:video_actor_role (string, choicelist[osmSourceProperties])
+ - osm:video_director (string, choicelist[osmSourceProperties])
+ - osm:video_writer (string, choicelist[osmSourceProperties])
+ - osm:video_duration (string, choicelist[osmSourceProperties])
+ - osm:video_release_date (string, choicelist[osmSourceProperties])
+ - osm:video_tag (string, choicelist[osmSourceProperties])
 
 [osmmix:videoOther] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:video_actor (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_actor_role (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_director (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_writer (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:video_actor (string, choicelist[osmSourceProperties])
+ - osm:video_actor_role (string, choicelist[osmSourceProperties])
+ - osm:video_director (string, choicelist[osmSourceProperties])
+ - osm:video_writer (string, choicelist[osmSourceProperties])
+ - osm:video_duration (string, choicelist[osmSourceProperties])
+ - osm:video_release_date (string, choicelist[osmSourceProperties])
+ - osm:video_tag (string, choicelist[osmSourceProperties])
 
 [osmmix:videoTvShow] > jmix:dynamicFieldset mixin
  extends = osmnt:typeMapping
- - osm:video_actor (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_actor_role (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_director (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_writer (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_duration (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_release_date (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
- - osm:video_tag (string, choicelist[osmSourceProperties,dependentProperties='osm:nodeType'])
+ - osm:video_actor (string, choicelist[osmSourceProperties])
+ - osm:video_actor_role (string, choicelist[osmSourceProperties])
+ - osm:video_director (string, choicelist[osmSourceProperties])
+ - osm:video_writer (string, choicelist[osmSourceProperties])
+ - osm:video_duration (string, choicelist[osmSourceProperties])
+ - osm:video_release_date (string, choicelist[osmSourceProperties])
+ - osm:video_tag (string, choicelist[osmSourceProperties])
