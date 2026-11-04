@@ -75,7 +75,7 @@ public class TemplatesInitializer implements ModuleChoiceListInitializer {
     }
 
     /**
-     * @return the templates of the content type, or none for a mixin or a type without {@code j:templateName}
+     * @return the templates of the content type, or none for a mixin
      */
     private Map<String, String> templates(JCRSiteNode site, String nodeType, Locale locale) {
         try {

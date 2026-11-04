@@ -3,7 +3,7 @@
 | Term | Definition |
 |---|---|
 | Mapping | A node of type `osmnt:typeMapping` that maps a content type or a mixin to an og:type, to a schema.org type, or to both. |
-| Template mapping | A mapping whose `osm:templateName` names one template. It applies only to the contents that use that template. |
+| Template mapping | A mapping whose `osm:templateName` names one template. It applies only to the contents that use that template: the pages and the contents whose `j:templateName` names it, and the main resources that this content template renders. |
 | Settings node | The node `/sites/<siteKey>/opengraph-schemaorg-metadata` of type `osmnt:settings`, which holds the mappings of a site. |
 | Source property | A property of a content type whose value fills a property of a vocabulary, such as `jcr:title` for `og:title`. |
 | Storage name | The name of the property of a mapping node that holds the source of one target property, such as `osm:og_image_alt`. |

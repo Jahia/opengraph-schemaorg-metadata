@@ -118,7 +118,7 @@ order of `specPattern` in [`tests/cypress.config.ts`](../../tests/cypress.config
 | `3FilterPreview.cy.ts` | The Open Graph tags and the JSON-LD block in the head of a preview page, with the live URLs. |
 | `5AdminScreen.cy.ts` | The mapping screen, as a site administrator and as an editor in chief. |
 | `6EditorField.cy.ts`, `7EditorTags.cy.ts`, `8ShareCard.cy.ts` | The Open Graph values, the custom tags and the share card in the Content Editor. |
-| `8MixinTemplate.cy.ts` | The mappings of a mixin and of a template. |
+| `8MixinTemplate.cy.ts` | The mappings of a mixin and of a template, for a page and for a main resource. |
 | `9SchemaOrg.cy.ts`, `9SchemaOrgEditor.cy.ts` | The JSON-LD block in the head, and the schema.org fieldsets of the Content Editor. |
 
 The helpers of [`tests/cypress/support/`](../../tests/cypress/support/) wrap the GraphQL calls, the mapping screen, the

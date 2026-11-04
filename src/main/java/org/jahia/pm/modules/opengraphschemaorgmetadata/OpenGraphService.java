@@ -1,6 +1,7 @@
 package org.jahia.pm.modules.opengraphschemaorgmetadata;
 
 import org.jahia.api.Constants;
+import org.jahia.bin.Render;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgKind;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgProperty;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.vocabulary.OgType;
@@ -22,9 +23,15 @@ import org.jahia.services.content.nodetypes.SelectorType;
 import org.jahia.services.content.nodetypes.initializers.ChoiceListInitializer;
 import org.jahia.services.content.nodetypes.initializers.ChoiceListInitializerService;
 import org.jahia.services.content.nodetypes.initializers.ChoiceListValue;
+import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.RenderService;
+import org.jahia.services.render.Resource;
+import org.jahia.services.render.Template;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PropertyType;
@@ -66,6 +73,8 @@ public class OpenGraphService {
      * The value of {@code osm:templateName} for a mapping of every template.
      */
     public static final String ALL_TEMPLATES = "*";
+
+    private static final Logger logger = LoggerFactory.getLogger(OpenGraphService.class);
 
     private static final String SETTINGS_TYPE = "osmnt:settings";
     private static final String TYPE_MAPPING_TYPE = "osmnt:typeMapping";
@@ -118,6 +127,7 @@ public class OpenGraphService {
     private static final String HAS_TEMPLATE_MIXIN = "jmix:hasTemplateNode";
     private static final String TEMPLATE_NAME_PROPERTY = "j:templateName";
     private static final String TEMPLATES_INITIALIZER = "templatesNode";
+    private static final String HTML = "html";
     private static final String MODULE_ID = "opengraph-schemaorg-metadata";
     private static final String FILE_TYPE = "jnt:file";
     private static final String IMAGE_MIXIN = "jmix:image";
@@ -496,15 +506,21 @@ public class OpenGraphService {
     }
 
     /**
-     * @return true when a template mapping can use the type: a content type, not a mixin, with {@code j:templateName}
+     * A page, or a content with {@code j:templateName}, stores its template. A main resource without it takes the
+     * content template that Jahia resolves for it when it renders the content as a page.
+     *
+     * @return true when a template mapping can use the type: a content type, not a mixin, that is a page, a main
+     * resource or has {@code j:templateName}
      */
     public static boolean hasTemplates(ExtendedNodeType type) {
-        return !type.isMixin() && type.isNodeType(HAS_TEMPLATE_MIXIN);
+        return !type.isMixin() && (type.isNodeType(HAS_TEMPLATE_MIXIN) || type.isNodeType(MAIN_RESOURCE_TYPE));
     }
 
     /**
      * Lists the templates that a template mapping of the content type can use. The list comes from the choice list of
-     * {@code j:templateName}, so it holds the templates of the template set and of the modules of the site.
+     * {@code j:templateName}, so it holds the templates of the template set and of the modules of the site: the page
+     * templates of a page, and the content templates that apply to the type of a main resource. A JavaScript module
+     * adds its own templates to this choice list.
      *
      * @return the display name of each template, by name, in the order of the choice list
      * @throws InvalidMappingException when the site cannot map the content type, or when the type has no template
@@ -512,15 +528,15 @@ public class OpenGraphService {
     public Map<String, String> getTemplates(JCRSiteNode site, String nodeType, Locale locale) throws InvalidMappingException {
         ExtendedNodeType type = mappableType(site, nodeType);
         if (!hasTemplates(type)) {
-            throw new InvalidMappingException("The content type '" + nodeType + "' has no " + TEMPLATE_NAME_PROPERTY
-                    + ", so a template mapping cannot use it");
+            throw new InvalidMappingException("The content type '" + nodeType + "' is not a page or a main resource and has no "
+                    + TEMPLATE_NAME_PROPERTY + ", so a template mapping cannot use it");
         }
         ChoiceListInitializer initializer = ChoiceListInitializerService.getInstance().getInitializers().get(TEMPLATES_INITIALIZER);
-        ExtendedPropertyDefinition definition = type.getPropertyDefinitionsAsMap().get(TEMPLATE_NAME_PROPERTY);
+        ExtendedPropertyDefinition definition = templateNameDefinition(type);
         if (initializer == null || definition == null) {
             return Collections.emptyMap();
         }
-        // The context of the creation form of a page: the choice list reads the site of the parent node.
+        // The context of the creation form of a content of the type: the choice list reads the site of the parent node.
         Map<String, Object> context = new HashMap<>();
         context.put("contextType", type);
         context.put("contextParent", site);
@@ -537,6 +553,24 @@ public class OpenGraphService {
             }
         }
         return templates;
+    }
+
+    /**
+     * A main resource without {@code j:templateName} takes the definition of {@code jmix:hasTemplateNode}, so the choice
+     * list gives the names of the content templates that apply to its type.
+     *
+     * @return the definition of {@code j:templateName} that the choice list of the templates of the type reads
+     */
+    private static ExtendedPropertyDefinition templateNameDefinition(ExtendedNodeType type) {
+        ExtendedPropertyDefinition definition = type.getPropertyDefinitionsAsMap().get(TEMPLATE_NAME_PROPERTY);
+        if (definition != null) {
+            return definition;
+        }
+        try {
+            return NodeTypeRegistry.getInstance().getNodeType(HAS_TEMPLATE_MIXIN).getPropertyDefinitionsAsMap().get(TEMPLATE_NAME_PROPERTY);
+        } catch (NoSuchNodeTypeException e) {
+            return null;
+        }
     }
 
     private static String stringValue(ChoiceListValue value) {
@@ -647,15 +681,16 @@ public class OpenGraphService {
      * The last tag is {@code twitter:card}, because X has no Open Graph fallback for it: {@code summary_large_image}
      * when the tags include {@code og:image}, else {@code summary}.
      *
+     * @param renderContext the render of the node as the main resource of a page, or null outside a render
      * @return the tags, or an empty list when no mapping applies to the node
      */
-    public List<OgTag> resolve(JCRNodeWrapper node, Locale locale) throws RepositoryException {
+    public List<OgTag> resolve(JCRNodeWrapper node, Locale locale, RenderContext renderContext) throws RepositoryException {
         JCRSiteNode site = node.getResolveSite();
         if (site == null) {
             return Collections.emptyList();
         }
         JCRNodeWrapper localized = inLocale(node, locale);
-        TypeMapping mapping = findMapping(getMappings(site), localized);
+        TypeMapping mapping = findMapping(getMappings(site), localized, renderContext);
         OgType ogType = mapping == null ? null : OgType.fromValue(mapping.getOgType()).orElse(null);
         if (ogType == null) {
             return Collections.emptyList();
@@ -685,15 +720,17 @@ public class OpenGraphService {
      * {@link #findMapping} selects as for the Open Graph tags. {@link SchemaOrgEntity#of} states the content of the
      * entity, and the caller builds the absolute URL of each node in it.
      *
+     * @param renderContext the render of the node as the main resource of a page, or null outside a render
      * @return the entity, or an empty map when no mapping applies to the node or when its mapping has no schema.org type
      */
-    public Map<String, Object> resolveSchemaOrg(JCRNodeWrapper node, Locale locale) throws RepositoryException {
+    public Map<String, Object> resolveSchemaOrg(JCRNodeWrapper node, Locale locale, RenderContext renderContext)
+            throws RepositoryException {
         JCRSiteNode site = node.getResolveSite();
         if (site == null) {
             return Collections.emptyMap();
         }
         JCRNodeWrapper localized = inLocale(node, locale);
-        TypeMapping mapping = findMapping(getMappings(site), localized);
+        TypeMapping mapping = findMapping(getMappings(site), localized, renderContext);
         SchemaType schemaType = mapping == null || mapping.getSchemaType() == null ? null
                 : SchemaType.fromValue(mapping.getSchemaType()).orElse(null);
         if (schemaType == null) {
@@ -1069,23 +1106,15 @@ public class OpenGraphService {
     }
 
     /**
-     * Selects the mapping of a node. The template mappings for the {@code j:templateName} of the node come first, then
-     * the mappings of every template. In each group, a mixin of the node comes first, in the order of the list, then
-     * the primary type, then the closest supertype.
+     * Selects the mapping of a node. The template mappings for the template of the node come first, then the mappings
+     * of every template. In each group, a mixin of the node comes first, in the order of the list, then the primary
+     * type, then the closest supertype. {@link #templateOf} gives the template of the node, and runs only when a
+     * template mapping exists for the type of the node.
      *
      * @return the mapping, or null when no mapping applies to the node
      */
-    private static TypeMapping findMapping(List<TypeMapping> mappings, JCRNodeWrapper node) throws RepositoryException {
-        String templateName = node.getPropertyAsString(TEMPLATE_NAME_PROPERTY);
-        List<TypeMapping> ofTemplate = new ArrayList<>();
-        List<TypeMapping> ofEveryTemplate = new ArrayList<>();
-        for (TypeMapping mapping : mappings) {
-            if (mapping.getTemplateName() == null) {
-                ofEveryTemplate.add(mapping);
-            } else if (mapping.getTemplateName().equals(templateName)) {
-                ofTemplate.add(mapping);
-            }
-        }
+    private static TypeMapping findMapping(List<TypeMapping> mappings, JCRNodeWrapper node, RenderContext renderContext)
+            throws RepositoryException {
         List<String> types = new ArrayList<>();
         types.add(node.getPrimaryNodeType().getName());
         for (ExtendedNodeType supertype : node.getPrimaryNodeType().getSupertypes()) {
@@ -1098,8 +1127,67 @@ public class OpenGraphService {
                 mixins.add(supertype.getName());
             }
         }
-        TypeMapping mapping = findTypeMapping(ofTemplate, types, mixins);
-        return mapping == null ? findTypeMapping(ofEveryTemplate, types, mixins) : mapping;
+        // A template mapping maps a content type, never a mixin.
+        List<TypeMapping> ofTypeTemplates = new ArrayList<>();
+        List<TypeMapping> ofEveryTemplate = new ArrayList<>();
+        for (TypeMapping mapping : mappings) {
+            if (mapping.getTemplateName() == null) {
+                ofEveryTemplate.add(mapping);
+            } else if (types.contains(mapping.getNodeType())) {
+                ofTypeTemplates.add(mapping);
+            }
+        }
+        if (!ofTypeTemplates.isEmpty()) {
+            String templateName = templateOf(node, renderContext);
+            List<TypeMapping> ofTemplate = ofTypeTemplates.stream()
+                    .filter(mapping -> mapping.getTemplateName().equals(templateName)).collect(Collectors.toList());
+            TypeMapping mapping = findTypeMapping(ofTemplate, types, mixins);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return findTypeMapping(ofEveryTemplate, types, mixins);
+    }
+
+    /**
+     * A page, or a content with {@code j:templateName}, stores its template. Jahia resolves the content template of a
+     * main resource without it from the templates that apply to its type: the default one of the highest priority, or
+     * the one that the URL names. Outside a render, the method resolves the template of the default URL of the node in
+     * live, as jContent does to tell whether a node can display as a page.
+     *
+     * @param renderContext the render of the node as the main resource of a page, or null outside a render
+     * @return the template of the node, or null when it has none
+     */
+    private static String templateOf(JCRNodeWrapper node, RenderContext renderContext) throws RepositoryException {
+        String stored = node.getPropertyAsString(TEMPLATE_NAME_PROPERTY);
+        if (stored != null || !node.isNodeType(MAIN_RESOURCE_TYPE)) {
+            return stored;
+        }
+        RenderContext context = renderContext;
+        if (context == null) {
+            context = new RenderContext(null, null, node.getSession().getUser());
+            context.setMainResource(new Resource(node, HTML, null, Resource.CONFIGURATION_PAGE));
+            context.setServletPath(Render.getRenderServletPath() + "/" + Constants.LIVE_WORKSPACE);
+        }
+        Template template;
+        try {
+            template = RenderService.getInstance().resolveTemplate(context.getMainResource(), context);
+        } catch (RepositoryException | RuntimeException e) {
+            logger.debug("Cannot resolve the template of {}", node.getPath(), e);
+            return null;
+        }
+        if (template == null) {
+            return null;
+        }
+        // A template of a JavaScript module is a view, whose key is the name of the template.
+        if (template.isExternal()) {
+            return template.getView();
+        }
+        // The chain of a template node starts at the root template and ends with the template of the content.
+        while (template.getNext() != null) {
+            template = template.getNext();
+        }
+        return template.getName();
     }
 
     /**
