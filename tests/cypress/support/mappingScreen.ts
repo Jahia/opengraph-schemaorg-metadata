@@ -135,7 +135,9 @@ export const cancelAndDiscard = () => {
     cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
 };
 
+// The Content Editor enables Save once the publication info of the node has loaded. In the form of a mapping, that query
+// comes after one fieldConstraints query for each source field, which a slow server answers in more than 10 s.
 export const save = () => {
-    cy.get(SAVE).click();
+    cy.get(SAVE, {timeout: LOAD_TIMEOUT}).should('be.enabled').click({timeout: LOAD_TIMEOUT});
     cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
 };
