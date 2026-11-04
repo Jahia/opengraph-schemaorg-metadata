@@ -1,9 +1,9 @@
 # Introduction and Goals
 
-Open Graph & Schema.org Metadata is a Jahia module. It writes Open Graph meta tags and a schema.org JSON-LD block in
-the head of a live page. A site administrator maps a content type to an og:type and to a schema.org type. The mapping
-also names the property of the content type that fills each property of a vocabulary. An editor sees the resulting
-values in the Content Editor, and can replace them for one content.
+Open Graph & Schema.org Metadata is a Jahia module. It writes Open Graph meta tags and a schema.org JSON-LD block in the
+head of a live page and of a preview page. A site administrator maps a content type to an og:type and to a schema.org
+type. The mapping also names the property of the content type that fills each property of a vocabulary. An editor sees
+the resulting values in the Content Editor, and can replace them for one content.
 
 The module is not meant for a site whose templates already write Open Graph tags or schema.org values. The render
 filter adds its tags before the first `</head>`, and it does not read the tags that the template wrote. A page of such
@@ -18,7 +18,7 @@ its own values.
 | A mapping applies to `jnt:page`, to a type that inherits `jmix:mainResource`, or to a mixin that extends one of them. | Mapping service |
 | A template mapping applies only to the contents of its type that use its template. | Mapping service |
 | A mapping switches each vocabulary on or off: Open Graph and schema.org. | Content model |
-| The head of a live page holds the `og:*` meta tags, a `twitter:card` tag and one JSON-LD block of the mapped content. | Render filter |
+| The head of a page holds the `og:*` meta tags, a `twitter:card` tag and one JSON-LD block of the mapped content. A preview page gets the tags of the live page, with the live URLs. | Render filter |
 | The SEO section of the Content Editor shows the Open Graph values, a share card and the JSON-LD block. An editor can set custom values for one content there. | Content Editor extensions |
 | A change of a mapping applies to the live pages at once, with no publication. | Content model, render filter |
 
