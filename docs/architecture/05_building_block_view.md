@@ -151,7 +151,10 @@ values load:
 
 `PropertyValue` edits one custom value with the editor of the kind of its property. An image gets the image picker, a
 date gets the date picker, and a text or a number gets a text field. `OsmTag` offers the properties of the og:type of the
-mapping, and `OsmSchemaValue` offers the properties of its schema.org type.
+mapping, and `OsmSchemaValue` offers the properties of its schema.org type. `useTagCheck` in
+[`tagCheck.ts`](../../src/javascript/editor-tags/tagCheck.ts) registers a check of the field `osm:customTags` on the
+Formik form of the Content Editor. The Content Editor runs it with its own checks, and refuses to save a date or a URL
+that the service would not write.
 
 ## Level 3
 

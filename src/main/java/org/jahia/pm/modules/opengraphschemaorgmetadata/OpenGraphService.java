@@ -1155,7 +1155,8 @@ public class OpenGraphService {
 
     /**
      * Reads the tags that the editor set in {@code osm:customTags}. The method ignores a value that is not valid
-     * JSON, or whose property the og:type does not have. A property with one value keeps the first value of the
+     * JSON, or whose property the og:type does not have. A value whose text does not fit the kind of its property,
+     * such as {@code next week} for a date, sets nothing. A property with one value keeps the first value of the
      * editor that sets a tag. A property with several values keeps a null in place of a value that sets nothing,
      * because a structured array pairs its values by index.
      *
@@ -1204,8 +1205,27 @@ public class OpenGraphService {
         if (!fileId.isEmpty()) {
             return ogProperty.getKind() == OgKind.IMAGE || ogProperty.getKind() == OgKind.URL ? fileTag(session, fileId, name) : null;
         }
-        String content = accepted(ogProperty, json.optString("content").trim());
+        String content = acceptedFromEditor(ogProperty, json.optString("content").trim());
         return content == null || content.isEmpty() ? null : OgTag.text(name, content);
+    }
+
+    /**
+     * An editor types the text of a date or of a URL, where a mapping reads a date property or a file. The selector
+     * {@code OsmTag} applies the same checks before the Content Editor saves the value.
+     *
+     * @return the text that the protocol accepts for a value of the editor, or null: a date in ISO 8601 for a date
+     * property, an absolute URL for a URL or an image property, or else what {@link #accepted} returns
+     */
+    private static String acceptedFromEditor(OgProperty ogProperty, String text) {
+        switch (ogProperty.getKind()) {
+            case DATE:
+                return OgValues.isIsoDate(text) ? text : null;
+            case URL:
+            case IMAGE:
+                return OgValues.isAbsoluteUrl(text) ? text : null;
+            default:
+                return accepted(ogProperty, text);
+        }
     }
 
     /**

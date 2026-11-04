@@ -66,7 +66,9 @@ A custom value replaces every mapped value of its property. A custom schema.org 
 mapping does not fill. The service ignores a value that is not valid JSON, whose property the type of the mapping does
 not have, or that sets nothing. A property that takes one value keeps the first valid value of the editor. For a custom
 Open Graph tag, a value of a closed list, such as `og:determiner`, must be an allowed value. An integer must be 1 or
-more.
+more. A date must be in the extended format of ISO 8601, such as `2026-10-19` or `2026-10-19T09:30:00Z`, and a URL, or
+an image that holds a text, must be an absolute `http` or `https` URL. `OgValues.isIsoDate` and `OgValues.isAbsoluteUrl`
+make these two checks, and `OsmTag` makes them again before the Content Editor saves the field.
 
 ## Output encoding
 
