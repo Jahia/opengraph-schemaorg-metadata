@@ -8,5 +8,10 @@
 3. `OsmTag` registers the check of its field through the `form` prop that the `FastField` of the Content Editor gives
    each selector. jContent does not document this prop, so a change of jContent can remove the check before the save.
    The check of the service stays.
-4. `OpenGraphService` holds the storage, the validation, the selection and the Open Graph resolution in one class of
+4. The handler `osmSourceChoices` fills the source fields of a mapping through the registry type
+   `selectorType.onChange`, and writes the `valueConstraints` of the fields of its context. jContent does not document
+   this registry type, nor the `sections`, `onSectionsUpdate`, `formik` and `client` of the context. A change of jContent
+   can stop the handler: the source fields of a new mapping then stay empty, and the form of an existing mapping keeps
+   the choices of `SourcePropertiesInitializer`.
+5. `OpenGraphService` holds the storage, the validation, the selection and the Open Graph resolution in one class of
    about 1,350 lines.

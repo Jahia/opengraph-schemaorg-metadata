@@ -10,9 +10,12 @@ import org.jahia.modules.graphql.provider.dxm.node.GqlJcrNode;
 import org.jahia.modules.graphql.provider.dxm.node.GqlJcrWrongInputException;
 import org.jahia.modules.graphql.provider.dxm.node.NodeHelper;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.InvalidMappingException;
+import org.jahia.pm.modules.opengraphschemaorgmetadata.SourceProperty;
+import org.jahia.pm.modules.opengraphschemaorgmetadata.choicelist.SourceChoices;
 import org.jahia.pm.modules.opengraphschemaorgmetadata.render.JsonLdWriter;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
+import org.jahia.services.content.nodetypes.initializers.ChoiceListValue;
 import org.jahia.utils.LanguageCodeConverters;
 
 import javax.jcr.RepositoryException;
@@ -55,6 +58,34 @@ public class OpenGraphSchemaOrgMetadataNodeExtension {
         try {
             return Resolvers.service().getSourceProperties(site, nodeType, LanguageCodeConverters.languageCodeToLocale(language))
                     .stream().map(GqlSourceProperty::new).collect(Collectors.toList());
+        } catch (InvalidMappingException e) {
+            throw new GqlJcrWrongInputException(e.getMessage(), e);
+        } catch (RepositoryException e) {
+            throw new DataFetchingException(e);
+        }
+    }
+
+    @GraphQLField
+    @GraphQLName("openGraphSourceChoices")
+    @GraphQLDescription("The choices of every field of a mapping that holds a source property, for a content type, as "
+            + "the Content Editor lists them in the form of a mapping. Call it on the site node. Requires the permission "
+            + "'openGraphSchemaOrgMetadataManage' on the site")
+    public List<GqlSourceChoices> getOpenGraphSourceChoices(
+            @GraphQLName("nodeType") @GraphQLNonNull @GraphQLDescription("The content type, such as jnt:news") String nodeType,
+            @GraphQLName("language") @GraphQLNonNull @GraphQLDescription("The language of the labels") String language) {
+        JCRSiteNode site = Resolvers.managedSite(node.getNode());
+        try {
+            List<SourceProperty> sources = Resolvers.service().getSourceProperties(site, nodeType,
+                    LanguageCodeConverters.languageCodeToLocale(language));
+            List<GqlSourceChoices> fields = new ArrayList<>();
+            for (Map.Entry<String, List<ChoiceListValue>> field : SourceChoices.ofEveryField(sources).entrySet()) {
+                List<GqlSourceChoice> choices = new ArrayList<>();
+                for (ChoiceListValue choice : field.getValue()) {
+                    choices.add(new GqlSourceChoice(choice.getValue().getString(), choice.getDisplayName()));
+                }
+                fields.add(new GqlSourceChoices(field.getKey(), choices));
+            }
+            return fields;
         } catch (InvalidMappingException e) {
             throw new GqlJcrWrongInputException(e.getMessage(), e);
         } catch (RepositoryException e) {

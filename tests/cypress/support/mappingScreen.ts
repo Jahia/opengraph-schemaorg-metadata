@@ -131,3 +131,22 @@ export const save = () => {
     cy.get(SAVE).click();
     cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('not.exist');
 };
+
+// The queries that fill the lists of a mapping form from now on: the field of each fieldConstraints query of the
+// Content Editor, and the number of openGraphSchemaOrgMetadataSourceChoices queries of the module.
+export type ListQueries = {fieldConstraints: string[]; sourceChoices: number};
+
+export const recordListQueries = (): ListQueries => {
+    const queries: ListQueries = {fieldConstraints: [], sourceChoices: 0};
+    cy.intercept('POST', '**/modules/graphql', request => {
+        const operations = Array.isArray(request.body) ? request.body : [request.body];
+        operations.forEach(operation => {
+            if (operation?.operationName === 'fieldConstraints') {
+                queries.fieldConstraints.push(operation.variables?.fieldName);
+            } else if (operation?.operationName === 'openGraphSchemaOrgMetadataSourceChoices') {
+                queries.sourceChoices += 1;
+            }
+        });
+    });
+    return queries;
+};

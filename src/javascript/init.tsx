@@ -5,7 +5,10 @@ import type { OsmSchemaValueProps } from "./editor-tags/OsmSchemaValue.tsx";
 import type { OsmTagProps } from "./editor-tags/OsmTag.tsx";
 import { i18n, NAMESPACE } from "./i18n.ts";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
+import type { EditorField, OnChangeContext } from "./open-graph-settings/sourceChoices.ts";
 import type { SchemaPreviewProps } from "./schema-org-preview/SchemaPreview.tsx";
+
+const NODE_TYPE_PROPERTY = "osm:nodeType";
 
 const OpenGraphSettingsApp = lazy(() => import("./open-graph-settings/OpenGraphSettingsApp.tsx"));
 // The preview needs the federated module of jContent. If it does not load, the Content Editor shows an empty field.
@@ -78,6 +81,19 @@ export default function registerOpenGraphSchemaOrgMetadata() {
       // osm:schemaPreview. The forms files of osmmix:customTags and osmmix:customSchemaOrg set these selector types.
       registry.add("selectorType", "OsmTag", { cmp: OsmTagSelector, supportMultiple: false });
       registry.add("selectorType", "OsmSchemaValue", { cmp: OsmSchemaValueSelector, supportMultiple: false });
+
+      // The source fields of a mapping declare no dependentProperties, so this handler fills their lists when the
+      // content type of the mapping changes. jContent calls it with undefined when the field unmounts.
+      registry.add("selectorType.onChange", "osmSourceChoices", {
+        targets: ["Choicelist"],
+        onChange: (_previousValue: unknown, currentValue: unknown, field: EditorField, context: OnChangeContext) => {
+          if (field.propertyName === NODE_TYPE_PROPERTY && currentValue !== undefined) {
+            import("./open-graph-settings/sourceChoices.ts")
+              .then(({ followNodeType }) => followNodeType(currentValue, field, context))
+              .catch(console.error);
+          }
+        },
+      });
     },
   });
 }
