@@ -1,6 +1,7 @@
-import { Code } from "@jahia/moonstone/dist/icons";
+import { toIconComponent } from "@jahia/moonstone";
 import { registry } from "@jahia/ui-extender";
 import { lazy, Suspense, type ComponentType } from "react";
+import { BRACED_SHARE } from "./bracedShare.tsx";
 import type { OsmSchemaValueProps } from "./editor-tags/OsmSchemaValue.tsx";
 import type { OsmTagProps } from "./editor-tags/OsmTag.tsx";
 import { i18n, NAMESPACE } from "./i18n.ts";
@@ -70,7 +71,7 @@ export default function registerOpenGraphSchemaOrgMetadata() {
 
       registry.add("adminRoute", "openGraphSchemaOrgMetadata", {
         targets: ["jcontent-siteSettingsSeo:90"],
-        icon: <Code/>,
+        icon: toIconComponent(BRACED_SHARE),
         label: "opengraph-schemaorg-metadata:mappings.nav",
         isSelectable: true,
         requiredPermission: "openGraphSchemaOrgMetadataManage",
