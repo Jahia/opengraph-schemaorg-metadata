@@ -18,6 +18,7 @@ tags of every content of that type:
 - Search engines read a schema.org block of the type of the content, such as `NewsArticle`, `Event` or `Product`.
 - A change of a mapping applies to the live pages at once, with no publication.
 - Editors see the values of each content in the Content Editor, with a preview of its share card.
+- Editors find the same tags in the head of a page in preview mode, with the URLs of the live page.
 - An editor can replace a value for one content, such as a shorter title for social networks.
 
 ## Set a mapping
