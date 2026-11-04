@@ -15,8 +15,3 @@
    the choices of `SourcePropertiesInitializer`.
 5. `OpenGraphService` holds the storage, the validation, the selection and the Open Graph resolution in one class of
    about 1,350 lines.
-5. When the form of an existing mapping opens, the Content Editor sends one `fieldConstraints` query for each of the
-   138 properties whose choice list depends on `osm:nodeType`, also for the fields of the dynamic fieldsets that are
-   off. Its query of the publication info comes after them, and Save stays disabled until that query returns. On a slow
-   server, Save stays disabled for several seconds after the form opens, so the `save()` helper of the Cypress suite
-   waits up to `LOAD_TIMEOUT`.
