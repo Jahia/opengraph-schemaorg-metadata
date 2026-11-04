@@ -4,6 +4,8 @@ import { lazy, Suspense, type ComponentType } from "react";
 import type { OsmSchemaValueProps } from "./editor-tags/OsmSchemaValue.tsx";
 import type { OsmTagProps } from "./editor-tags/OsmTag.tsx";
 import { i18n, NAMESPACE } from "./i18n.ts";
+import ChoiceList from "./open-graph-settings/ChoiceList.tsx";
+import type { TemplateFieldProps } from "./open-graph-settings/TemplateField.tsx";
 import type { OgPreviewProps } from "./open-graph-preview/OgPreview.tsx";
 import type { SchemaPreviewProps } from "./schema-org-preview/SchemaPreview.tsx";
 
@@ -16,6 +18,10 @@ const SchemaPreviewApp = lazy<ComponentType<SchemaPreviewProps>>(() =>
   import("./schema-org-preview/SchemaPreview.tsx").catch(() => ({ default: () => null }))
 );
 const OsmTagApp = lazy(() => import("./editor-tags/OsmTag.tsx"));
+// The template field needs the federated module of jContent. If it does not load, the field is a plain choice list.
+const TemplateFieldApp = lazy<ComponentType<TemplateFieldProps>>(() =>
+  import("./open-graph-settings/TemplateField.tsx").catch(() => ({ default: ChoiceList }))
+);
 const OsmSchemaValueApp = lazy(() => import("./editor-tags/OsmSchemaValue.tsx"));
 
 const OgPreviewSelector = (props: OgPreviewProps) => (
@@ -33,6 +39,12 @@ const SchemaPreviewSelector = (props: SchemaPreviewProps) => (
 const OsmTagSelector = (props: OsmTagProps) => (
     <Suspense fallback={null}>
         <OsmTagApp {...props}/>
+    </Suspense>
+);
+
+const TemplateFieldSelector = (props: TemplateFieldProps) => (
+    <Suspense fallback={null}>
+        <TemplateFieldApp {...props}/>
     </Suspense>
 );
 
@@ -78,6 +90,10 @@ export default function registerOpenGraphSchemaOrgMetadata() {
       // osm:schemaPreview. The forms files of osmmix:customTags and osmmix:customSchemaOrg set these selector types.
       registry.add("selectorType", "OsmTag", { cmp: OsmTagSelector, supportMultiple: false });
       registry.add("selectorType", "OsmSchemaValue", { cmp: OsmSchemaValueSelector, supportMultiple: false });
+
+      // The field osm:templateName of the mapping form, which the forms file of osmnt:typeMapping sets. The Content Editor
+      // checks the value of a selector type whose name holds "choicelist" against its values, and not as a pattern.
+      registry.add("selectorType", "OsmTemplateChoicelist", { cmp: TemplateFieldSelector, supportMultiple: false });
     },
   });
 }

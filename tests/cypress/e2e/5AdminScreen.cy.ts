@@ -24,12 +24,14 @@ import {
     LOAD_TIMEOUT,
     mappingRow,
     menuItem,
+    menuValues,
     NODE_TYPE_FIELD,
     OG_TYPE_FIELD,
     OPEN_GRAPH,
     openDropdown,
     openScreen,
     propertiesText,
+    readOnlyDropdown,
     save,
     SCHEMA_ORG,
     SCHEMA_TYPE_FIELD,
@@ -45,7 +47,10 @@ const NEWS_TYPE = 'jnt:news';
 const PAGE_TYPE = 'jnt:page';
 const PAGE_MIXIN = 'jmix:canBeUseAsTemplateModel';
 const TEMPLATE = 'home';
+// The content template of the module news for jnt:news.
+const NEWS_TEMPLATE = 'news-template';
 const ALL_TEMPLATES = '*';
+const ALL_TEMPLATES_LABEL = 'All templates';
 const TITLE: PropertyMapping = {ogProperty: 'og:title', sourceProperty: 'jcr:title'};
 const DESCRIPTION: PropertyMapping = {ogProperty: 'og:description', sourceProperty: 'desc'};
 const PUBLISHED: PropertyMapping = {ogProperty: 'article:published_time', sourceProperty: 'date'};
@@ -234,12 +239,13 @@ describe('Open Graph & schema.org mapping screen', () => {
             close();
         });
 
-        it('leaves a mapped content type out of a new mapping', () => {
+        it('offers a mapped main resource again for its content templates only', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
-            openDropdown(NODE_TYPE_FIELD);
-            cy.get(menuItem('jnt:page')).should('exist');
-            cy.get(menuItem(NEWS_TYPE)).should('not.exist');
+            choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            // The one template left is the value of the field, and the field is read-only.
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', NEWS_TEMPLATE);
+            cancelAndDiscard();
         });
 
         it('deletes the mapping with "Delete", then "Confirm deletion"', () => {
@@ -255,6 +261,22 @@ describe('Open Graph & schema.org mapping screen', () => {
             openDropdown(NODE_TYPE_FIELD);
             cy.get(menuItem(PAGE_MIXIN)).should('exist');
             cy.get(menuItem('osmmix:customTags')).should('not.exist');
+        });
+
+        it('keeps the template read-only until the form has a content type with a template', () => {
+            cy.get(ADD_MAPPING).click();
+            cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', ALL_TEMPLATES_LABEL);
+            choose(NODE_TYPE_FIELD, PAGE_MIXIN);
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', ALL_TEMPLATES_LABEL);
+            choose(NODE_TYPE_FIELD, NEWS_TYPE);
+            openDropdown(TEMPLATE_FIELD);
+            menuValues().should('include.members', [ALL_TEMPLATES, NEWS_TEMPLATE]).and('not.include', TEMPLATE);
+            cy.get(menuItem(NEWS_TEMPLATE)).click();
+            // A mixin has no template, so the field goes back to every template.
+            choose(NODE_TYPE_FIELD, PAGE_MIXIN);
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', ALL_TEMPLATES_LABEL);
+            cancelAndDiscard();
         });
 
         it('creates a template mapping of jnt:page for the template home in the Content Editor', () => {
@@ -278,9 +300,15 @@ describe('Open Graph & schema.org mapping screen', () => {
             cy.get(ADD_MAPPING).click();
             cy.get(CONTENT_EDITOR, {timeout: LOAD_TIMEOUT}).should('be.visible');
             choose(NODE_TYPE_FIELD, PAGE_TYPE);
-            openDropdown(TEMPLATE_FIELD);
-            cy.get(menuItem(ALL_TEMPLATES)).should('exist');
-            cy.get(menuItem(TEMPLATE)).should('not.exist');
+            // The template set templates-system has one page template, so every template is the one value left.
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', ALL_TEMPLATES_LABEL);
+            cancelAndDiscard();
+        });
+
+        it('shows the template of an existing mapping read-only', () => {
+            mappingRow(PAGE_TYPE, TEMPLATE).find(EDIT).click();
+            readOnlyDropdown(TEMPLATE_FIELD).should('contain.text', TEMPLATE);
+            close();
         });
 
         it('deletes the template mapping', () => {

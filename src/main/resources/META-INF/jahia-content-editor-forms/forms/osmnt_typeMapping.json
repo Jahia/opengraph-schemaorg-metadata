@@ -7,7 +7,10 @@
       "fieldSets": [
         {
           "name": "osmnt:typeMapping",
-          "rank": 0.0
+          "rank": 0.0,
+          "fields": [
+            {"name": "osm:templateName", "declaringNodeType": "osmnt:typeMapping", "selectorType": "OsmTemplateChoicelist"}
+          ]
         },
         {
           "name": "osmmix:openGraph",

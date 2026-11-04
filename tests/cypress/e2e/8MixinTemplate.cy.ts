@@ -19,6 +19,9 @@ const TEMPLATE = 'home';
 const PAGE_PATH = `${SITE_PATH}/home/osm-plain-page`;
 const MIXIN_PAGE_PATH = `${SITE_PATH}/home/osm-mixin-page`;
 const OTHER_TEMPLATE_PAGE_PATH = `${SITE_PATH}/home/osm-other-template-page`;
+// A main resource has no j:templateName. The module news gives jnt:news its default content template, news-template.
+const NEWS_TEMPLATE = 'news-template';
+const NEWS_PATH = `${SITE_PATH}/contents/osm-template-news`;
 
 const PAGE_MAPPING: TypeMapping = {
     nodeType: 'jnt:page',
@@ -39,6 +42,13 @@ const TEMPLATE_MAPPING: TypeMapping = {
     ogType: 'profile',
     properties: [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}]
 };
+
+const NEWS_MAPPING: TypeMapping = {
+    nodeType: 'jnt:news',
+    ogType: 'website',
+    properties: [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}]
+};
+const NEWS_TEMPLATE_MAPPING: TypeMapping = {...NEWS_MAPPING, templateName: NEWS_TEMPLATE, ogType: 'article'};
 
 const addPage = (path: string, title: string, templateName: string, mixins: string[] = []) => {
     const name = path.substring(path.lastIndexOf('/') + 1);
@@ -77,22 +87,30 @@ const deleteAllMappings = () => {
     deleteMapping('jnt:page');
     deleteMapping('jnt:page', {templateName: TEMPLATE});
     deleteMapping(MIXIN);
+    deleteMapping('jnt:news');
+    deleteMapping('jnt:news', {templateName: NEWS_TEMPLATE});
 };
 
 describe('Open Graph mappings of a mixin and of a template', () => {
     before(() => {
         deleteAllMappings();
-        [PAGE_PATH, MIXIN_PAGE_PATH, OTHER_TEMPLATE_PAGE_PATH].forEach(deleteEverywhere);
+        [PAGE_PATH, MIXIN_PAGE_PATH, OTHER_TEMPLATE_PAGE_PATH, NEWS_PATH].forEach(deleteEverywhere);
         addPage(PAGE_PATH, 'Plain page', TEMPLATE);
         addPage(MIXIN_PAGE_PATH, 'Mixin page', TEMPLATE, [MIXIN]);
         // No template of the site has this name, so the page is checked through the API only.
         addPage(OTHER_TEMPLATE_PAGE_PATH, 'Other template page', 'osm-other');
+        addNode({
+            parentPathOrId: `${SITE_PATH}/contents`,
+            name: NEWS_PATH.substring(NEWS_PATH.lastIndexOf('/') + 1),
+            primaryNodeType: 'jnt:news',
+            properties: [{name: 'jcr:title', value: 'Template news', language: 'en'}]
+        });
         publish(SITE_PATH);
     });
 
     after(() => {
         deleteAllMappings();
-        [PAGE_PATH, MIXIN_PAGE_PATH, OTHER_TEMPLATE_PAGE_PATH].forEach(deleteEverywhere);
+        [PAGE_PATH, MIXIN_PAGE_PATH, OTHER_TEMPLATE_PAGE_PATH, NEWS_PATH].forEach(deleteEverywhere);
     });
 
     it('offers the properties of a mixin and of the page type that the mixin extends', () => {
@@ -157,6 +175,17 @@ describe('Open Graph mappings of a mixin and of a template', () => {
         });
     });
 
+    it('applies a template mapping of a main resource to the contents that its content template renders', () => {
+        saveMapping(NEWS_MAPPING).then(expectNoError);
+        expectOgType(NEWS_PATH, 'website');
+        expectLiveOgType(NEWS_PATH, 'website');
+        saveMapping(NEWS_TEMPLATE_MAPPING).then(expectNoError);
+        expectOgType(NEWS_PATH, 'article');
+        expectLiveOgType(NEWS_PATH, 'article');
+        deleteMapping('jnt:news', {templateName: NEWS_TEMPLATE}).then(expectNoError);
+        expectLiveOgType(NEWS_PATH, 'website');
+    });
+
     describe('refuses an invalid template mapping', () => {
         const title = [{ogProperty: 'og:title', sourceProperty: 'jcr:title'}];
         const refusals = [
@@ -171,9 +200,9 @@ describe('Open Graph mappings of a mixin and of a template', () => {
                 message: 'so a template mapping cannot use it'
             },
             {
-                reason: 'a template on a content type that has no template',
+                reason: 'a page template on a main resource',
                 mapping: {nodeType: 'jnt:news', templateName: TEMPLATE, ogType: 'website', properties: title},
-                message: 'so a template mapping cannot use it'
+                message: `has no template '${TEMPLATE}'`
             }
         ];
 

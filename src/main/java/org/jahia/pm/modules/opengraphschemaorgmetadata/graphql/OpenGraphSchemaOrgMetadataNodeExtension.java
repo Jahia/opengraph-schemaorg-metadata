@@ -70,7 +70,7 @@ public class OpenGraphSchemaOrgMetadataNodeExtension {
             @GraphQLName("language") @GraphQLNonNull @GraphQLDescription("The language of the values") String language) {
         try {
             JCRNodeWrapper localized = NodeHelper.getNodeInLanguage(node.getNode(), language);
-            return Resolvers.service().resolve(localized, LanguageCodeConverters.languageCodeToLocale(language))
+            return Resolvers.service().resolve(localized, LanguageCodeConverters.languageCodeToLocale(language), null)
                     .stream().map(GqlOgTag::new).collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new DataFetchingException(e);
@@ -88,7 +88,7 @@ public class OpenGraphSchemaOrgMetadataNodeExtension {
         try {
             JCRNodeWrapper localized = NodeHelper.getNodeInLanguage(node.getNode(), language);
             Map<String, Object> entity = Resolvers.service().resolveSchemaOrg(localized,
-                    LanguageCodeConverters.languageCodeToLocale(language));
+                    LanguageCodeConverters.languageCodeToLocale(language), null);
             return entity.isEmpty() ? null : JsonLdWriter.json(withNodePaths(entity));
         } catch (RepositoryException e) {
             throw new DataFetchingException(e);
